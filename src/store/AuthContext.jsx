@@ -81,6 +81,9 @@ export function AuthProvider({ children }) {
     const email = `${dni}${EMAIL_DOMAIN}`
     const { error } = await supabase.auth.signInWithPassword({ email, password: pin })
     if (error) throw new Error('DNI o PIN incorrecto')
+    
+      // Esperar a que onAuthStateChange cargue el perfil
+    await new Promise(resolve => setTimeout(resolve, 500))
   }
 
   async function logout() {
