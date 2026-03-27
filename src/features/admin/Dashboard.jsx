@@ -21,17 +21,10 @@ async function cargarStats() {
     const { data: clientes, error: errorClientes } = await supabase.from('clientes').select('id, estado, fecha_vencimiento')
     const { data: entrenadores, error: errorEntrenadores } = await supabase.from('entrenadores').select('id')
 
-    console.log('clientes:', clientes)
-    console.log('errorClientes:', errorClientes)
-    console.log('entrenadores:', entrenadores)
-    console.log('errorEntrenadores:', errorEntrenadores)
-
     const totalClientes = clientes?.length ?? 0
     const clientesActivos = clientes?.filter(c => c.estado === true).length ?? 0
     const clientesVencidos = clientes?.filter(c => c.fecha_vencimiento && c.fecha_vencimiento < hoy).length ?? 0
     const totalEntrenadores = entrenadores?.length ?? 0
-
-    console.log('stats calculadas:', { totalClientes, clientesActivos, clientesVencidos, totalEntrenadores })
 
     setStats({ totalClientes, clientesActivos, clientesVencidos, totalEntrenadores })
   } catch (error) {

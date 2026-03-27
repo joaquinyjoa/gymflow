@@ -15,9 +15,9 @@ export default function ClientesList() {
   async function cargarClientes() {
     setLoading(true)
     const { data, error } = await supabase
-      .from('clientes')
-      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, numero_documento')
-      .order('apellido', { ascending: true })
+        .from('clientes')
+        .select('id, nombre, apellido, correo, estado, fecha_vencimiento')
+        .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
     else setClientes(data)
