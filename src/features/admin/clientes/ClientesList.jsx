@@ -60,6 +60,7 @@ export default function ClientesList() {
     <div>
       <div>
         <h1>Clientes</h1>
+        <p>Total: {clientes.length} clientes</p>
         <button onClick={() => navigate('/admin/clientes/nuevo')}>
           + Nuevo cliente
         </button>
