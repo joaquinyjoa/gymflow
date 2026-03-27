@@ -17,16 +17,13 @@ export default function AdminPage() {
           <h2>GymFlow</h2>
           <p>{perfil?.correo}</p>
         </div>
-
         <nav>
           <NavLink to="/admin">Dashboard</NavLink>
           <NavLink to="/admin/clientes">Clientes</NavLink>
           <NavLink to="/admin/entrenadores">Entrenadores</NavLink>
         </nav>
-
         <button onClick={handleLogout}>Cerrar sesión</button>
       </aside>
-
       <main>
         <Outlet />
       </main>

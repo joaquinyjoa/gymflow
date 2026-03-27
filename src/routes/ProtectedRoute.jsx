@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../store/AuthContext'
 import { ROUTES } from '../lib/constants'
 
@@ -13,5 +13,5 @@ export default function ProtectedRoute({ children, rolesPermitidos }) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  return children
+  return children ? children : <Outlet />
 }

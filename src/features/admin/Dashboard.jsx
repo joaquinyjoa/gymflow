@@ -14,23 +14,32 @@ export default function Dashboard() {
     cargarStats()
   }, [])
 
-  async function cargarStats() {
-    try {
-      const [{ count: totalClientes }, { count: clientesActivos }, { count: clientesVencidos }, { count: totalEntrenadores }] =
-        await Promise.all([
-          supabase.from('clientes').select('*', { count: 'exact', head: true }),
-          supabase.from('clientes').select('*', { count: 'exact', head: true }).eq('estado', true),
-          supabase.from('clientes').select('*', { count: 'exact', head: true }).lt('fecha_vencimiento', new Date().toISOString().split('T')[0]),
-          supabase.from('entrenadores').select('*', { count: 'exact', head: true }),
-        ])
+async function cargarStats() {
+  try {
+    const hoy = new Date().toISOString().split('T')[0]
 
-      setStats({ totalClientes, clientesActivos, clientesVencidos, totalEntrenadores })
-    } catch (error) {
-      console.error('Error cargando stats:', error)
-    } finally {
-      setLoading(false)
-    }
+    const { data: clientes, error: errorClientes } = await supabase.from('clientes').select('id, estado, fecha_vencimiento')
+    const { data: entrenadores, error: errorEntrenadores } = await supabase.from('entrenadores').select('id')
+
+    console.log('clientes:', clientes)
+    console.log('errorClientes:', errorClientes)
+    console.log('entrenadores:', entrenadores)
+    console.log('errorEntrenadores:', errorEntrenadores)
+
+    const totalClientes = clientes?.length ?? 0
+    const clientesActivos = clientes?.filter(c => c.estado === true).length ?? 0
+    const clientesVencidos = clientes?.filter(c => c.fecha_vencimiento && c.fecha_vencimiento < hoy).length ?? 0
+    const totalEntrenadores = entrenadores?.length ?? 0
+
+    console.log('stats calculadas:', { totalClientes, clientesActivos, clientesVencidos, totalEntrenadores })
+
+    setStats({ totalClientes, clientesActivos, clientesVencidos, totalEntrenadores })
+  } catch (error) {
+    console.error('Error cargando stats:', error)
+  } finally {
+    setLoading(false)
   }
+}
 
   if (loading) return <p>Cargando...</p>
 

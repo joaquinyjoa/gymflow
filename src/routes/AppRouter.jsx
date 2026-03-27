@@ -3,11 +3,14 @@ import { AuthProvider } from '../store/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 import { ROUTES, ROLES } from '../lib/constants'
 
-// Páginas
 import LoginPage from '../features/auth/LoginPage'
+import AdminPage from '../features/admin/AdminPage'
+import Dashboard from '../features/admin/Dashboard'
+import ClientesList from '../features/admin/clientes/ClientesList'
+import ClienteForm from '../features/admin/clientes/ClienteForm'
+import EntrenadoresList from '../features/admin/entrenadores/EntrenadoresList'
+import EntrenadorForm from '../features/admin/entrenadores/EntrenadorForm'
 
-// Placeholders hasta que creemos las páginas reales
-const AdminPage = () => <div>Admin</div>
 const EntrenadorPage = () => <div>Entrenador</div>
 const ClientePage = () => <div>Cliente</div>
 
@@ -16,31 +19,34 @@ export default function AppRouter() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Pública */}
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
 
-          {/* Admin */}
           <Route path={ROUTES.ADMIN} element={
             <ProtectedRoute rolesPermitidos={[ROLES.ADMIN]}>
               <AdminPage />
             </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="clientes" element={<ClientesList />} />
+            <Route path="clientes/nuevo" element={<ClienteForm />} />
+            <Route path="clientes/:id/editar" element={<ClienteForm />} />
+            <Route path="entrenadores" element={<EntrenadoresList />} />
+            <Route path="entrenadores/nuevo" element={<EntrenadorForm />} />
+            <Route path="entrenadores/:id/editar" element={<EntrenadorForm />} />
+          </Route>
 
-          {/* Entrenador */}
           <Route path={ROUTES.ENTRENADOR} element={
             <ProtectedRoute rolesPermitidos={[ROLES.ENTRENADOR]}>
               <EntrenadorPage />
             </ProtectedRoute>
           } />
 
-          {/* Cliente */}
           <Route path={ROUTES.CLIENTE} element={
             <ProtectedRoute rolesPermitidos={[ROLES.CLIENTE]}>
               <ClientePage />
             </ProtectedRoute>
           } />
 
-          {/* Cualquier ruta desconocida manda al login */}
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
         </Routes>
       </AuthProvider>
