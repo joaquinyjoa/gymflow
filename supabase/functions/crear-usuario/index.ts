@@ -47,6 +47,11 @@ Deno.serve(async (req) => {
     const { dni, pin, rol, perfil } = body
     if (!dni || !pin || !rol) throw new Error('Faltan campos obligatorios')
 
+      const { data: usuarioExistente } = await supabaseAdmin.auth.admin.listUsers()
+    const emailBuscado = `${dni}@retofitness.com`
+    const yaExiste = usuarioExistente.users.some(u => u.email === emailBuscado)
+    if (yaExiste) throw new Error(`El DNI ${dni} ya está registrado en el sistema`)
+
     const email = `${dni}@retofitness.com`
 
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({

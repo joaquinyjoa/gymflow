@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
-import { EMAIL_DOMAIN } from '../../../lib/constants'
+import { invocarFuncion } from '../../../lib/api'
 
 
 function getFechaProximoMes() {
@@ -180,26 +180,20 @@ export default function ClienteForm() {
 
   // Llama a la Edge Function que crea el usuario en Auth + inserta en users + clientes
   async function crearCliente() {
-    const { data, error } = await supabase.functions.invoke('crear-usuario', {
-      body: {
-        dni,
-        pin,
-        rol: 'cliente',
-        perfil: {
-          ...form,
-          // Convertir a números antes de enviar
-          edad: Number(form.edad),
-          peso: Number(form.peso),
-          altura: Number(form.altura),
-          horas_sueno: form.horas_sueno ? Number(form.horas_sueno) : null,
-          terminos_aceptados: true,
-          fecha_aceptacion_terminos: new Date().toISOString(),
-        }
+    await invocarFuncion('crear-usuario', {
+      dni,
+      pin,
+      rol: 'cliente',
+      perfil: {
+        ...form,
+        edad: Number(form.edad),
+        peso: Number(form.peso),
+        altura: Number(form.altura),
+        horas_sueno: form.horas_sueno ? Number(form.horas_sueno) : null,
+        terminos_aceptados: true,
+        fecha_aceptacion_terminos: new Date().toISOString(),
       }
     })
-
-    if (error) throw new Error(error.message)
-    if (data?.error) throw new Error(data.error)
   }
 
   // Actualiza los datos del cliente en la tabla clientes

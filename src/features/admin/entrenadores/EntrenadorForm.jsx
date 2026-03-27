@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
+import { invocarFuncion } from '../../../lib/api'
 
 function getFechaProximoMes() {
   const fecha = new Date()
@@ -88,20 +89,15 @@ export default function EntrenadorForm() {
   }
 
   async function crearEntrenador() {
-    const { data, error } = await supabase.functions.invoke('crear-usuario', {
-      body: {
-        dni,
-        pin,
-        rol: 'entrenador',
-        perfil: {
-          nombre: form.nombre,
-          apellido: form.apellido,
-        }
+    await invocarFuncion('crear-usuario', {
+      dni,
+      pin,
+      rol: 'entrenador',
+      perfil: {
+        nombre: form.nombre,
+        apellido: form.apellido,
       }
     })
-
-    if (error) throw new Error(error.message)
-    if (data?.error) throw new Error(data.error)
   }
 
   async function editarEntrenador() {

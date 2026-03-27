@@ -14,26 +14,21 @@ export default function EntrenadoresList() {
 
   async function cargarEntrenadores() {
     setLoading(true)
+    // Traemos activo desde users para mostrarlo en la tabla
     const { data, error } = await supabase
       .from('entrenadores')
-      .select('id, nombre, apellido, correo, user_id')
+      .select('id, nombre, apellido, correo, user_id, users(activo)')
       .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
-    else setEntrenadores(data)
+    else setEntrenadores(data.map(e => ({ ...e, activo: e.users?.activo ?? true })))
     setLoading(false)
   }
 
   async function toggleEstado(entrenador) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('activo')
-      .eq('id', entrenador.user_id)
-      .single()
-
     const { error } = await supabase
       .from('users')
-      .update({ activo: !userData.activo })
+      .update({ activo: !entrenador.activo })
       .eq('id', entrenador.user_id)
 
     if (error) {
@@ -41,6 +36,7 @@ export default function EntrenadoresList() {
       return
     }
 
+    // Actualiza solo ese entrenador en el estado local sin recargar
     setEntrenadores(prev =>
       prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e)
     )
@@ -79,8 +75,8 @@ export default function EntrenadoresList() {
           <thead>
             <tr>
               <th>Nombre</th>
-              <th>DNI</th>
-              <th>Correo</th>
+              <th>Documento</th>
+              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -89,13 +85,13 @@ export default function EntrenadoresList() {
               <tr key={entrenador.id}>
                 <td>{entrenador.apellido}, {entrenador.nombre}</td>
                 <td>{entrenador.correo?.split('@')[0]}</td>
-                <td>{entrenador.correo}</td>
+                <td>{entrenador.activo ? 'Activo' : 'Inactivo'}</td>
                 <td>
                   <button onClick={() => navigate(`/admin/entrenadores/${entrenador.id}/editar`)}>
                     Editar
                   </button>
                   <button onClick={() => toggleEstado(entrenador)}>
-                    Activar/Desactivar
+                    {entrenador.activo ? 'Desactivar' : 'Activar'}
                   </button>
                   <button onClick={() => eliminarEntrenador(entrenador)}>
                     Eliminar
