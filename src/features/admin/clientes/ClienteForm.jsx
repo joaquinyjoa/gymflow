@@ -3,6 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { EMAIL_DOMAIN } from '../../../lib/constants'
 
+
+function getFechaProximoMes() {
+  const fecha = new Date()
+  fecha.setMonth(fecha.getMonth() + 1)
+  return fecha.toISOString().split('T')[0]
+}
+
+// Estado inicial del formulario — todos los campos vacíos o false
 const estadoInicial = {
   nombre: '',
   apellido: '',
@@ -11,10 +19,9 @@ const estadoInicial = {
   peso: '',
   altura: '',
   nivel_actividad: 'Medio',
-  fecha_vencimiento: '',
+  fecha_vencimiento: getFechaProximoMes(), // predeterminada al mes siguiente
   objetivo: '',
   horas_sueno: '',
-  // Salud
   enfermedad_cronica: false,
   descripcion_enfermedad: '',
   diabetes: false,
@@ -41,12 +48,18 @@ export default function ClienteForm() {
 
   const navigate = useNavigate()
   const { id } = useParams()
+
+  // Si hay un id en la URL, estamos editando. Si no, estamos creando.
   const esEdicion = Boolean(id)
 
+  // Al montar el componente, si es edición cargamos los datos del cliente
   useEffect(() => {
     if (esEdicion) cargarCliente()
   }, [id])
 
+  
+
+  // Carga los datos del cliente desde Supabase y los pone en el estado
   async function cargarCliente() {
     setCargandoDatos(true)
     const { data, error } = await supabase
@@ -84,12 +97,14 @@ export default function ClienteForm() {
         fuma: data.fuma ?? false,
         alcohol: data.alcohol ?? false,
       })
-      // Sacar DNI del correo
+      // El DNI lo sacamos del correo (ej: "12345678@retofitness.com" → "12345678")
       setDni(data.correo?.split('@')[0] ?? '')
     }
     setCargandoDatos(false)
   }
 
+  // Handler genérico para inputs y checkboxes
+  // Detecta si es checkbox por el type y usa checked o value según corresponda
   function handleChange(e) {
     const { name, value, type, checked } = e.target
     setForm(prev => ({
@@ -98,14 +113,56 @@ export default function ClienteForm() {
     }))
   }
 
+  // Validaciones y submit del formulario
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
+    // ── Acceso ──────────────────────────────────────────────
     if (!dni) { setError('El DNI es obligatorio'); return }
-    if (!esEdicion && pin.length !== 4) { setError('El PIN debe tener 4 dígitos'); return }
-    if (!form.nombre || !form.apellido) { setError('Nombre y apellido son obligatorios'); return }
+    if (!/^\d+$/.test(dni)) { setError('El DNI solo puede contener números'); return }
+    if (dni.length < 6 || dni.length > 11) { setError('El DNI debe tener entre 6 y 11 dígitos'); return }
+    if (!esEdicion && !pin) { setError('El PIN es obligatorio'); return }
+    if (pin && !/^\d+$/.test(pin)) { setError('El PIN solo puede contener números'); return }
+    if (pin && pin.length !== 4) { setError('El PIN debe tener exactamente 4 dígitos'); return }
 
+    // ── Datos personales ─────────────────────────────────────
+    if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre)) { setError('El nombre solo puede contener letras'); return }
+    if (!form.apellido.trim()) { setError('El apellido es obligatorio'); return }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.apellido)) { setError('El apellido solo puede contener letras'); return }
+    if (!form.genero) { setError('El género es obligatorio'); return }
+
+    // Edad: entero entre 12 y 100
+    if (!form.edad) { setError('La edad es obligatoria'); return }
+    if (!/^\d+$/.test(String(form.edad))) { setError('La edad debe ser un número entero'); return }
+    if (Number(form.edad) < 12 || Number(form.edad) > 100) { setError('La edad debe estar entre 12 y 100 años'); return }
+
+    // Peso: número con hasta 2 decimales, entre 20 y 300 kg
+    if (!form.peso) { setError('El peso es obligatorio'); return }
+    if (!/^\d+(\.\d{1,2})?$/.test(String(form.peso))) { setError('El peso debe ser un número válido (ej: 70 o 70.5)'); return }
+    if (Number(form.peso) < 20 || Number(form.peso) > 300) { setError('El peso debe estar entre 20 y 300 kg'); return }
+
+    // Altura: entero en cm entre 50 y 250
+    if (!form.altura) { setError('La altura es obligatoria'); return }
+    if (!/^\d+$/.test(String(form.altura))) { setError('La altura debe ser un número entero en cm (ej: 170)'); return }
+    if (Number(form.altura) < 50 || Number(form.altura) > 250) { setError('La altura debe estar entre 50 y 250 cm'); return }
+
+    if (!form.fecha_vencimiento) { setError('La fecha de vencimiento es obligatoria'); return }
+
+    // Horas de sueño: entero entre 1 y 24 (opcional)
+    if (form.horas_sueno) {
+      if (!/^\d+$/.test(String(form.horas_sueno))) { setError('Las horas de sueño deben ser un número entero'); return }
+      if (Number(form.horas_sueno) < 1 || Number(form.horas_sueno) > 24) { setError('Las horas de sueño deben estar entre 1 y 24'); return }
+    }
+
+    // ── Salud: descripción obligatoria si la condición está marcada ──
+    if (form.enfermedad_cronica && !form.descripcion_enfermedad.trim()) { setError('Describí la enfermedad crónica'); return }
+    if (form.medicacion_regular && !form.descripcion_medicacion.trim()) { setError('Describí la medicación regular'); return }
+    if (form.cirugias && !form.descripcion_cirugias.trim()) { setError('Describí las cirugías'); return }
+    if (form.lesiones && !form.descripcion_lesiones.trim()) { setError('Describí las lesiones'); return }
+
+    // ── Submit ───────────────────────────────────────────────
     setLoading(true)
     try {
       if (esEdicion) {
@@ -121,47 +178,47 @@ export default function ClienteForm() {
     }
   }
 
+  // Llama a la Edge Function que crea el usuario en Auth + inserta en users + clientes
   async function crearCliente() {
-    const email = `${dni}${EMAIL_DOMAIN}`
-
-    // 1. Crear usuario en Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password: pin,
-      email_confirm: true,
+    const { data, error } = await supabase.functions.invoke('crear-usuario', {
+      body: {
+        dni,
+        pin,
+        rol: 'cliente',
+        perfil: {
+          ...form,
+          // Convertir a números antes de enviar
+          edad: Number(form.edad),
+          peso: Number(form.peso),
+          altura: Number(form.altura),
+          horas_sueno: form.horas_sueno ? Number(form.horas_sueno) : null,
+          terminos_aceptados: true,
+          fecha_aceptacion_terminos: new Date().toISOString(),
+        }
+      }
     })
-    if (authError) throw new Error(`Error creando usuario: ${authError.message}`)
 
-    const uid = authData.user.id
-
-    // 2. Insertar en tabla users
-    const { error: userError } = await supabase
-      .from('users')
-      .insert({ id: uid, rol: 'cliente', activo: true })
-    if (userError) throw new Error(`Error creando perfil: ${userError.message}`)
-
-    // 3. Insertar en tabla clientes
-    const { error: clienteError } = await supabase
-      .from('clientes')
-      .insert({
-        user_id: uid,
-        correo: email,
-        ...form,
-        terminos_aceptados: true,
-        fecha_aceptacion_terminos: new Date().toISOString(),
-      })
-    if (clienteError) throw new Error(`Error guardando cliente: ${clienteError.message}`)
+    if (error) throw new Error(error.message)
+    if (data?.error) throw new Error(data.error)
   }
 
+  // Actualiza los datos del cliente en la tabla clientes
+  // Si hay un PIN nuevo (4 dígitos), también lo actualiza en Auth via Edge Function
   async function editarCliente() {
-    // Actualizar datos del cliente
     const { error: clienteError } = await supabase
       .from('clientes')
-      .update({ ...form })
+      .update({
+        ...form,
+        edad: Number(form.edad),
+        peso: Number(form.peso),
+        altura: Number(form.altura),
+        horas_sueno: form.horas_sueno ? Number(form.horas_sueno) : null,
+      })
       .eq('id', id)
+
     if (clienteError) throw new Error(`Error actualizando cliente: ${clienteError.message}`)
 
-    // Si cambió el PIN, actualizarlo en Auth
+    // Si el admin ingresó un PIN nuevo, actualizarlo en Auth
     if (pin.length === 4) {
       const { data: clienteData } = await supabase
         .from('clientes')
@@ -169,11 +226,11 @@ export default function ClienteForm() {
         .eq('id', id)
         .single()
 
-      const { error: pinError } = await supabase.auth.admin.updateUserById(
-        clienteData.user_id,
-        { password: pin }
-      )
-      if (pinError) throw new Error(`Error actualizando PIN: ${pinError.message}`)
+      const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
+        body: { user_id: clienteData.user_id, pin }
+      })
+
+      if (pinError || data?.error) throw new Error('Error actualizando PIN')
     }
   }
 
@@ -185,15 +242,20 @@ export default function ClienteForm() {
 
       <form onSubmit={handleSubmit}>
 
+        {/* ── Acceso ── */}
         <h2>Acceso</h2>
         <div>
           <label>DNI</label>
           <input
             type="text"
             value={dni}
-            onChange={e => setDni(e.target.value)}
+            // Filtra cualquier carácter que no sea número mientras escribe
+            onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
             disabled={esEdicion}
             placeholder="12345678"
+            minLength={6}
+            maxLength={11}
+            autoComplete="off"
           />
         </div>
         <div>
@@ -201,25 +263,47 @@ export default function ClienteForm() {
           <input
             type="password"
             value={pin}
-            onChange={e => setPin(e.target.value)}
+            onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
             placeholder="4 dígitos"
             maxLength={4}
-            autoComplete="new-password"
+            autoComplete="off"
           />
         </div>
 
+        {/* ── Datos personales ── */}
         <h2>Datos personales</h2>
         <div>
           <label>Nombre</label>
-          <input type="text" name="nombre" value={form.nombre} onChange={handleChange} />
+          <input
+            type="text"
+            name="nombre"
+            value={form.nombre}
+            // Solo permite letras y espacios (incluye acentos y ñ)
+            onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+            placeholder="Ej: Juan"
+          />
         </div>
         <div>
           <label>Apellido</label>
-          <input type="text" name="apellido" value={form.apellido} onChange={handleChange} />
+          <input
+            type="text"
+            name="apellido"
+            value={form.apellido}
+            onChange={e => setForm(prev => ({ ...prev, apellido: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+            placeholder="Ej: González"
+          />
         </div>
         <div>
           <label>Edad</label>
-          <input type="number" name="edad" value={form.edad} onChange={handleChange} />
+          <input
+            type="number"
+            name="edad"
+            value={form.edad}
+            onChange={e => setForm(prev => ({ ...prev, edad: e.target.value.replace(/\D/g, '') }))}
+            min={12}
+            max={100}
+            placeholder="Ej: 25"
+          />
         </div>
         <div>
           <label>Género</label>
@@ -232,11 +316,28 @@ export default function ClienteForm() {
         </div>
         <div>
           <label>Peso (kg)</label>
-          <input type="number" name="peso" value={form.peso} onChange={handleChange} />
+          <input
+            type="number"
+            name="peso"
+            value={form.peso}
+            onChange={e => setForm(prev => ({ ...prev, peso: e.target.value.replace(/[^0-9.]/g, '') }))}
+            min={20}
+            max={300}
+            step="0.1"
+            placeholder="Ej: 70.5"
+          />
         </div>
         <div>
           <label>Altura (cm)</label>
-          <input type="number" name="altura" value={form.altura} onChange={handleChange} />
+          <input
+            type="number"
+            name="altura"
+            value={form.altura}
+            onChange={e => setForm(prev => ({ ...prev, altura: e.target.value.replace(/\D/g, '') }))}
+            min={50}
+            max={250}
+            placeholder="Ej: 170"
+          />
         </div>
         <div>
           <label>Nivel de actividad</label>
@@ -248,19 +349,39 @@ export default function ClienteForm() {
         </div>
         <div>
           <label>Fecha de vencimiento</label>
-          <input type="date" name="fecha_vencimiento" value={form.fecha_vencimiento} onChange={handleChange} />
+          <input
+            type="date"
+            name="fecha_vencimiento"
+            value={form.fecha_vencimiento}
+            onChange={handleChange}
+          />
         </div>
 
+        {/* ── Objetivo ── */}
         <h2>Objetivo</h2>
         <div>
           <label>Objetivo</label>
-          <textarea name="objetivo" value={form.objetivo} onChange={handleChange} />
+          <textarea
+            name="objetivo"
+            value={form.objetivo}
+            onChange={handleChange}
+            placeholder="Ej: Bajar de peso, ganar masa muscular..."
+          />
         </div>
         <div>
           <label>Horas de sueño</label>
-          <input type="number" name="horas_sueno" value={form.horas_sueno} onChange={handleChange} min={1} max={24} />
+          <input
+            type="number"
+            name="horas_sueno"
+            value={form.horas_sueno}
+            onChange={e => setForm(prev => ({ ...prev, horas_sueno: e.target.value.replace(/\D/g, '') }))}
+            min={1}
+            max={24}
+            placeholder="Ej: 8"
+          />
         </div>
 
+        {/* ── Salud ── */}
         <h2>Salud</h2>
 
         <div>
@@ -268,6 +389,7 @@ export default function ClienteForm() {
             <input type="checkbox" name="enfermedad_cronica" checked={form.enfermedad_cronica} onChange={handleChange} />
             Enfermedad crónica
           </label>
+          {/* Solo muestra el campo de descripción si el checkbox está marcado */}
           {form.enfermedad_cronica && (
             <input type="text" name="descripcion_enfermedad" value={form.descripcion_enfermedad} onChange={handleChange} placeholder="Describí la enfermedad" />
           )}
@@ -345,7 +467,8 @@ export default function ClienteForm() {
           </label>
         </div>
 
-        {error && <p>{error}</p>}
+        {/* Mensaje de error visible debajo del formulario */}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div>
           <button type="button" onClick={() => navigate('/admin/clientes')}>

@@ -30,8 +30,15 @@ export default function ClientesList() {
       .update({ estado: !cliente.estado })
       .eq('id', cliente.id)
 
-    if (error) alert('Error al actualizar estado')
-    else cargarClientes()
+    if (error) {
+      alert('Error al actualizar estado')
+      return
+    }
+
+    // Actualiza solo ese cliente en el estado local sin recargar todo
+    setClientes(prev =>
+      prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c)
+    )
   }
 
   async function eliminarCliente(cliente) {
