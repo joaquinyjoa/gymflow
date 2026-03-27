@@ -1,3 +1,206 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { supabase } from '../../../lib/supabase'
+
+function getFechaProximoMes() {
+  const fecha = new Date()
+  fecha.setMonth(fecha.getMonth() + 1)
+  return fecha.toISOString().split('T')[0]
+}
+
+const estadoInicial = {
+  nombre: '',
+  apellido: '',
+}
+
 export default function EntrenadorForm() {
-  return <div>Formulario entrenador</div>
+  const [form, setForm] = useState(estadoInicial)
+  const [dni, setDni] = useState('')
+  const [pin, setPin] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [cargandoDatos, setCargandoDatos] = useState(false)
+  const [error, setError] = useState('')
+
+  const navigate = useNavigate()
+  const { id } = useParams()
+  const esEdicion = Boolean(id)
+
+  useEffect(() => {
+    if (esEdicion) cargarEntrenador()
+  }, [id])
+
+  async function cargarEntrenador() {
+    setCargandoDatos(true)
+    const { data, error } = await supabase
+      .from('entrenadores')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      setError('Error al cargar entrenador')
+    } else {
+      setForm({
+        nombre: data.nombre ?? '',
+        apellido: data.apellido ?? '',
+      })
+      setDni(data.correo?.split('@')[0] ?? '')
+    }
+    setCargandoDatos(false)
+  }
+
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+
+    // ── Acceso ──
+    if (!dni) { setError('El DNI es obligatorio'); return }
+    if (!/^\d+$/.test(dni)) { setError('El DNI solo puede contener números'); return }
+    if (dni.length < 6 || dni.length > 11) { setError('El DNI debe tener entre 6 y 11 dígitos'); return }
+    if (!esEdicion && !pin) { setError('El PIN es obligatorio'); return }
+    if (pin && !/^\d+$/.test(pin)) { setError('El PIN solo puede contener números'); return }
+    if (pin && pin.length !== 4) { setError('El PIN debe tener exactamente 4 dígitos'); return }
+
+    // ── Datos personales ──
+    if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre)) { setError('El nombre solo puede contener letras'); return }
+    if (!form.apellido.trim()) { setError('El apellido es obligatorio'); return }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.apellido)) { setError('El apellido solo puede contener letras'); return }
+
+    setLoading(true)
+    try {
+      if (esEdicion) {
+        await editarEntrenador()
+      } else {
+        await crearEntrenador()
+      }
+      navigate('/admin/entrenadores')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function crearEntrenador() {
+    const { data, error } = await supabase.functions.invoke('crear-usuario', {
+      body: {
+        dni,
+        pin,
+        rol: 'entrenador',
+        perfil: {
+          nombre: form.nombre,
+          apellido: form.apellido,
+        }
+      }
+    })
+
+    if (error) throw new Error(error.message)
+    if (data?.error) throw new Error(data.error)
+  }
+
+  async function editarEntrenador() {
+    const { error: entrenadorError } = await supabase
+      .from('entrenadores')
+      .update({
+        nombre: form.nombre,
+        apellido: form.apellido,
+      })
+      .eq('id', id)
+
+    if (entrenadorError) throw new Error(`Error actualizando entrenador: ${entrenadorError.message}`)
+
+    // Si hay PIN nuevo actualizarlo
+    if (pin.length === 4) {
+      const { data: entrenadorData } = await supabase
+        .from('entrenadores')
+        .select('user_id')
+        .eq('id', id)
+        .single()
+
+      const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
+        body: { user_id: entrenadorData.user_id, pin }
+      })
+
+      if (pinError || data?.error) throw new Error('Error actualizando PIN')
+    }
+  }
+
+  if (cargandoDatos) return <p>Cargando...</p>
+
+  return (
+    <div>
+      <h1>{esEdicion ? 'Editar entrenador' : 'Nuevo entrenador'}</h1>
+
+      <form onSubmit={handleSubmit}>
+
+        {/* ── Acceso ── */}
+        <h2>Acceso</h2>
+        <div>
+          <label>DNI</label>
+          <input
+            type="text"
+            value={dni}
+            onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
+            disabled={esEdicion}
+            placeholder="12345678"
+            minLength={6}
+            maxLength={11}
+            autoComplete="off"
+          />
+        </div>
+        <div>
+          <label>{esEdicion ? 'Nuevo PIN (dejá vacío para no cambiar)' : 'PIN'}</label>
+          <input
+            type="password"
+            value={pin}
+            onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+            placeholder="4 dígitos"
+            maxLength={4}
+            autoComplete="off"
+          />
+        </div>
+
+        {/* ── Datos personales ── */}
+        <h2>Datos personales</h2>
+        <div>
+          <label>Nombre</label>
+          <input
+            type="text"
+            name="nombre"
+            value={form.nombre}
+            onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+            placeholder="Ej: Carlos"
+          />
+        </div>
+        <div>
+          <label>Apellido</label>
+          <input
+            type="text"
+            name="apellido"
+            value={form.apellido}
+            onChange={e => setForm(prev => ({ ...prev, apellido: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+            placeholder="Ej: López"
+          />
+        </div>
+
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+
+        <div>
+          <button type="button" onClick={() => navigate('/admin/entrenadores')}>
+            Cancelar
+          </button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear entrenador'}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  )
 }
