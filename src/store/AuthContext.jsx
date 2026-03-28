@@ -9,15 +9,16 @@ export function AuthProvider({ children }) {
   const [perfil, setPerfil] = useState(null)
   const [rol, setRol] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [perfilListo, setPerfilListo] = useState(false)
+  const [authError, setAuthError] = useState(null)
+  const [clienteVencido, setClienteVencido] = useState(false)
 
   useEffect(() => {
-    // Verificar si hay sesión activa al cargar la app
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) cargarPerfil(session.user)
       else setLoading(false)
     })
 
-    // Escuchar cambios de sesión (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) cargarPerfil(session.user)
       else {
@@ -25,6 +26,8 @@ export function AuthProvider({ children }) {
         setPerfil(null)
         setRol(null)
         setLoading(false)
+        setPerfilListo(false)
+        setClienteVencido(false)
       }
     })
 
@@ -32,8 +35,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function cargarPerfil(authUser) {
+    setPerfilListo(false)
     try {
-      // Obtener rol desde la tabla users
       const { data: userData, error } = await supabase
         .from('users')
         .select('rol, activo')
@@ -46,7 +49,6 @@ export function AuthProvider({ children }) {
       setUser(authUser)
       setRol(userData.rol)
 
-      // Cargar perfil según rol
       if (userData.rol === ROLES.CLIENTE) {
         const { data } = await supabase
           .from('clientes')
@@ -54,6 +56,15 @@ export function AuthProvider({ children }) {
           .eq('user_id', authUser.id)
           .single()
         setPerfil(data)
+
+        // Verificar vencimiento
+        if (data?.fecha_vencimiento) {
+          const hoy = new Date().toISOString().split('T')[0]
+          setClienteVencido(data.fecha_vencimiento < hoy)
+        } else {
+          setClienteVencido(false)
+        }
+
       } else if (userData.rol === ROLES.ENTRENADOR) {
         const { data } = await supabase
           .from('entrenadores')
@@ -62,15 +73,14 @@ export function AuthProvider({ children }) {
           .single()
         setPerfil(data)
       } else if (userData.rol === ROLES.ADMIN) {
-        const { data } = await supabase
-          .from('recepcion')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .single()
-        setPerfil(data)
+        setPerfil({ correo: authUser.email })
       }
+
+      setPerfilListo(true)
     } catch (error) {
       console.error('Error cargando perfil:', error.message)
+      setAuthError(error.message)
+      setPerfilListo(false)
       await supabase.auth.signOut()
     } finally {
       setLoading(false)
@@ -78,11 +88,11 @@ export function AuthProvider({ children }) {
   }
 
   async function login(dni, pin) {
+    setPerfilListo(false)
+    setAuthError(null)
     const email = `${dni}${EMAIL_DOMAIN}`
     const { error } = await supabase.auth.signInWithPassword({ email, password: pin })
     if (error) throw new Error('DNI o PIN incorrecto')
-      // Esperar a que onAuthStateChange cargue el perfil
-  await new Promise(resolve => setTimeout(resolve, 500))
   }
 
   async function logout() {
@@ -97,7 +107,12 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, perfil, rol, loading, login, logout, getRutaInicial }}>
+    <AuthContext.Provider value={{
+      user, perfil, rol, loading,
+      perfilListo, authError, setAuthError,
+      clienteVencido,
+      login, logout, getRutaInicial
+    }}>
       {children}
     </AuthContext.Provider>
   )

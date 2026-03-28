@@ -25,7 +25,10 @@ import AsignarRutina from '../features/entrenador/rutinas/AsignarRutina'
 import ClientesEntrenador from '../features/entrenador/clientes/ClientesEntrenador'
 import RutinaClienteDetalle from '../features/entrenador/clientes/RutinaClienteDetalle'
 
-const ClientePage = () => <div>Cliente</div>
+// Páginas de cliente
+import ClientePage from '../features/cliente/ClientePage'
+import RutinaDelDia from '../features/cliente/RutinaDelDia'
+import EjercicioDetalleCliente from '../features/cliente/EjercicioDetalle'
 
 export default function AppRouter() {
   return (
@@ -69,10 +72,13 @@ export default function AppRouter() {
           </Route>
 
           <Route path={ROUTES.CLIENTE} element={
-            <ProtectedRoute rolesPermitidos={[ROLES.CLIENTE]}>
-              <ClientePage />
-            </ProtectedRoute>
-          } />
+          <ProtectedRoute rolesPermitidos={[ROLES.CLIENTE]}>
+            <ClientePage />
+          </ProtectedRoute>
+        }>
+          <Route index element={<RutinaDelDia />} />
+          <Route path="ejercicio/:ejercicioId" element={<EjercicioDetalleCliente />} />
+        </Route>
 
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
         </Routes>
