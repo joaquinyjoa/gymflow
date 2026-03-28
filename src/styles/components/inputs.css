@@ -1,3 +1,9 @@
+/* ── Disabled state ── */
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Series weight input ── */
 .peso-input {
   width: 100%;

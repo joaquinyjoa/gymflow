@@ -50,6 +50,12 @@
   font-size: 15px !important;
 }
 
+/* ── Small icon button ── */
+.btn-icon-sm {
+  width: 32px;
+  height: 32px;
+}
+
 /* ── Detalle back button ── */
 .btn-back {
   display: inline-flex;

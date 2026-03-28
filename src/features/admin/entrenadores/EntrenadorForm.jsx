@@ -3,12 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { invocarFuncion } from '../../../lib/api'
 
-function getFechaProximoMes() {
-  const fecha = new Date()
-  fecha.setMonth(fecha.getMonth() + 1)
-  return fecha.toISOString().split('T')[0]
-}
-
 const estadoInicial = {
   nombre: '',
   apellido: '',
@@ -32,12 +26,7 @@ export default function EntrenadorForm() {
 
   async function cargarEntrenador() {
     setCargandoDatos(true)
-    const { data, error } = await supabase
-      .from('entrenadores')
-      .select('*')
-      .eq('id', id)
-      .single()
-
+    const { data, error } = await supabase.from('entrenadores').select('*').eq('id', id).single()
     if (error) {
       setError('Error al cargar entrenador')
     } else {
@@ -50,24 +39,16 @@ export default function EntrenadorForm() {
     setCargandoDatos(false)
   }
 
-  function handleChange(e) {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
-    // ── Acceso ──
     if (!dni) { setError('El DNI es obligatorio'); return }
     if (!/^\d+$/.test(dni)) { setError('El DNI solo puede contener números'); return }
     if (dni.length < 6 || dni.length > 11) { setError('El DNI debe tener entre 6 y 11 dígitos'); return }
     if (!esEdicion && !pin) { setError('El PIN es obligatorio'); return }
     if (pin && !/^\d+$/.test(pin)) { setError('El PIN solo puede contener números'); return }
     if (pin && pin.length !== 4) { setError('El PIN debe tener exactamente 4 dígitos'); return }
-
-    // ── Datos personales ──
     if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre)) { setError('El nombre solo puede contener letras'); return }
     if (!form.apellido.trim()) { setError('El apellido es obligatorio'); return }
@@ -75,11 +56,7 @@ export default function EntrenadorForm() {
 
     setLoading(true)
     try {
-      if (esEdicion) {
-        await editarEntrenador()
-      } else {
-        await crearEntrenador()
-      }
+      esEdicion ? await editarEntrenador() : await crearEntrenador()
       navigate('/admin/entrenadores')
     } catch (err) {
       setError(err.message)
@@ -90,108 +67,117 @@ export default function EntrenadorForm() {
 
   async function crearEntrenador() {
     await invocarFuncion('crear-usuario', {
-      dni,
-      pin,
-      rol: 'entrenador',
-      perfil: {
-        nombre: form.nombre,
-        apellido: form.apellido,
-      }
+      dni, pin, rol: 'entrenador',
+      perfil: { nombre: form.nombre, apellido: form.apellido }
     })
   }
 
   async function editarEntrenador() {
     const { error: entrenadorError } = await supabase
       .from('entrenadores')
-      .update({
-        nombre: form.nombre,
-        apellido: form.apellido,
-      })
+      .update({ nombre: form.nombre, apellido: form.apellido })
       .eq('id', id)
 
     if (entrenadorError) throw new Error(`Error actualizando entrenador: ${entrenadorError.message}`)
 
-    // Si hay PIN nuevo actualizarlo
     if (pin.length === 4) {
-      const { data: entrenadorData } = await supabase
-        .from('entrenadores')
-        .select('user_id')
-        .eq('id', id)
-        .single()
-
+      const { data: entrenadorData } = await supabase.from('entrenadores').select('user_id').eq('id', id).single()
       const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
         body: { user_id: entrenadorData.user_id, pin }
       })
-
       if (pinError || data?.error) throw new Error('Error actualizando PIN')
     }
   }
 
-  if (cargandoDatos) return <p>Cargando...</p>
+  if (cargandoDatos) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando datos del entrenador...</p>
+    </div>
+  )
 
   return (
-    <div>
-      <h1>{esEdicion ? 'Editar entrenador' : 'Nuevo entrenador'}</h1>
+    <div className="admin-form-page">
+
+      <div className="admin-form-header">
+        <button className="btn-back" onClick={() => navigate('/admin/entrenadores')}>
+          ← Volver
+        </button>
+        <h1 className="admin-page-title">{esEdicion ? 'Editar entrenador' : 'Nuevo entrenador'}</h1>
+      </div>
 
       <form onSubmit={handleSubmit}>
 
         {/* ── Acceso ── */}
-        <h2>Acceso</h2>
-        <div>
-          <label>DNI</label>
-          <input
-            type="text"
-            value={dni}
-            onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
-            disabled={esEdicion}
-            placeholder="12345678"
-            minLength={6}
-            maxLength={11}
-            autoComplete="off"
-          />
-        </div>
-        <div>
-          <label>{esEdicion ? 'Nuevo PIN (dejá vacío para no cambiar)' : 'PIN'}</label>
-          <input
-            type="password"
-            value={pin}
-            onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-            placeholder="4 dígitos"
-            maxLength={4}
-            autoComplete="off"
-          />
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Acceso</p>
+          <div className="admin-form-grid">
+            <div className="input-group">
+              <label className="input-label">DNI</label>
+              <input
+                className="input"
+                type="text"
+                value={dni}
+                onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
+                disabled={esEdicion}
+                placeholder="12345678"
+                minLength={6}
+                maxLength={11}
+                autoComplete="off"
+              />
+            </div>
+            <div className="input-group">
+              <label className="input-label">
+                {esEdicion ? 'Nuevo PIN (vacío = no cambiar)' : 'PIN'}
+              </label>
+              <input
+                className="input"
+                type="password"
+                value={pin}
+                onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="4 dígitos"
+                maxLength={4}
+                autoComplete="off"
+              />
+            </div>
+          </div>
         </div>
 
         {/* ── Datos personales ── */}
-        <h2>Datos personales</h2>
-        <div>
-          <label>Nombre</label>
-          <input
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
-            placeholder="Ej: Carlos"
-          />
-        </div>
-        <div>
-          <label>Apellido</label>
-          <input
-            type="text"
-            name="apellido"
-            value={form.apellido}
-            onChange={e => setForm(prev => ({ ...prev, apellido: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
-            placeholder="Ej: López"
-          />
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Datos personales</p>
+          <div className="admin-form-grid">
+            <div className="input-group">
+              <label className="input-label">Nombre</label>
+              <input
+                className="input"
+                type="text"
+                name="nombre"
+                value={form.nombre}
+                onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+                placeholder="Ej: Carlos"
+              />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Apellido</label>
+              <input
+                className="input"
+                type="text"
+                name="apellido"
+                value={form.apellido}
+                onChange={e => setForm(prev => ({ ...prev, apellido: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+                placeholder="Ej: López"
+              />
+            </div>
+          </div>
         </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <div className="msg-error mb-16">{error}</div>}
 
-        <div>
-          <button type="button" onClick={() => navigate('/admin/entrenadores')}>
+        <div className="admin-form-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/entrenadores')}>
             Cancelar
           </button>
-          <button type="submit" disabled={loading}>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear entrenador'}
           </button>
         </div>
