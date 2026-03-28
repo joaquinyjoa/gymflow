@@ -11,11 +11,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('1. Iniciando función')
-
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No autorizado')
-    console.log('2. Auth header recibido')
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -28,66 +25,70 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
-    console.log('3. Usuario:', user?.id, 'Error:', userError?.message)
+    // Verificar que quien llama es admin
+    const { data: { user } } = await supabaseUser.auth.getUser()
     if (!user) throw new Error('No autorizado')
 
-    const { data: userData, error: rolError } = await supabaseAdmin
+    const { data: userData } = await supabaseAdmin
       .from('users')
       .select('rol')
       .eq('id', user.id)
       .single()
-    console.log('4. Rol:', userData?.rol, 'Error:', rolError?.message)
 
     if (userData?.rol !== 'admin') throw new Error('Sin permisos')
 
     const body = await req.json()
-    console.log('5. Body recibido:', JSON.stringify(body))
-
     const { dni, pin, rol, perfil } = body
-    if (!dni || !pin || !rol) throw new Error('Faltan campos obligatorios')
 
-      const { data: usuarioExistente } = await supabaseAdmin.auth.admin.listUsers()
+    // Validaciones del lado del servidor
+    if (!dni || !pin || !rol) throw new Error('Faltan campos obligatorios')
+    if (typeof dni !== 'string' || !/^\d{6,11}$/.test(dni)) throw new Error('DNI inválido')
+    if (typeof pin !== 'string' || !/^\d{4}$/.test(pin)) throw new Error('PIN inválido')
+    if (!['cliente', 'entrenador'].includes(rol)) throw new Error('Rol inválido')
+    if (!perfil?.nombre || typeof perfil.nombre !== 'string') throw new Error('Nombre inválido')
+    if (!perfil?.apellido || typeof perfil.apellido !== 'string') throw new Error('Apellido inválido')
+
+    // Verificar que el DNI no esté en uso
+    const { data: usuariosData } = await supabaseAdmin.auth.admin.listUsers()
     const emailBuscado = `${dni}@retofitness.com`
-    const yaExiste = usuarioExistente.users.some(u => u.email === emailBuscado)
+    const yaExiste = usuariosData.users.some(u => u.email === emailBuscado)
     if (yaExiste) throw new Error(`El DNI ${dni} ya está registrado en el sistema`)
 
-    const email = `${dni}@retofitness.com`
+    const email = emailBuscado
 
+    // 1. Crear usuario en Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: pin,
       email_confirm: true,
     })
-    console.log('6. Auth user creado:', authData?.user?.id, 'Error:', authError?.message)
     if (authError) throw new Error(authError.message)
 
     const uid = authData.user.id
 
-    const { error: insertUserError } = await supabaseAdmin
+    // 2. Insertar en tabla users
+    const { error: userError } = await supabaseAdmin
       .from('users')
       .insert({ id: uid, rol, activo: true })
-    console.log('7. User insertado, Error:', insertUserError?.message)
-    if (insertUserError) throw new Error(insertUserError.message)
+    if (userError) throw new Error(userError.message)
 
-   if (rol === 'cliente') {
-    const perfilLimpio = {
-      ...perfil,
-      edad: perfil.edad ? parseInt(perfil.edad) : null,
-      peso: perfil.peso ? parseFloat(perfil.peso) : null,
-      altura: perfil.altura ? parseInt(perfil.altura) : null,
-      horas_sueno: perfil.horas_sueno ? parseInt(perfil.horas_sueno) : null,
-    }
-    const { error: perfilError } = await supabaseAdmin
-      .from('clientes')
-      .insert({ user_id: uid, correo: email, ...perfilLimpio })
-    console.log('8. Cliente insertado, Error:', perfilError?.message)
-    if (perfilError) throw new Error(perfilError.message)
-  } else if (rol === 'entrenador') {
+    // 3. Insertar perfil según rol
+    if (rol === 'cliente') {
+      const perfilLimpio = {
+        ...perfil,
+        edad: perfil.edad ? parseInt(perfil.edad) : null,
+        peso: perfil.peso ? parseFloat(perfil.peso) : null,
+        altura: perfil.altura ? parseInt(perfil.altura) : null,
+        horas_sueno: perfil.horas_sueno ? parseInt(perfil.horas_sueno) : null,
+      }
+      const { error: perfilError } = await supabaseAdmin
+        .from('clientes')
+        .insert({ user_id: uid, correo: email, ...perfilLimpio })
+      if (perfilError) throw new Error(perfilError.message)
+    } else if (rol === 'entrenador') {
       const { error: perfilError } = await supabaseAdmin
         .from('entrenadores')
-        .insert({ user_id: uid, correo: email, ...perfil })
-      console.log('8. Entrenador insertado, Error:', perfilError?.message)
+        .insert({ user_id: uid, correo: email, nombre: perfil.nombre, apellido: perfil.apellido })
       if (perfilError) throw new Error(perfilError.message)
     }
 
@@ -97,7 +98,6 @@ Deno.serve(async (req) => {
     )
 
   } catch (err) {
-    console.log('ERROR:', err.message)
     return new Response(
       JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

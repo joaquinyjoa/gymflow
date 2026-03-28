@@ -46,13 +46,16 @@ export default function EntrenadoresList() {
     const confirmar = window.confirm(`¿Eliminar a ${entrenador.nombre} ${entrenador.apellido}? Esta acción no se puede deshacer.`)
     if (!confirmar) return
 
-    const { error } = await supabase
-      .from('entrenadores')
-      .delete()
-      .eq('id', entrenador.id)
+    const { data: result, error } = await supabase.functions.invoke('eliminar-usuario', {
+      body: { user_id: entrenador.user_id }
+    })
 
-    if (error) alert('Error al eliminar entrenador')
-    else setEntrenadores(prev => prev.filter(e => e.id !== entrenador.id))
+    if (error || result?.error) {
+      alert('Error al eliminar entrenador')
+      return
+    }
+
+    setEntrenadores(prev => prev.filter(e => e.id !== entrenador.id))
   }
 
   if (loading) return <p>Cargando entrenadores...</p>

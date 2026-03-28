@@ -42,17 +42,28 @@ export default function ClientesList() {
   }
 
   async function eliminarCliente(cliente) {
-    const confirmar = window.confirm(`¿Eliminár a ${cliente.nombre} ${cliente.apellido}? Esta acción no se puede deshacer.`)
+    const confirmar = window.confirm(`¿Eliminar a ${cliente.nombre} ${cliente.apellido}? Esta acción no se puede deshacer.`)
     if (!confirmar) return
 
-    // Eliminar el user de auth también
-    const { error } = await supabase
+    // Primero necesitamos el user_id del cliente
+    const { data } = await supabase
       .from('clientes')
-      .delete()
+      .select('user_id')
       .eq('id', cliente.id)
+      .single()
 
-    if (error) alert('Error al eliminar cliente')
-    else cargarClientes()
+    if (!data?.user_id) { alert('Error al obtener datos del cliente'); return }
+
+    const { data: result, error } = await supabase.functions.invoke('eliminar-usuario', {
+      body: { user_id: data.user_id }
+    })
+
+    if (error || result?.error) {
+      alert('Error al eliminar cliente')
+      return
+    }
+
+    setClientes(prev => prev.filter(c => c.id !== cliente.id))
   }
 
   function estaVencido(fecha_vencimiento) {
