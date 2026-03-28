@@ -23,6 +23,7 @@ import RutinasList from '../features/entrenador/rutinas/RutinasList'
 import RutinaForm from '../features/entrenador/rutinas/RutinaForm'
 import AsignarRutina from '../features/entrenador/rutinas/AsignarRutina'
 import ClientesEntrenador from '../features/entrenador/clientes/ClientesEntrenador'
+import RutinaClienteDetalle from '../features/entrenador/clientes/RutinaClienteDetalle'
 
 const ClientePage = () => <div>Cliente</div>
 
@@ -64,6 +65,7 @@ export default function AppRouter() {
             <Route path="rutinas/:id/editar" element={<RutinaForm />} />
             <Route path="rutinas/:id/asignar" element={<AsignarRutina />} />
             <Route path="clientes" element={<ClientesEntrenador />} />
+            <Route path="clientes/:clienteId/rutina/:rutinaClienteId" element={<RutinaClienteDetalle />} />
           </Route>
 
           <Route path={ROUTES.CLIENTE} element={
