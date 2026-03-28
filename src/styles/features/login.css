@@ -1,0 +1,70 @@
+/* ── Login page ── */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--bg-base);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ── Logo / branding ── */
+.login-logo {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-logo-icono {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radio-xl);
+  background: var(--acento);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.login-logo-titulo {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.login-logo-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ── Form card ── */
+.login-form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-xl);
+  padding: 24px;
+}
+
+.login-form-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.login-submit {
+  margin-top: 8px;
+}
+
+/* ── Theme toggle ── */
+.login-tema-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+}

@@ -1,0 +1,67 @@
+/* ── Day selector ── */
+.btn-dia {
+  flex-shrink: 0;
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.btn-dia.activo {
+  border-color: transparent;
+  background: var(--acento);
+  color: #fff;
+}
+
+/* ── "Ver instrucciones" ── */
+.btn-ver-mas {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--acento);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.btn-ver-mas:hover { opacity: 0.8; }
+
+/* ── Danger icon button ── */
+.btn-icon-danger {
+  color: #ff4444 !important;
+  border-color: rgba(255, 68, 68, 0.3) !important;
+}
+.btn-icon-danger:hover { background: rgba(255, 68, 68, 0.08) !important; }
+
+/* ── Modal large buttons ── */
+.btn-modal {
+  padding: 14px !important;
+  font-size: 15px !important;
+}
+
+/* ── Detalle back button ── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  color: var(--acento);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.btn-back:hover { opacity: 0.75; }

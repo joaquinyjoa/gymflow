@@ -1,0 +1,300 @@
+@import '../components/buttons.css';
+@import '../components/cards.css';
+@import '../components/badges.css';
+@import '../components/inputs.css';
+@import '../components/stats.css';
+
+/* ── Icons ── */
+.icon-chevron {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--acento);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-puno {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--acento);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-cache {
+  width: 12px;
+  height: 12px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 2;
+}
+
+.icon-placeholder {
+  width: 40px;
+  height: 40px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.icon-estado {
+  width: 32px;
+  height: 32px;
+  stroke: var(--acento);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+/* ── Estado vacío / cargando / error ── */
+.estado-center {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.estado-icono {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 51, 0, 0.1);
+  border: 1px solid var(--acento-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.estado-titulo {
+  margin-bottom: 8px;
+}
+
+.estado-desc {
+  max-width: 260px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Cache indicator ── */
+.cache-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-card2);
+  border-radius: var(--radio-md);
+  margin-bottom: 12px;
+}
+
+.cache-text {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Days selector ── */
+.dias-selector {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: none;
+}
+.dias-selector::-webkit-scrollbar { display: none; }
+
+/* ── Routine container ── */
+.rutina-container {
+  padding-bottom: 32px;
+}
+
+/* ── Routine header ── */
+.rutina-header {
+  margin-bottom: 16px;
+}
+
+.rutina-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rutina-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ── Exercise list ── */
+.ejercicios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scroll-hint {
+  text-align: center;
+  padding: 20px 0 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+/* ── Weight tracking ── */
+.registro-peso {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.registro-peso-titulo {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.registro-peso-series {
+  display: flex;
+  gap: 8px;
+}
+
+.registro-peso-serie {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.registro-peso-label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ── Client page header ── */
+.cliente-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 8px;
+}
+
+.cliente-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cliente-saludo {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+}
+
+.cliente-nombre {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cliente-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Logout modal ── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-sheet {
+  background: var(--bg-card);
+  border-radius: var(--radio-xl) var(--radio-xl) 0 0;
+  padding: 24px 20px 36px;
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-hover);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-titulo {
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.modal-desc {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.modal-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Ejercicio detalle ── */
+.detalle-page {
+  padding-bottom: 32px;
+}
+
+.detalle-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.detalle-seccion {
+  margin-bottom: 16px;
+}
+
+.detalle-seccion-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.detalle-texto {
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.detalle-consejos {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-left: 3px solid #EAB308;
+  border-radius: var(--radio-md);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.detalle-consejos-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #EAB308;
+  margin-bottom: 6px;
+}

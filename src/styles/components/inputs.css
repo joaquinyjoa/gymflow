@@ -1,0 +1,31 @@
+/* ── Series weight input ── */
+.peso-input {
+  width: 100%;
+  text-align: center;
+  padding: 6px 4px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.peso-input.con-peso {
+  background: var(--acento-bg);
+  border-color: var(--acento-border);
+  color: var(--acento-glow);
+}
+
+.peso-input::-webkit-outer-spin-button,
+.peso-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.peso-input[type="number"] {
+  -moz-appearance: textfield;
+}

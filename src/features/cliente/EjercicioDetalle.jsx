@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import '../../styles/features/cliente.css'
 
 export default function EjercicioDetalleCliente() {
   const { state } = useLocation()
@@ -26,83 +27,99 @@ export default function EjercicioDetalleCliente() {
     setLoading(false)
   }
 
-  if (loading) return <p>Cargando ejercicio...</p>
-  if (!ejercicio) return <p>Ejercicio no encontrado</p>
+  if (loading) return (
+    <div className="page">
+      <div className="container">
+        <div className="estado-center">
+          <p className="text-muted">Cargando ejercicio...</p>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (!ejercicio) return (
+    <div className="page">
+      <div className="container">
+        <div className="estado-center">
+          <p className="text-muted">Ejercicio no encontrado</p>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
-    <div style={{ padding: '16px', maxWidth: '600px', margin: '0 auto' }}>
-      <button onClick={() => navigate(-1)}>← Volver</button>
+    <div className="page">
+      <div className="container">
+        <div className="detalle-page">
 
-      <h1 style={{ marginTop: '12px' }}>{ejercicio.nombre}</h1>
+          <button className="btn-back" onClick={() => navigate(-1)}>
+            ← Volver
+          </button>
 
-      {/* GIF grande */}
-      {ejercicio.enlace_video && (
-        <div style={{ textAlign: 'center', margin: '16px 0' }}>
-          <img
-            src={ejercicio.enlace_video}
-            alt={ejercicio.nombre}
-            style={{ width: '100%', maxWidth: '400px', borderRadius: '12px' }}
-          />
+          <h1>{ejercicio.nombre}</h1>
+
+          {/* GIF grande */}
+          {ejercicio.enlace_video && (
+            <div className="detalle-gif">
+              <img src={ejercicio.enlace_video} alt={ejercicio.nombre} />
+            </div>
+          )}
+
+          {/* Info básica */}
+          <div className="detalle-badges">
+            {ejercicio.musculo_principal && (
+              <span className="badge badge-acento">{ejercicio.musculo_principal}</span>
+            )}
+            {ejercicio.nivel_dificultad && (
+              <span className="badge badge-neutral">{ejercicio.nivel_dificultad}</span>
+            )}
+            {ejercicio.categoria && (
+              <span className="badge badge-neutral">{ejercicio.categoria}</span>
+            )}
+          </div>
+
+          {/* Músculos secundarios */}
+          {ejercicio.musculos_secundarios?.length > 0 && (
+            <div className="detalle-seccion">
+              <p className="detalle-seccion-titulo">Músculos secundarios</p>
+              <p>{ejercicio.musculos_secundarios.join(', ')}</p>
+            </div>
+          )}
+
+          {/* Equipamiento */}
+          {ejercicio.equipamiento?.length > 0 && (
+            <div className="detalle-seccion">
+              <p className="detalle-seccion-titulo">Equipamiento</p>
+              <p>{ejercicio.equipamiento.join(', ')}</p>
+            </div>
+          )}
+
+          {/* Descripción */}
+          {ejercicio.descripcion && (
+            <div className="detalle-seccion">
+              <p className="detalle-seccion-titulo">Descripción</p>
+              <p className="detalle-texto">{ejercicio.descripcion}</p>
+            </div>
+          )}
+
+          {/* Instrucciones */}
+          {ejercicio.instrucciones && (
+            <div className="detalle-seccion">
+              <p className="detalle-seccion-titulo">Instrucciones</p>
+              <p className="detalle-texto">{ejercicio.instrucciones}</p>
+            </div>
+          )}
+
+          {/* Consejos */}
+          {ejercicio.consejos && (
+            <div className="detalle-consejos">
+              <p className="detalle-consejos-titulo">Consejos</p>
+              <p className="detalle-texto">{ejercicio.consejos}</p>
+            </div>
+          )}
+
         </div>
-      )}
-
-      {/* Info básica */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '12px 0' }}>
-        <span style={{ padding: '4px 10px', background: '#eee', borderRadius: '20px', fontSize: '13px' }}>
-          {ejercicio.musculo_principal}
-        </span>
-        <span style={{ padding: '4px 10px', background: '#eee', borderRadius: '20px', fontSize: '13px' }}>
-          {ejercicio.nivel_dificultad}
-        </span>
-        <span style={{ padding: '4px 10px', background: '#eee', borderRadius: '20px', fontSize: '13px' }}>
-          {ejercicio.categoria}
-        </span>
       </div>
-
-      {/* Músculos secundarios */}
-      {ejercicio.musculos_secundarios?.length > 0 && (
-        <div style={{ margin: '12px 0' }}>
-          <strong>Músculos secundarios:</strong>
-          <p>{ejercicio.musculos_secundarios.join(', ')}</p>
-        </div>
-      )}
-
-      {/* Equipamiento */}
-      {ejercicio.equipamiento?.length > 0 && (
-        <div style={{ margin: '12px 0' }}>
-          <strong>Equipamiento:</strong>
-          <p>{ejercicio.equipamiento.join(', ')}</p>
-        </div>
-      )}
-
-      {/* Descripción */}
-      {ejercicio.descripcion && (
-        <div style={{ margin: '16px 0' }}>
-          <h2>Descripción</h2>
-          <p style={{ lineHeight: '1.6', color: '#444' }}>{ejercicio.descripcion}</p>
-        </div>
-      )}
-
-      {/* Instrucciones */}
-      {ejercicio.instrucciones && (
-        <div style={{ margin: '16px 0' }}>
-          <h2>Instrucciones</h2>
-          <p style={{ lineHeight: '1.8', color: '#444', whiteSpace: 'pre-line' }}>
-            {ejercicio.instrucciones}
-          </p>
-        </div>
-      )}
-
-      {/* Consejos */}
-      {ejercicio.consejos && (
-        <div style={{ margin: '16px 0', padding: '12px', background: '#fffbe6', borderRadius: '8px', borderLeft: '4px solid #f0c040' }}>
-          <h2>💡 Consejos</h2>
-          <p style={{ lineHeight: '1.6', color: '#444', whiteSpace: 'pre-line' }}>
-            {ejercicio.consejos}
-          </p>
-        </div>
-      )}
-
     </div>
   )
 }
