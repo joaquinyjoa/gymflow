@@ -18,6 +18,7 @@ import DashboardEntrenador from '../features/entrenador/Dashboard'
 // paginas del entrenador
 import EjerciciosList from '../features/entrenador/ejercicios/EjerciciosList'
 import EjercicioForm from '../features/entrenador/ejercicios/EjercicioForm'
+import EjercicioDetalle from '../features/entrenador/ejercicios/EjercicioDetalle'
 import RutinasList from '../features/entrenador/rutinas/RutinasList'
 import RutinaForm from '../features/entrenador/rutinas/RutinaForm'
 import AsignarRutina from '../features/entrenador/rutinas/AsignarRutina'
@@ -57,6 +58,7 @@ export default function AppRouter() {
             <Route path="ejercicios" element={<EjerciciosList />} />
             <Route path="ejercicios/nuevo" element={<EjercicioForm />} />
             <Route path="ejercicios/:id/editar" element={<EjercicioForm />} />
+            <Route path="ejercicios/:id" element={<EjercicioDetalle />} />
             <Route path="rutinas" element={<RutinasList />} />
             <Route path="rutinas/nuevo" element={<RutinaForm />} />
             <Route path="rutinas/:id/editar" element={<RutinaForm />} />

@@ -18,7 +18,7 @@ export default function EjerciciosList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('ejercicios')
-      .select('id, nombre, musculo_principal, nivel_dificultad, activo, categoria')
+      .select('id, nombre, musculo_principal, nivel_dificultad, activo, categoria, enlace_video')
       .eq('created_by', perfil.id)
       .order('nombre', { ascending: true })
 
@@ -33,10 +33,7 @@ export default function EjerciciosList() {
       .update({ activo: !ejercicio.activo })
       .eq('id', ejercicio.id)
 
-    if (error) {
-      alert('Error al actualizar ejercicio')
-      return
-    }
+    if (error) { alert('Error al actualizar ejercicio'); return }
 
     setEjercicios(prev =>
       prev.map(e => e.id === ejercicio.id ? { ...e, activo: !e.activo } : e)
@@ -46,6 +43,17 @@ export default function EjerciciosList() {
   async function eliminarEjercicio(ejercicio) {
     const confirmar = window.confirm(`¿Eliminar "${ejercicio.nombre}"? Esta acción no se puede deshacer.`)
     if (!confirmar) return
+
+    // Extraer el path del GIF desde la URL pública
+    // La URL es algo como: https://xxx.supabase.co/storage/v1/object/public/ejercicios/ejercicios/nombre.gif
+    if (ejercicio.enlace_video) {
+      const path = ejercicio.enlace_video.split('/storage/v1/object/public/ejercicios/')[1]
+      if (path) {
+        await supabase.storage
+          .from('ejercicios')
+          .remove([path])
+      }
+    }
 
     const { error } = await supabase
       .from('ejercicios')
@@ -72,40 +80,48 @@ export default function EjerciciosList() {
       {ejercicios.length === 0 ? (
         <p>No hay ejercicios creados todavía</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Músculo</th>
-              <th>Categoría</th>
-              <th>Dificultad</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ejercicios.map(ejercicio => (
-              <tr key={ejercicio.id}>
-                <td>{ejercicio.nombre}</td>
-                <td>{ejercicio.musculo_principal}</td>
-                <td>{ejercicio.categoria}</td>
-                <td>{ejercicio.nivel_dificultad}</td>
-                <td>{ejercicio.activo ? 'Activo' : 'Inactivo'}</td>
-                <td>
-                  <button onClick={() => navigate(`/entrenador/ejercicios/${ejercicio.id}/editar`)}>
-                    Editar
-                  </button>
-                  <button onClick={() => toggleActivo(ejercicio)}>
-                    {ejercicio.activo ? 'Desactivar' : 'Activar'}
-                  </button>
-                  <button onClick={() => eliminarEjercicio(ejercicio)}>
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div>
+          {ejercicios.map(ejercicio => (
+            <div key={ejercicio.id}>
+              {/* GIF */}
+              {ejercicio.enlace_video ? (
+                <img
+                  src={ejercicio.enlace_video}
+                  alt={ejercicio.nombre}
+                  style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ width: '120px', height: '120px', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <p>Sin GIF</p>
+                </div>
+              )}
+
+              {/* Info */}
+              <div>
+                <h3>{ejercicio.nombre}</h3>
+                <p>{ejercicio.musculo_principal} — {ejercicio.categoria}</p>
+                <p>{ejercicio.nivel_dificultad}</p>
+                <p>{ejercicio.activo ? 'Activo' : 'Inactivo'}</p>
+              </div>
+
+              {/* Acciones */}
+              <div>
+                <button onClick={() => navigate(`/entrenador/ejercicios/${ejercicio.id}`)}>
+                  Ver más
+                </button>
+                <button onClick={() => navigate(`/entrenador/ejercicios/${ejercicio.id}/editar`)}>
+                  Editar
+                </button>
+                <button onClick={() => toggleActivo(ejercicio)}>
+                  {ejercicio.activo ? 'Desactivar' : 'Activar'}
+                </button>
+                <button onClick={() => eliminarEjercicio(ejercicio)}>
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
