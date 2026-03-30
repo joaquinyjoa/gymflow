@@ -168,8 +168,8 @@ export default function ClientesList() {
                   </div>
                   <div className="admin-card-meta-row">
                     <span className="admin-card-meta-label">Estado</span>
-                    <span className={`badge ${cliente.estado ? 'badge-success' : 'badge-neutral'}`}>
-                      {cliente.estado ? 'Activo' : 'Inactivo'}
+                    <span className={`badge ${cliente.estado && !vencido ? 'badge-success' : 'badge-neutral'}`}>
+                      {cliente.estado && !vencido ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                   {cliente.genero && (
