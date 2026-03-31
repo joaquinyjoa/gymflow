@@ -2,11 +2,25 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
+import ConfirmModal from '../../../components/ConfirmModal'
+
+function IconTrash() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+      <path d="M10 11v6"/><path d="M14 11v6"/>
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+    </svg>
+  )
+}
 
 export default function RutinasList() {
   const [rutinas, setRutinas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [confirmItem, setConfirmItem] = useState(null)
+  const [eliminando, setEliminando] = useState(false)
   const { perfil } = useAuth()
   const navigate = useNavigate()
 
@@ -41,70 +55,121 @@ export default function RutinasList() {
       .update({ activo: !rutina.activo })
       .eq('id', rutina.id)
 
-    if (error) { alert('Error al actualizar rutina'); return }
-
-    setRutinas(prev =>
-      prev.map(r => r.id === rutina.id ? { ...r, activo: !r.activo } : r)
-    )
+    if (error) { setError('Error al actualizar rutina'); return }
+    setRutinas(prev => prev.map(r => r.id === rutina.id ? { ...r, activo: !r.activo } : r))
   }
 
-  async function eliminarRutina(rutina) {
-    const confirmar = window.confirm(`¿Eliminar "${rutina.nombre}"? Esta acción no se puede deshacer.`)
-    if (!confirmar) return
-
+  async function eliminarRutina() {
+    setEliminando(true)
     const { error } = await supabase
       .from('rutinas')
       .delete()
-      .eq('id', rutina.id)
+      .eq('id', confirmItem.id)
 
-    if (error) alert('Error al eliminar rutina')
-    else setRutinas(prev => prev.filter(r => r.id !== rutina.id))
+    if (error) setError('Error al eliminar rutina')
+    else setRutinas(prev => prev.filter(r => r.id !== confirmItem.id))
+
+    setEliminando(false)
+    setConfirmItem(null)
   }
 
-  if (loading) return <p>Cargando rutinas...</p>
-  if (error) return <p>Error: {error}</p>
+  if (loading) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando rutinas...</p>
+    </div>
+  )
 
   return (
-    <div>
-      <div>
-        <h1>Rutinas</h1>
-        <p>Total: {rutinas.length} rutinas</p>
-        <button onClick={() => navigate('/entrenador/rutinas/nuevo')}>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <h1 className="admin-page-title">Rutinas</h1>
+          <p className="admin-page-subtitle">{rutinas.length} creadas</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => navigate('/entrenador/rutinas/nuevo')}>
           + Nueva rutina
         </button>
       </div>
 
+      {error && <div className="msg-error mb-16">{error}</div>}
+
       {rutinas.length === 0 ? (
-        <p>No hay rutinas creadas todavía</p>
+        <div className="admin-empty">
+          <h3>Sin rutinas creadas</h3>
+          <p>Creá tu primera rutina con el botón de arriba.</p>
+        </div>
       ) : (
-        <div>
-          {rutinas.map(rutina => (
-            <div key={rutina.id}>
-              <div>
-                <h3>{rutina.nombre}</h3>
-                <p>{rutina.objetivo}</p>
-                <p>{rutina.nivel_dificultad}</p>
-                <p>{rutina.rutinas_ejercicios?.[0]?.count ?? 0} ejercicios</p>
-                <p>{rutina.activo ? 'Activa' : 'Inactiva'}</p>
+        <div className="admin-cards-list">
+          {rutinas.map(rutina => {
+            const cantEjercicios = rutina.rutinas_ejercicios?.[0]?.count ?? 0
+            return (
+              <div key={rutina.id} className="admin-card">
+
+                <div className="admin-card-top">
+                  <div>
+                    <div className="admin-card-nombre">{rutina.nombre}</div>
+                    <div className="admin-card-dni">{cantEjercicios} ejercicio{cantEjercicios !== 1 ? 's' : ''}</div>
+                  </div>
+                  <button
+                    className="btn btn-icon btn-icon-sm btn-icon-danger"
+                    onClick={() => setConfirmItem(rutina)}
+                    title="Eliminar"
+                  >
+                    <IconTrash />
+                  </button>
+                </div>
+
+                <div className="admin-card-meta">
+                  <div className="admin-card-meta-row">
+                    <span className="admin-card-meta-label">Dificultad</span>
+                    <span className="badge badge-acento">{rutina.nivel_dificultad}</span>
+                  </div>
+                  <div className="admin-card-meta-row">
+                    <span className="admin-card-meta-label">Estado</span>
+                    <span className={`badge ${rutina.activo ? 'badge-success' : 'badge-neutral'}`}>
+                      {rutina.activo ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </div>
+                  {rutina.objetivo && (
+                    <p className="admin-card-objetivo">{rutina.objetivo}</p>
+                  )}
+                </div>
+
+                <div className="admin-card-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => navigate(`/entrenador/rutinas/${rutina.id}/editar`)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => navigate(`/entrenador/rutinas/${rutina.id}/asignar`)}
+                  >
+                    Asignar
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => toggleActivo(rutina)}
+                  >
+                    {rutina.activo ? 'Desactivar' : 'Activar'}
+                  </button>
+                </div>
+
               </div>
-              <div>
-                <button onClick={() => navigate(`/entrenador/rutinas/${rutina.id}/editar`)}>
-                  Editar
-                </button>
-                <button onClick={() => navigate(`/entrenador/rutinas/${rutina.id}/asignar`)}>
-                  Asignar a cliente
-                </button>
-                <button onClick={() => toggleActivo(rutina)}>
-                  {rutina.activo ? 'Desactivar' : 'Activar'}
-                </button>
-                <button onClick={() => eliminarRutina(rutina)}>
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
-    </div>
+
+      <ConfirmModal
+        open={Boolean(confirmItem)}
+        titulo="¿Eliminar rutina?"
+        desc={confirmItem ? `"${confirmItem.nombre}" será eliminada permanentemente. Esta acción no se puede deshacer.` : ''}
+        onConfirm={eliminarRutina}
+        onCancel={() => setConfirmItem(null)}
+        loading={eliminando}
+      />
+    </>
   )
 }

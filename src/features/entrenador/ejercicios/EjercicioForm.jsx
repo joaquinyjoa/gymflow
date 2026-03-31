@@ -27,7 +27,6 @@ export default function EjercicioForm() {
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
-  // Para manejar inputs de arrays (equipamiento y musculos secundarios)
   const [equipamientoInput, setEquipamientoInput] = useState('')
   const [musculoSecInput, setMusculoSecInput] = useState('')
 
@@ -73,51 +72,39 @@ export default function EjercicioForm() {
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
-  // Manejo del GIF — genera preview local antes de subir
   function handleGifChange(e) {
     const file = e.target.files[0]
     if (!file) return
 
-    // Validar formato
     const formatosPermitidos = ['image/gif', 'image/webp']
     if (!formatosPermitidos.includes(file.type)) {
-        setError('Solo se permiten archivos GIF o WebP')
-        return
+      setError('Solo se permiten archivos GIF o WebP')
+      return
     }
 
-    // Validar tamaño máximo 2MB
-    const maxSize = 2 * 1024 * 1024 // 2MB en bytes
+    const maxSize = 2 * 1024 * 1024
     if (file.size > maxSize) {
-        setError(`El archivo es demasiado grande. Máximo 2MB (el tuyo pesa ${(file.size / 1024 / 1024).toFixed(2)}MB)`)
-        return
+      setError(`El archivo es demasiado grande. Máximo 2MB (el tuyo pesa ${(file.size / 1024 / 1024).toFixed(2)}MB)`)
+      return
     }
 
     setGifFile(file)
     setGifPreview(URL.createObjectURL(file))
     setError('')
-    }
+  }
 
-  // Agregar ítem a un array (equipamiento o musculos secundarios)
   function agregarItem(campo, valor, setInput) {
     if (!valor.trim()) return
-    setForm(prev => ({
-      ...prev,
-      [campo]: [...prev[campo], valor.trim()]
-    }))
+    setForm(prev => ({ ...prev, [campo]: [...prev[campo], valor.trim()] }))
     setInput('')
   }
 
-  // Eliminar ítem de un array
   function eliminarItem(campo, index) {
-    setForm(prev => ({
-      ...prev,
-      [campo]: prev[campo].filter((_, i) => i !== index)
-    }))
+    setForm(prev => ({ ...prev, [campo]: prev[campo].filter((_, i) => i !== index) }))
   }
 
   async function subirGif() {
     if (!gifFile) return null
-
     const extension = gifFile.name.split('.').pop()
     const nombreArchivo = `${Date.now()}_${form.nombre.replace(/\s+/g, '_')}.${extension}`
     const ruta = `ejercicios/${nombreArchivo}`
@@ -128,10 +115,7 @@ export default function EjercicioForm() {
 
     if (error) throw new Error(`Error subiendo GIF: ${error.message}`)
 
-    const { data } = supabase.storage
-      .from('ejercicios')
-      .getPublicUrl(ruta)
-
+    const { data } = supabase.storage.from('ejercicios').getPublicUrl(ruta)
     return data.publicUrl
   }
 
@@ -139,44 +123,24 @@ export default function EjercicioForm() {
     e.preventDefault()
     setError('')
 
-   // Nombre — solo letras
     if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
     if (form.nombre.trim().length < 3) { setError('El nombre debe tener al menos 3 caracteres'); return }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre.trim())) { setError('El nombre solo puede contener letras'); return }
-
-    // Músculo principal — ya es un select, no puede tener números
-
-    
-    // Músculo secundario — texto sin agregar
     if (musculoSecInput.trim()) { setError('Tenés un músculo secundario sin agregar. Presioná "Agregar" o borralo'); return }
-    // Músculo secundario — que no tenga solo números
     if (form.musculos_secundarios.some(m => /^\d+$/.test(m))) { setError('Los músculos secundarios no pueden contener solo números'); return }
     if (form.musculos_secundarios.length === 0) { setError('Agregá al menos un músculo secundario. Si no hay escribí "Ninguno"'); return }
-
-    // Equipamiento — texto sin agregar
     if (equipamientoInput.trim()) { setError('Tenés texto en equipamiento sin agregar. Presioná "Agregar" o borralo'); return }
-    // Equipamiento — que no tenga solo números
     if (form.equipamiento.some(eq => /^\d+$/.test(eq))) { setError('El equipamiento no puede contener solo números'); return }
     if (form.equipamiento.length === 0) { setError('Agregá al menos un equipamiento. Si no usa equipamiento escribí "Ninguno"'); return }
-
-
-    // GIF solo obligatorio al crear
     if (!esEdicion && !gifFile) { setError('El GIF demostrativo es obligatorio'); return }
-
-    // Instrucciones — opcional, sin validación de caracteres
-    if (form.instrucciones && form.instrucciones.trim().length < 10) {
-    setError('Las instrucciones deben tener al menos 10 caracteres'); return
-    }
+    if (form.instrucciones && form.instrucciones.trim().length < 10) { setError('Las instrucciones deben tener al menos 10 caracteres'); return }
 
     setLoading(true)
     try {
-      // Subir GIF si hay uno nuevo
       let gifUrl = form.enlace_video
-      if (gifFile) {
-        gifUrl = await subirGif()
-      }
+      if (gifFile) gifUrl = await subirGif()
 
-        const datos = {
+      const datos = {
         nombre: form.nombre.trim(),
         descripcion: form.descripcion.trim() || null,
         categoria: form.categoria,
@@ -188,20 +152,15 @@ export default function EjercicioForm() {
         consejos: form.consejos.trim() || null,
         enlace_video: gifUrl,
         created_by: perfil.id,
-        }
+      }
 
       if (esEdicion) {
-        const { error } = await supabase
-            .from('ejercicios')
-            .update(datos)
-            .eq('id', id)
+        const { error } = await supabase.from('ejercicios').update(datos).eq('id', id)
         if (error) throw new Error(error.message)
-        } else {
-        const { error } = await supabase
-            .from('ejercicios')
-            .insert(datos)
+      } else {
+        const { error } = await supabase.from('ejercicios').insert(datos)
         if (error) throw new Error(error.message)
-        }
+      }
 
       navigate('/entrenador/ejercicios')
     } catch (err) {
@@ -211,100 +170,122 @@ export default function EjercicioForm() {
     }
   }
 
-  if (cargandoDatos) return <p>Cargando...</p>
+  if (cargandoDatos) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando datos del ejercicio...</p>
+    </div>
+  )
 
   return (
-    <div>
-      <h1>{esEdicion ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h1>
+    <div className="admin-form-page">
+
+      <div className="admin-form-header">
+        <button className="btn-back" onClick={() => navigate('/entrenador/ejercicios')}>
+          ← Volver
+        </button>
+        <h1 className="admin-page-title">{esEdicion ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h1>
+      </div>
 
       <form onSubmit={handleSubmit}>
 
         {/* ── Información básica ── */}
-        <h2>Información básica</h2>
-        <div>
-          <label>Nombre</label>
-         <input
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
-            placeholder="Ej: Press de banca"
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Información básica</p>
+          <div className="admin-form-grid">
+            <div className="input-group">
+              <label className="input-label">Nombre</label>
+              <input
+                className="input"
+                type="text"
+                name="nombre"
+                value={form.nombre}
+                onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+                placeholder="Ej: Press de banca"
+              />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Categoría</label>
+              <select className="input" name="categoria" value={form.categoria} onChange={handleChange}>
+                <option value="fuerza">Fuerza</option>
+                <option value="general">General</option>
+                <option value="cardio">Cardio</option>
+                <option value="movilidad">Movilidad</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label className="input-label">Músculo principal</label>
+              <select className="input" name="musculo_principal" value={form.musculo_principal} onChange={handleChange}>
+                <option value="">Seleccionar</option>
+                {MUSCULOS.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label className="input-label">Dificultad</label>
+              <select className="input" name="nivel_dificultad" value={form.nivel_dificultad} onChange={handleChange}>
+                <option value="principiante">Principiante</option>
+                <option value="intermedio">Intermedio</option>
+                <option value="avanzado">Avanzado</option>
+              </select>
+            </div>
+          </div>
+          <div className="input-group" style={{ marginTop: '12px' }}>
+            <label className="input-label">Descripción (opcional)</label>
+            <textarea
+              className="input"
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              placeholder="Describí el ejercicio..."
+              rows={3}
             />
-        </div>
-        <div>
-          <label>Descripción</label>
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            placeholder="Describí el ejercicio..."
-          />
-        </div>
-        <div>
-          <label>Categoría</label>
-          <select name="categoria" value={form.categoria} onChange={handleChange}>
-            <option value="fuerza">Fuerza</option>
-            <option value="general">General</option>
-            <option value="cardio">Cardio</option>
-            <option value="movilidad">Movilidad</option>
-          </select>
-        </div>
-        <div>
-          <label>Músculo principal</label>
-          <select name="musculo_principal" value={form.musculo_principal} onChange={handleChange}>
-            <option value="">Seleccionar</option>
-            {MUSCULOS.map(m => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Dificultad</label>
-          <select name="nivel_dificultad" value={form.nivel_dificultad} onChange={handleChange}>
-            <option value="principiante">Principiante</option>
-            <option value="intermedio">Intermedio</option>
-            <option value="avanzado">Avanzado</option>
-          </select>
+          </div>
         </div>
 
         {/* ── Músculos secundarios ── */}
-        <div>
-          <label>Músculos secundarios</label>
-          <div>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Músculos secundarios</p>
+          <div className="ent-tag-row" style={{ marginTop: '8px' }}>
             <input
-                type="text"
-                value={musculoSecInput}
-                onChange={e => setMusculoSecInput(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
-                placeholder="Ej: Tríceps"
-                onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                    e.preventDefault()
-                    agregarItem('musculos_secundarios', musculoSecInput, setMusculoSecInput)
-                    }
-                }}
-                />
+              className="input"
+              type="text"
+              value={musculoSecInput}
+              onChange={e => setMusculoSecInput(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
+              placeholder="Ej: Tríceps"
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  agregarItem('musculos_secundarios', musculoSecInput, setMusculoSecInput)
+                }
+              }}
+            />
             <button
               type="button"
+              className="btn btn-secondary"
               onClick={() => agregarItem('musculos_secundarios', musculoSecInput, setMusculoSecInput)}
             >
               Agregar
             </button>
           </div>
-          <div>
+          <div className="ent-tag-list">
             {form.musculos_secundarios.map((m, i) => (
-              <span key={i}>
+              <span key={i} className="ent-tag">
                 {m}
-                <button type="button" onClick={() => eliminarItem('musculos_secundarios', i)}>x</button>
+                <button type="button" className="ent-tag-remove" onClick={() => eliminarItem('musculos_secundarios', i)}>
+                  ×
+                </button>
               </span>
             ))}
           </div>
         </div>
 
         {/* ── Equipamiento ── */}
-        <div>
-          <label>Equipamiento</label>
-          <div>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Equipamiento</p>
+          <div className="ent-tag-row" style={{ marginTop: '8px' }}>
             <input
+              className="input"
               type="text"
               value={equipamientoInput}
               onChange={e => setEquipamientoInput(e.target.value)}
@@ -318,71 +299,75 @@ export default function EjercicioForm() {
             />
             <button
               type="button"
+              className="btn btn-secondary"
               onClick={() => agregarItem('equipamiento', equipamientoInput, setEquipamientoInput)}
             >
               Agregar
             </button>
           </div>
-          <div>
+          <div className="ent-tag-list">
             {form.equipamiento.map((eq, i) => (
-              <span key={i}>
+              <span key={i} className="ent-tag">
                 {eq}
-                <button type="button" onClick={() => eliminarItem('equipamiento', i)}>x</button>
+                <button type="button" className="ent-tag-remove" onClick={() => eliminarItem('equipamiento', i)}>
+                  ×
+                </button>
               </span>
             ))}
           </div>
         </div>
 
-        {/* ── Instrucciones y consejos ── */}
-        <h2>Instrucciones</h2>
-        <div>
-          <label>Instrucciones</label>
-          <textarea
-            name="instrucciones"
-            value={form.instrucciones}
-            onChange={handleChange}
-            placeholder="Paso a paso de cómo realizar el ejercicio..."
-            rows={5}
-          />
-        </div>
-        <div>
-          <label>Consejos</label>
-          <textarea
-            name="consejos"
-            value={form.consejos}
-            onChange={handleChange}
-            placeholder="Consejos para realizar el ejercicio correctamente..."
-            rows={3}
-          />
-        </div>
-
-        {/* ── GIF demostrativo ── */}
-        <h2>GIF demostrativo</h2>
-        <div>
-          <input
-            type="file"
-            accept=".gif,.webp"
-            onChange={handleGifChange}
+        {/* ── Instrucciones ── */}
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Instrucciones y consejos</p>
+          <div className="input-group" style={{ marginTop: '8px' }}>
+            <label className="input-label">Instrucciones (opcional)</label>
+            <textarea
+              className="input"
+              name="instrucciones"
+              value={form.instrucciones}
+              onChange={handleChange}
+              placeholder="Paso a paso de cómo realizar el ejercicio..."
+              rows={5}
             />
-            <p style={{ fontSize: '12px', color: 'gray' }}>
-            Formatos permitidos: GIF, WebP. Tamaño máximo: 2MB
-            </p>
-          {gifPreview && (
-            <img
-              src={gifPreview}
-              alt="Preview"
-              style={{ width: '200px', marginTop: '8px' }}
+          </div>
+          <div className="input-group" style={{ marginTop: '12px' }}>
+            <label className="input-label">Consejos (opcional)</label>
+            <textarea
+              className="input"
+              name="consejos"
+              value={form.consejos}
+              onChange={handleChange}
+              placeholder="Consejos para realizar el ejercicio correctamente..."
+              rows={3}
             />
-          )}
+          </div>
         </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {/* ── GIF ── */}
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">GIF demostrativo{!esEdicion && ' *'}</p>
+          <div style={{ marginTop: '8px' }}>
+            <div className="ent-gif-upload">
+              <input type="file" accept=".gif,.webp" onChange={handleGifChange} />
+              <div className="ent-gif-upload-label">
+                {gifPreview ? 'Cambiar GIF' : 'Seleccionar GIF o WebP'}
+              </div>
+              <div className="ent-gif-hint">Formatos: GIF, WebP · Máximo 2MB</div>
+            </div>
+            {gifPreview && (
+              <img src={gifPreview} alt="Preview" className="ent-gif-preview" />
+            )}
+          </div>
+        </div>
 
-        <div>
-          <button type="button" onClick={() => navigate('/entrenador/ejercicios')}>
+        {error && <div className="msg-error mb-16">{error}</div>}
+
+        <div className="admin-form-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/entrenador/ejercicios')}>
             Cancelar
           </button>
-          <button type="submit" disabled={loading}>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear ejercicio'}
           </button>
         </div>

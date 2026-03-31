@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
+import ConfirmModal from '../../../components/ConfirmModal'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -12,6 +13,19 @@ const DIAS = [
   { value: 7, label: 'Domingo' },
 ]
 
+function IconChevron({ abajo }) {
+  return (
+    <svg
+      width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ transform: abajo ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+    >
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  )
+}
+
 export default function ClientesEntrenador() {
   const [clientes, setClientes] = useState([])
   const [clienteExpandido, setClienteExpandido] = useState(null)
@@ -20,11 +34,11 @@ export default function ClientesEntrenador() {
   const [busquedaNombre, setBusquedaNombre] = useState('')
   const [busquedaApellido, setBusquedaApellido] = useState('')
   const [loading, setLoading] = useState(true)
+  const [confirmItem, setConfirmItem] = useState(null)
+  const [eliminando, setEliminando] = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    cargarClientes()
-  }, [])
+  useEffect(() => { cargarClientes() }, [])
 
   async function cargarClientes() {
     setLoading(true)
@@ -55,21 +69,24 @@ export default function ClientesEntrenador() {
     setRutinasCliente(prev => ({ ...prev, [clienteId]: data ?? [] }))
   }
 
-  async function eliminarAsignacion(clienteId, asignacionId) {
-    const confirmar = window.confirm('¿Eliminar esta rutina del cliente?')
-    if (!confirmar) return
+  async function eliminarAsignacion() {
+    setEliminando(true)
+    const { clienteId, asignacionId } = confirmItem
 
     const { error } = await supabase
       .from('rutinas_clientes')
       .delete()
       .eq('id', asignacionId)
 
-    if (error) { alert('Error al eliminar'); return }
+    if (!error) {
+      setRutinasCliente(prev => ({
+        ...prev,
+        [clienteId]: prev[clienteId].filter(r => r.id !== asignacionId)
+      }))
+    }
 
-    setRutinasCliente(prev => ({
-      ...prev,
-      [clienteId]: prev[clienteId].filter(r => r.id !== asignacionId)
-    }))
+    setEliminando(false)
+    setConfirmItem(null)
   }
 
   function estaVencido(fecha) {
@@ -77,7 +94,6 @@ export default function ClientesEntrenador() {
     return fecha < new Date().toISOString().split('T')[0]
   }
 
-  // Filtra en tiempo real por DNI, nombre y apellido de forma independiente
   const clientesFiltrados = clientes.filter(c => {
     const dni = c.correo?.split('@')[0] ?? ''
     return (
@@ -96,18 +112,27 @@ export default function ClientesEntrenador() {
     return DIAS.filter(d => !ocupados.includes(d.value))
   }
 
-  if (loading) return <p>Cargando clientes...</p>
+  if (loading) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando clientes...</p>
+    </div>
+  )
 
   return (
-    <div>
-      <h1>Clientes</h1>
-      <p>Total: {clientes.length} clientes</p>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <h1 className="admin-page-title">Clientes</h1>
+          <p className="admin-page-subtitle">{clientes.length} registrados</p>
+        </div>
+      </div>
 
       {/* ── Filtros ── */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-        <div>
-          <label>DNI</label>
+      <div className="admin-form-grid" style={{ marginBottom: '16px' }}>
+        <div className="input-group">
+          <label className="input-label">DNI</label>
           <input
+            className="input"
             type="text"
             value={busquedaDni}
             onChange={e => setBusquedaDni(e.target.value.replace(/\D/g, ''))}
@@ -115,9 +140,10 @@ export default function ClientesEntrenador() {
             autoComplete="off"
           />
         </div>
-        <div>
-          <label>Nombre</label>
+        <div className="input-group">
+          <label className="input-label">Nombre</label>
           <input
+            className="input"
             type="text"
             value={busquedaNombre}
             onChange={e => setBusquedaNombre(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
@@ -125,9 +151,10 @@ export default function ClientesEntrenador() {
             autoComplete="off"
           />
         </div>
-        <div>
-          <label>Apellido</label>
+        <div className="input-group">
+          <label className="input-label">Apellido</label>
           <input
+            className="input"
             type="text"
             value={busquedaApellido}
             onChange={e => setBusquedaApellido(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
@@ -138,9 +165,12 @@ export default function ClientesEntrenador() {
       </div>
 
       {clientesFiltrados.length === 0 ? (
-        <p>No se encontraron clientes</p>
+        <div className="admin-empty">
+          <h3>Sin resultados</h3>
+          <p>No se encontraron clientes con esos filtros.</p>
+        </div>
       ) : (
-        <div>
+        <div className="ent-clientes-lista">
           {clientesFiltrados.map(cliente => {
             const expandido = clienteExpandido === cliente.id
             const vencido = estaVencido(cliente.fecha_vencimiento)
@@ -148,90 +178,116 @@ export default function ClientesEntrenador() {
             const libres = diasLibres(cliente.id)
 
             return (
-              <div key={cliente.id} style={{ border: '1px solid #ccc', margin: '8px 0', padding: '12px' }}>
+              <div key={cliente.id} className={`ent-cliente-card${expandido ? ' expandido' : ''}`}>
 
-                {/* Cabecera del cliente */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Cabecera */}
+                <div className="ent-cliente-header" onClick={() => toggleCliente(cliente.id)}>
                   <div>
-                    <strong>{cliente.apellido}, {cliente.nombre}</strong>
-                    <span> — DNI: {cliente.correo?.split('@')[0]}</span>
-                    {!cliente.estado && <span style={{ color: 'red' }}> — Inactivo</span>}
-                    {vencido && <span style={{ color: 'orange' }}> — Vencido</span>}
+                    <div className="ent-cliente-nombre">
+                      {cliente.apellido}, {cliente.nombre}
+                    </div>
+                    <div className="ent-cliente-dni">DNI {cliente.correo?.split('@')[0]}</div>
+                    <div className="ent-cliente-badges">
+                      {!cliente.estado && (
+                        <span className="badge badge-neutral">Inactivo</span>
+                      )}
+                      {vencido && (
+                        <span className="badge badge-danger">Vencido</span>
+                      )}
+                      {expandido && rutinas.length > 0 && (
+                        <span className="badge badge-acento">{rutinas.length} rutina{rutinas.length !== 1 ? 's' : ''}</span>
+                      )}
+                    </div>
                   </div>
-                  <button onClick={() => toggleCliente(cliente.id)}>
-                    {expandido ? '▲ Cerrar' : '▼ Ver rutinas'}
-                  </button>
+                  <IconChevron abajo={expandido} />
                 </div>
 
                 {/* Panel expandido */}
                 {expandido && (
-                  <div style={{ marginTop: '12px' }}>
+                  <div className="ent-cliente-body">
 
-                    {/* Días con rutina */}
-                    <h3>Rutinas asignadas</h3>
                     {rutinas.length === 0 ? (
-                      <p>No tiene rutinas asignadas todavía</p>
+                      <p className="text-muted" style={{ fontSize: '13px' }}>No tiene rutinas asignadas todavía.</p>
                     ) : (
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Día</th>
-                            <th>Rutina</th>
-                            <th>Dificultad</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rutinas.map(r => (
-                            <tr key={r.id}>
-                              <td>{DIAS.find(d => d.value === r.dia_semana)?.label}</td>
-                              <td>{r.rutinas?.nombre}</td>
-                              <td>{r.rutinas?.nivel_dificultad}</td>
-                              <td>
-                                <button onClick={() => navigate(`/entrenador/clientes/${cliente.id}/rutina/${r.id}`)}>
-                                  Ver / modificar
-                                </button>
-                                <button onClick={() => eliminarAsignacion(cliente.id, r.id)}>
-                                  Quitar
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      <>
+                        <div className="ent-cliente-section-title">Rutinas asignadas</div>
+                        {rutinas.map(r => (
+                          <div key={r.id} className="ent-rutina-row">
+                            <div className="ent-rutina-row-dia">
+                              {DIAS.find(d => d.value === r.dia_semana)?.label}
+                            </div>
+                            <div className="ent-rutina-row-info">
+                              <div className="ent-rutina-row-nombre">{r.rutinas?.nombre}</div>
+                              {r.rutinas?.nivel_dificultad && (
+                                <span className="badge badge-acento" style={{ marginTop: '3px', display: 'inline-block' }}>
+                                  {r.rutinas.nivel_dificultad}
+                                </span>
+                              )}
+                            </div>
+                            <div className="ent-rutina-row-acciones">
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() => navigate(`/entrenador/clientes/${cliente.id}/rutina/${r.id}`)}
+                              >
+                                Ver
+                              </button>
+                              <button
+                                className="btn btn-ghost"
+                                onClick={() => setConfirmItem({ clienteId: cliente.id, asignacionId: r.id, nombre: r.rutinas?.nombre, dia: DIAS.find(d => d.value === r.dia_semana)?.label })}
+                              >
+                                Quitar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </>
                     )}
 
-                    {/* Días libres */}
                     {libres.length > 0 && (
-                      <div style={{ marginTop: '12px' }}>
-                        <h3>Días sin rutina</h3>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <>
+                        <div className="ent-cliente-section-title">
+                          {rutinas.length === 7 ? null : 'Días sin rutina'}
+                        </div>
+                        <div className="ent-dias-libres">
                           {libres.map(d => (
-                            <div key={d.value} style={{ padding: '8px', border: '1px dashed #ccc' }}>
-                              <span>{d.label}</span>
+                            <div key={d.value} className="ent-dia-libre">
+                              <span className="ent-dia-libre-label">{d.label}</span>
                               <button
+                                className="btn btn-ghost"
+                                style={{ fontSize: '12px', padding: '4px 8px' }}
                                 onClick={() => navigate(`/entrenador/rutinas?asignar=${cliente.id}&dia=${d.value}`)}
-                                style={{ marginLeft: '8px' }}
                               >
-                                + Asignar rutina
+                                + Asignar
                               </button>
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </>
                     )}
 
                     {rutinas.length === 7 && (
-                      <p style={{ color: 'green' }}>✓ Tiene rutinas los 7 días de la semana</p>
+                      <p className="msg-exito" style={{ marginTop: '8px' }}>
+                        Tiene rutinas los 7 días de la semana
+                      </p>
                     )}
 
                   </div>
                 )}
+
               </div>
             )
           })}
         </div>
       )}
-    </div>
+
+      <ConfirmModal
+        open={Boolean(confirmItem)}
+        titulo="¿Quitar rutina?"
+        desc={confirmItem ? `Se quitará "${confirmItem.nombre}" del ${confirmItem.dia}. Esta acción no se puede deshacer.` : ''}
+        onConfirm={eliminarAsignacion}
+        onCancel={() => setConfirmItem(null)}
+        loading={eliminando}
+      />
+    </>
   )
 }

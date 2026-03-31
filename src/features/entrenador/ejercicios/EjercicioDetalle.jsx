@@ -25,66 +25,107 @@ export default function EjercicioDetalle() {
     setLoading(false)
   }
 
-  if (loading) return <p>Cargando...</p>
-  if (error) return <p>{error}</p>
-  if (!ejercicio) return <p>Ejercicio no encontrado</p>
+  if (loading) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando ejercicio...</p>
+    </div>
+  )
+
+  if (error || !ejercicio) return (
+    <div className="admin-empty">
+      <h3>Ejercicio no encontrado</h3>
+      <button className="btn btn-secondary" onClick={() => navigate('/entrenador/ejercicios')}>
+        Volver a ejercicios
+      </button>
+    </div>
+  )
 
   return (
-    <div>
-      <button onClick={() => navigate('/entrenador/ejercicios')}>
-        ← Volver
-      </button>
+    <div className="ent-detalle-page">
 
-      <h1>{ejercicio.nombre}</h1>
+      <div className="ent-detalle-header">
+        <button className="btn-back" onClick={() => navigate('/entrenador/ejercicios')}>
+          ← Volver
+        </button>
+        <h1 className="admin-page-title">{ejercicio.nombre}</h1>
+      </div>
 
-      {/* GIF */}
       {ejercicio.enlace_video && (
         <img
           src={ejercicio.enlace_video}
           alt={ejercicio.nombre}
-          style={{ width: '250px' }}
+          className="ent-detalle-gif"
         />
       )}
 
-      {/* Info básica */}
-      <div>
-        <p><strong>Categoría:</strong> {ejercicio.categoria}</p>
-        <p><strong>Músculo principal:</strong> {ejercicio.musculo_principal}</p>
-        <p><strong>Músculos secundarios:</strong> {ejercicio.musculos_secundarios?.join(', ') || 'Ninguno'}</p>
-        <p><strong>Dificultad:</strong> {ejercicio.nivel_dificultad}</p>
-        <p><strong>Equipamiento:</strong> {ejercicio.equipamiento?.join(', ') || 'Ninguno'}</p>
-        <p><strong>Estado:</strong> {ejercicio.activo ? 'Activo' : 'Inactivo'}</p>
+      {/* Badges */}
+      <div className="detalle-badges">
+        {ejercicio.categoria && (
+          <span className="badge badge-neutral">{ejercicio.categoria}</span>
+        )}
+        {ejercicio.nivel_dificultad && (
+          <span className="badge badge-acento">{ejercicio.nivel_dificultad}</span>
+        )}
+        <span className={`badge ${ejercicio.activo ? 'badge-success' : 'badge-neutral'}`}>
+          {ejercicio.activo ? 'Activo' : 'Inactivo'}
+        </span>
       </div>
 
-      {/* Descripción */}
+      {/* Info básica */}
+      <div className="admin-form-section" style={{ marginTop: '20px' }}>
+        <p className="admin-form-section-title">Músculos</p>
+        <div className="admin-card-meta" style={{ paddingTop: '12px' }}>
+          <div className="admin-card-meta-row">
+            <span className="admin-card-meta-label">Principal</span>
+            <span>{ejercicio.musculo_principal || '—'}</span>
+          </div>
+          <div className="admin-card-meta-row">
+            <span className="admin-card-meta-label">Secundarios</span>
+            <span>{ejercicio.musculos_secundarios?.join(', ') || 'Ninguno'}</span>
+          </div>
+          <div className="admin-card-meta-row">
+            <span className="admin-card-meta-label">Equipamiento</span>
+            <span>{ejercicio.equipamiento?.join(', ') || 'Ninguno'}</span>
+          </div>
+        </div>
+      </div>
+
       {ejercicio.descripcion && (
-        <div>
-          <h2>Descripción</h2>
-          <p>{ejercicio.descripcion}</p>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Descripción</p>
+          <p className="detalle-texto" style={{ paddingTop: '8px' }}>{ejercicio.descripcion}</p>
         </div>
       )}
 
-      {/* Instrucciones */}
       {ejercicio.instrucciones && (
-        <div>
-          <h2>Instrucciones</h2>
-          <p>{ejercicio.instrucciones}</p>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Instrucciones</p>
+          <p className="detalle-texto" style={{ paddingTop: '8px' }}>{ejercicio.instrucciones}</p>
         </div>
       )}
 
-      {/* Consejos */}
       {ejercicio.consejos && (
-        <div>
-          <h2>Consejos</h2>
-          <p>{ejercicio.consejos}</p>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Consejos</p>
+          <p className="detalle-texto" style={{ paddingTop: '8px' }}>{ejercicio.consejos}</p>
         </div>
       )}
 
-      <div>
-        <button onClick={() => navigate(`/entrenador/ejercicios/${id}/editar`)}>
+      <div className="ent-detalle-acciones">
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate(`/entrenador/ejercicios/${id}/editar`)}
+        >
           Editar ejercicio
         </button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate('/entrenador/ejercicios')}
+        >
+          Volver
+        </button>
       </div>
+
     </div>
   )
 }

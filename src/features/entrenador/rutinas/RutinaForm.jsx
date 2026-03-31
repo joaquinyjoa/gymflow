@@ -25,7 +25,7 @@ export default function RutinaForm() {
   const [ejerciciosRutina, setEjerciciosRutina] = useState([])
   const [ejerciciosDisponibles, setEjerciciosDisponibles] = useState([])
   const [nuevoEjercicio, setNuevoEjercicio] = useState(ejercicioVacio)
-  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState(null) // índice del ejercicio seleccionado para editar
+  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState(null)
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +47,6 @@ export default function RutinaForm() {
       .eq('created_by', perfil.id)
       .eq('activo', true)
       .order('nombre', { ascending: true })
-
     setEjerciciosDisponibles(data ?? [])
   }
 
@@ -68,9 +67,8 @@ export default function RutinaForm() {
         objetivo: data.objetivo ?? '',
         nivel_dificultad: data.nivel_dificultad ?? 'intermedio',
       })
-      // Ordenar por orden
-      const ejerciciosOrdenados = (data.rutinas_ejercicios ?? []).sort((a, b) => a.orden - b.orden)
-      setEjerciciosRutina(ejerciciosOrdenados)
+      const ordenados = (data.rutinas_ejercicios ?? []).sort((a, b) => a.orden - b.orden)
+      setEjerciciosRutina(ordenados)
     }
     setCargandoDatos(false)
   }
@@ -85,10 +83,8 @@ export default function RutinaForm() {
     setNuevoEjercicio(prev => ({ ...prev, [name]: value }))
   }
 
-  // Seleccionar un ejercicio de la lista para editarlo
   function seleccionarEjercicio(index) {
     if (ejercicioSeleccionado === index) {
-      // Si ya está seleccionado, deseleccionar
       setEjercicioSeleccionado(null)
       setNuevoEjercicio(ejercicioVacio)
       return
@@ -106,7 +102,6 @@ export default function RutinaForm() {
     })
   }
 
-  // Guardar cambios del ejercicio seleccionado
   function guardarEdicionEjercicio() {
     if (!nuevoEjercicio.ejercicio_id) { setError('Seleccioná un ejercicio'); return }
     if (!nuevoEjercicio.series || nuevoEjercicio.series < 1) { setError('Las series son obligatorias'); return }
@@ -169,7 +164,6 @@ export default function RutinaForm() {
     setEjerciciosRutina(prev => prev.filter((_, i) => i !== index))
   }
 
-  // Mover ejercicio hacia arriba o abajo
   function moverEjercicio(index, direccion) {
     const nuevoIndex = index + direccion
     if (nuevoIndex < 0 || nuevoIndex >= ejerciciosRutina.length) return
@@ -182,7 +176,6 @@ export default function RutinaForm() {
       return copia
     })
 
-    // Si hay uno seleccionado, actualizar su índice
     if (ejercicioSeleccionado === index) setEjercicioSeleccionado(nuevoIndex)
     else if (ejercicioSeleccionado === nuevoIndex) setEjercicioSeleccionado(index)
   }
@@ -237,141 +230,262 @@ export default function RutinaForm() {
     }
   }
 
-  if (cargandoDatos) return <p>Cargando...</p>
+  if (cargandoDatos) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando datos de la rutina...</p>
+    </div>
+  )
 
   return (
-    <div>
-      <h1>{esEdicion ? 'Editar rutina' : 'Nueva rutina'}</h1>
+    <div className="admin-form-page">
+
+      <div className="admin-form-header">
+        <button className="btn-back" onClick={() => navigate('/entrenador/rutinas')}>
+          ← Volver
+        </button>
+        <h1 className="admin-page-title">{esEdicion ? 'Editar rutina' : 'Nueva rutina'}</h1>
+      </div>
 
       <form onSubmit={handleSubmit}>
 
         {/* ── Datos de la rutina ── */}
-        <h2>Datos de la rutina</h2>
-        <div>
-          <label>Nombre</label>
-          <input type="text" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Ej: Empuje tren superior" />
-        </div>
-        <div>
-          <label>Descripción (opcional)</label>
-          <textarea name="descripcion" value={form.descripcion} onChange={handleChange} placeholder="Describí la rutina..." />
-        </div>
-        <div>
-          <label>Objetivo</label>
-          <textarea name="objetivo" value={form.objetivo} onChange={handleChange} placeholder="Ej: Hipertrofia y fuerza del tren superior" />
-        </div>
-        <div>
-          <label>Dificultad</label>
-          <select name="nivel_dificultad" value={form.nivel_dificultad} onChange={handleChange}>
-            <option value="principiante">Principiante</option>
-            <option value="intermedio">Intermedio</option>
-            <option value="avanzado">Avanzado</option>
-          </select>
-        </div>
-
-        {/* ── Panel de ejercicio (agregar o editar) ── */}
-        <h2>Ejercicios de la rutina</h2>
-
-        <div>
-          <h3>{ejercicioSeleccionado !== null ? `Editando ejercicio #${ejercicioSeleccionado + 1}` : 'Agregar ejercicio'}</h3>
-
-          <div>
-            <label>Ejercicio</label>
-            <select name="ejercicio_id" value={nuevoEjercicio.ejercicio_id} onChange={handleNuevoEjercicioChange}>
-              <option value="">Seleccionar ejercicio</option>
-              {ejerciciosDisponibles.map(e => (
-                <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
-              ))}
-            </select>
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Datos de la rutina</p>
+          <div className="admin-form-grid">
+            <div className="input-group">
+              <label className="input-label">Nombre</label>
+              <input
+                className="input"
+                type="text"
+                name="nombre"
+                value={form.nombre}
+                onChange={handleChange}
+                placeholder="Ej: Empuje tren superior"
+              />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Dificultad</label>
+              <select className="input" name="nivel_dificultad" value={form.nivel_dificultad} onChange={handleChange}>
+                <option value="principiante">Principiante</option>
+                <option value="intermedio">Intermedio</option>
+                <option value="avanzado">Avanzado</option>
+              </select>
+            </div>
           </div>
-
-          <div>
-            <label>Ejercicio alternativo (opcional)</label>
-            <select name="ejercicio_alternativo_id" value={nuevoEjercicio.ejercicio_alternativo_id} onChange={handleNuevoEjercicioChange}>
-              <option value="">Sin alternativo</option>
-              {ejerciciosDisponibles
-                .filter(e => e.id !== Number(nuevoEjercicio.ejercicio_id))
-                .map(e => (
-                  <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
-                ))}
-            </select>
+          <div className="input-group" style={{ marginTop: '12px' }}>
+            <label className="input-label">Objetivo</label>
+            <textarea
+              className="input"
+              name="objetivo"
+              value={form.objetivo}
+              onChange={handleChange}
+              placeholder="Ej: Hipertrofia y fuerza del tren superior"
+              rows={2}
+            />
           </div>
-
-          <div>
-            <label>Series</label>
-            <input type="number" name="series" value={nuevoEjercicio.series} onChange={handleNuevoEjercicioChange} min={1} max={20} placeholder="Ej: 3" />
-          </div>
-
-          <div>
-            <label>Repeticiones</label>
-            <input type="text" name="repeticiones" value={nuevoEjercicio.repeticiones} onChange={handleNuevoEjercicioChange} placeholder="Ej: 10-12 o Al fallo" />
-          </div>
-
-          <div>
-            <label>Descanso (segundos)</label>
-            <input type="number" name="descanso_segundos" value={nuevoEjercicio.descanso_segundos} onChange={handleNuevoEjercicioChange} min={0} max={600} />
-          </div>
-
-          <div>
-            <label>Intensidad (%)</label>
-            <input type="number" name="porcentaje_fuerza" value={nuevoEjercicio.porcentaje_fuerza} onChange={handleNuevoEjercicioChange} min={1} max={100} />
-          </div>
-
-          <div>
-            <label>Notas (opcional)</label>
-            <input type="text" name="notas" value={nuevoEjercicio.notas} onChange={handleNuevoEjercicioChange} placeholder="Ej: Controlar la bajada" />
-          </div>
-
-          <div>
-            {ejercicioSeleccionado !== null ? (
-              <>
-                <button type="button" onClick={guardarEdicionEjercicio}>Guardar cambios</button>
-                <button type="button" onClick={() => { setEjercicioSeleccionado(null); setNuevoEjercicio(ejercicioVacio) }}>Cancelar edición</button>
-              </>
-            ) : (
-              <button type="button" onClick={agregarEjercicio}>+ Agregar a la rutina</button>
-            )}
+          <div className="input-group" style={{ marginTop: '12px' }}>
+            <label className="input-label">Descripción (opcional)</label>
+            <textarea
+              className="input"
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              placeholder="Describí la rutina..."
+              rows={2}
+            />
           </div>
         </div>
 
-        {/* ── Lista de ejercicios agregados ── */}
-        {ejerciciosRutina.length > 0 && (
-          <div>
-            <h3>Ejercicios agregados ({ejerciciosRutina.length})</h3>
-            {ejerciciosRutina.map((ej, index) => {
-              const nombreEj = ej._nombre ?? ejerciciosDisponibles.find(e => e.id === ej.ejercicio_id)?.nombre ?? `Ejercicio ${ej.ejercicio_id}`
-              const nombreAlt = ej._nombreAlternativo ?? (ej.ejercicio_alternativo_id ? ejerciciosDisponibles.find(e => e.id === ej.ejercicio_alternativo_id)?.nombre : null)
-              const estaSeleccionado = ejercicioSeleccionado === index
+        {/* ── Panel agregar / editar ejercicio ── */}
+        <div className="admin-form-section">
+          <p className="admin-form-section-title">Ejercicios de la rutina</p>
 
-              return (
-                <div key={index} style={{ border: estaSeleccionado ? '2px solid blue' : '1px solid #ccc', padding: '8px', margin: '4px 0' }}>
-                  <div>
-                    <strong>{index + 1}. {nombreEj}</strong>
-                    {nombreAlt && <span> (Alt: {nombreAlt})</span>}
-                    <p>{ej.series} series × {ej.repeticiones} — Descanso: {ej.descanso_segundos}s — Intensidad: {ej.porcentaje_fuerza}%</p>
-                    {ej.notas && <p>Nota: {ej.notas}</p>}
-                  </div>
-                  <div>
-                    {/* Mover arriba/abajo */}
-                    <button type="button" onClick={() => moverEjercicio(index, -1)} disabled={index === 0}>↑</button>
-                    <button type="button" onClick={() => moverEjercicio(index, 1)} disabled={index === ejerciciosRutina.length - 1}>↓</button>
-                    {/* Seleccionar para editar */}
-                    <button type="button" onClick={() => seleccionarEjercicio(index)}>
-                      {estaSeleccionado ? 'Cancelar' : 'Editar'}
-                    </button>
-                    {/* Eliminar */}
-                    <button type="button" onClick={() => eliminarEjercicioDeRutina(index)}>Quitar</button>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="ent-ejercicio-panel">
+            <div className="ent-ejercicio-panel-title">
+              {ejercicioSeleccionado !== null
+                ? `Editando ejercicio #${ejercicioSeleccionado + 1}`
+                : 'Agregar ejercicio'}
+            </div>
+
+            <div className="admin-form-grid">
+              <div className="input-group">
+                <label className="input-label">Ejercicio</label>
+                <select className="input" name="ejercicio_id" value={nuevoEjercicio.ejercicio_id} onChange={handleNuevoEjercicioChange}>
+                  <option value="">Seleccionar ejercicio</option>
+                  {ejerciciosDisponibles.map(e => (
+                    <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Alternativo (opcional)</label>
+                <select className="input" name="ejercicio_alternativo_id" value={nuevoEjercicio.ejercicio_alternativo_id} onChange={handleNuevoEjercicioChange}>
+                  <option value="">Sin alternativo</option>
+                  {ejerciciosDisponibles
+                    .filter(e => e.id !== Number(nuevoEjercicio.ejercicio_id))
+                    .map(e => (
+                      <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
+                    ))}
+                </select>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Series</label>
+                <input
+                  className="input"
+                  type="number"
+                  name="series"
+                  value={nuevoEjercicio.series}
+                  onChange={handleNuevoEjercicioChange}
+                  min={1} max={20}
+                  placeholder="Ej: 3"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Repeticiones</label>
+                <input
+                  className="input"
+                  type="text"
+                  name="repeticiones"
+                  value={nuevoEjercicio.repeticiones}
+                  onChange={handleNuevoEjercicioChange}
+                  placeholder="Ej: 10-12 o Al fallo"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Descanso (seg)</label>
+                <input
+                  className="input"
+                  type="number"
+                  name="descanso_segundos"
+                  value={nuevoEjercicio.descanso_segundos}
+                  onChange={handleNuevoEjercicioChange}
+                  min={0} max={600}
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Intensidad (%)</label>
+                <input
+                  className="input"
+                  type="number"
+                  name="porcentaje_fuerza"
+                  value={nuevoEjercicio.porcentaje_fuerza}
+                  onChange={handleNuevoEjercicioChange}
+                  min={1} max={100}
+                />
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginTop: '12px' }}>
+              <label className="input-label">Notas (opcional)</label>
+              <input
+                className="input"
+                type="text"
+                name="notas"
+                value={nuevoEjercicio.notas}
+                onChange={handleNuevoEjercicioChange}
+                placeholder="Ej: Controlar la bajada"
+              />
+            </div>
+
+            <div className="ent-panel-actions">
+              {ejercicioSeleccionado !== null ? (
+                <>
+                  <button type="button" className="btn btn-primary" onClick={guardarEdicionEjercicio}>
+                    Guardar cambios
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => { setEjercicioSeleccionado(null); setNuevoEjercicio(ejercicioVacio) }}
+                  >
+                    Cancelar edición
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="btn btn-secondary" onClick={agregarEjercicio}>
+                  + Agregar a la rutina
+                </button>
+              )}
+            </div>
           </div>
-        )}
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+          {/* Lista de ejercicios */}
+          {ejerciciosRutina.length > 0 && (
+            <>
+              <p className="admin-form-section-title" style={{ marginTop: '16px' }}>
+                Ejercicios agregados ({ejerciciosRutina.length})
+              </p>
+              <div className="ent-ejercicios-lista">
+                {ejerciciosRutina.map((ej, index) => {
+                  const nombreEj = ej._nombre ?? ejerciciosDisponibles.find(e => e.id === ej.ejercicio_id)?.nombre ?? `Ejercicio ${ej.ejercicio_id}`
+                  const nombreAlt = ej._nombreAlternativo ?? (ej.ejercicio_alternativo_id ? ejerciciosDisponibles.find(e => e.id === ej.ejercicio_alternativo_id)?.nombre : null)
+                  const estaSeleccionado = ejercicioSeleccionado === index
 
-        <div>
-          <button type="button" onClick={() => navigate('/entrenador/rutinas')}>Cancelar</button>
-          <button type="submit" disabled={loading}>
+                  return (
+                    <div key={index} className={`ent-ej-item${estaSeleccionado ? ' seleccionado' : ''}`}>
+                      <div className="ent-ej-item-info">
+                        <div className="ent-ej-item-nombre">
+                          {index + 1}. {nombreEj}
+                        </div>
+                        <div className="ent-ej-item-meta">
+                          {ej.series} series × {ej.repeticiones} · Descanso: {ej.descanso_segundos}s · Intensidad: {ej.porcentaje_fuerza}%
+                        </div>
+                        {nombreAlt && (
+                          <div className="ent-ej-item-alt">Alt: {nombreAlt}</div>
+                        )}
+                        {ej.notas && (
+                          <div className="ent-ej-item-nota">Nota: {ej.notas}</div>
+                        )}
+                      </div>
+                      <div className="ent-ej-item-acciones">
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-icon-sm"
+                          onClick={() => moverEjercicio(index, -1)}
+                          disabled={index === 0}
+                          title="Subir"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-icon-sm"
+                          onClick={() => moverEjercicio(index, 1)}
+                          disabled={index === ejerciciosRutina.length - 1}
+                          title="Bajar"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => seleccionarEjercicio(index)}
+                        >
+                          {estaSeleccionado ? 'Cancelar' : 'Editar'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => eliminarEjercicioDeRutina(index)}
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {error && <div className="msg-error mb-16">{error}</div>}
+
+        <div className="admin-form-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/entrenador/rutinas')}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear rutina'}
           </button>
         </div>

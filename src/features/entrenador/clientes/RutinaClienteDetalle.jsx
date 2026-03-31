@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
+import ConfirmModal from '../../../components/ConfirmModal'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -23,6 +24,8 @@ export default function RutinaClienteDetalle() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [exito, setExito] = useState('')
+  const [confirmRestore, setConfirmRestore] = useState(null)
+  const [restaurando, setRestaurando] = useState(false)
 
   const { clienteId, rutinaClienteId } = useParams()
   const navigate = useNavigate()
@@ -33,18 +36,18 @@ export default function RutinaClienteDetalle() {
 
   async function cargarTodasLasAsignaciones() {
     const { data } = await supabase
-        .from('rutinas_clientes')
-        .select('id, dia_semana, rutinas(nombre)')
-        .eq('cliente_id', clienteId)
-        .order('dia_semana', { ascending: true })
+      .from('rutinas_clientes')
+      .select('id, dia_semana, rutinas(nombre)')
+      .eq('cliente_id', clienteId)
+      .order('dia_semana', { ascending: true })
     setTodasLasAsignaciones(data ?? [])
-    }
+  }
 
   async function cargarDatos() {
     setLoading(true)
     await Promise.all([cargarRutina(), cargarEjerciciosDisponibles(), cargarTodasLasAsignaciones()])
     setLoading(false)
-    }
+  }
 
   async function cargarRutina() {
     const { data: asignacion } = await supabase
@@ -95,7 +98,7 @@ export default function RutinaClienteDetalle() {
       .eq('rutina_cliente_id', rutinaClienteId)
 
     const ejerciciosBase = asignacion.rutinas?.rutinas_ejercicios ?? []
-    const ejerciciosCombinados = ejerciciosBase
+    const combinados = ejerciciosBase
       .sort((a, b) => a.orden - b.orden)
       .map(ej => {
         const override = overrides?.find(o => o.ejercicio_id === ej.ejercicio_id)
@@ -107,7 +110,7 @@ export default function RutinaClienteDetalle() {
         }
       })
 
-    setEjercicios(ejerciciosCombinados)
+    setEjercicios(combinados)
   }
 
   async function cargarEjerciciosDisponibles() {
@@ -119,7 +122,6 @@ export default function RutinaClienteDetalle() {
     setEjerciciosDisponibles(data ?? [])
   }
 
-  // Filtro del buscador de ejercicios
   const ejerciciosFiltrados = ejerciciosDisponibles.filter(e => {
     const busqueda = busquedaEjercicio.toLowerCase()
     return (
@@ -132,7 +134,6 @@ export default function RutinaClienteDetalle() {
     setBusquedaEjercicio(ejercicio.ejercicioFinal?.nombre ?? '')
     setEjercicioEditando({
       ejercicioBaseId: ejercicio.ejercicio_id,
-      // El ejercicio que se va a usar (puede ser distinto al base si hay override)
       ejercicio_id: ejercicio.override?.ejercicio_id ?? ejercicio.ejercicio_id,
       ejercicioNombre: ejercicio.ejercicioFinal?.nombre ?? '',
       series: ejercicio.override?.series ?? ejercicio.series,
@@ -171,7 +172,6 @@ export default function RutinaClienteDetalle() {
     try {
       const datos = {
         rutina_cliente_id: Number(rutinaClienteId),
-        // ejercicio_id es el ejercicio BASE de la plantilla (la clave del override)
         ejercicio_id: Number(ejercicioEditando.ejercicioBaseId),
         series: Number(ejercicioEditando.series),
         repeticiones: String(ejercicioEditando.repeticiones),
@@ -202,218 +202,259 @@ export default function RutinaClienteDetalle() {
     }
   }
 
-  async function eliminarOverride(ejercicio) {
-    if (!ejercicio.override?.id) return
-    const confirmar = window.confirm('¿Restaurar el ejercicio original de la plantilla?')
-    if (!confirmar) return
-
+  async function eliminarOverride() {
+    setRestaurando(true)
     const { error } = await supabase
       .from('rutinas_clientes_ejercicios')
       .delete()
-      .eq('id', ejercicio.override.id)
+      .eq('id', confirmRestore.overrideId)
 
-    if (error) { alert('Error al restaurar'); return }
+    if (!error) {
+      setExito('Ejercicio restaurado al original')
+      cargarRutina()
+    }
 
-    setExito('Ejercicio restaurado al original')
-    cargarRutina()
+    setRestaurando(false)
+    setConfirmRestore(null)
   }
 
-  if (loading) return <p>Cargando...</p>
-  if (!rutina) return <p>No se encontró la rutina</p>
+  if (loading) return (
+    <div className="admin-loading">
+      <p className="text-muted">Cargando rutina...</p>
+    </div>
+  )
+
+  if (!rutina) return (
+    <div className="admin-empty">
+      <h3>Rutina no encontrada</h3>
+      <button className="btn btn-secondary" onClick={() => navigate('/entrenador/clientes')}>
+        Volver a clientes
+      </button>
+    </div>
+  )
 
   return (
-    <div>
-      <button onClick={() => navigate('/entrenador/clientes')}>← Volver</button>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <button className="btn-back" onClick={() => navigate('/entrenador/clientes')}>
+            ← Volver
+          </button>
+          <h1 className="admin-page-title">
+            {rutina.clientes?.apellido}, {rutina.clientes?.nombre}
+          </h1>
+          <p className="admin-page-subtitle">
+            {rutina.rutinas?.nombre} · {DIAS.find(d => d.value === rutina.dia_semana)?.label}
+          </p>
+        </div>
+      </div>
 
       {/* Selector de días */}
-        {todasLasAsignaciones.length > 1 && (
-        <div style={{ display: 'flex', gap: '8px', margin: '12px 0', flexWrap: 'wrap' }}>
-            {todasLasAsignaciones.map(a => (
+      {todasLasAsignaciones.length > 1 && (
+        <div className="ent-dia-tabs">
+          {todasLasAsignaciones.map(a => (
             <button
-                key={a.id}
-                onClick={() => navigate(`/entrenador/clientes/${clienteId}/rutina/${a.id}`)}
-                style={{
-                padding: '8px 12px',
-                background: String(a.id) === String(rutinaClienteId) ? '#333' : '#eee',
-                color: String(a.id) === String(rutinaClienteId) ? 'white' : 'black',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                }}
+              key={a.id}
+              className={`ent-dia-tab${String(a.id) === String(rutinaClienteId) ? ' activo' : ''}`}
+              onClick={() => navigate(`/entrenador/clientes/${clienteId}/rutina/${a.id}`)}
             >
-                {DIAS.find(d => d.value === a.dia_semana)?.label} — {a.rutinas?.nombre}
+              {DIAS.find(d => d.value === a.dia_semana)?.label} — {a.rutinas?.nombre}
             </button>
-            ))}
+          ))}
         </div>
+      )}
+
+      {/* Badges de info */}
+      <div className="detalle-badges" style={{ marginBottom: '20px' }}>
+        {rutina.rutinas?.nivel_dificultad && (
+          <span className="badge badge-acento">{rutina.rutinas.nivel_dificultad}</span>
         )}
+        <span className="badge badge-neutral">{ejercicios.length} ejercicio{ejercicios.length !== 1 ? 's' : ''}</span>
+      </div>
 
-      <h1>Rutina de {rutina.clientes?.apellido}, {rutina.clientes?.nombre}</h1>
-      <h2>{rutina.rutinas?.nombre}</h2>
-      <p>Día: {DIAS.find(d => d.value === rutina.dia_semana)?.label}</p>
-      <p>Dificultad: {rutina.rutinas?.nivel_dificultad}</p>
+      {exito && <div className="msg-exito mb-16">{exito}</div>}
+      {error && <div className="msg-error mb-16">{error}</div>}
 
-      {exito && <p style={{ color: 'green' }}>{exito}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {/* Lista de ejercicios */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {ejercicios.map((ej, index) => {
+          const editando = ejercicioEditando?.ejercicioBaseId === ej.ejercicio_id
 
-      <h2>Ejercicios ({ejercicios.length})</h2>
-
-      {ejercicios.map((ej, index) => {
-        const editando = ejercicioEditando?.ejercicioBaseId === ej.ejercicio_id
-
-        return (
-          <div
-            key={ej.id}
-            style={{
-              border: ej.tieneOverride ? '2px solid orange' : '1px solid #ccc',
-              margin: '8px 0',
-              padding: '12px'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <strong>{index + 1}. {ej.ejercicioFinal?.nombre}</strong>
-                {ej.tieneOverride && (
-                  <span style={{ color: 'orange', marginLeft: '8px' }}>⚡ Modificado para este cliente</span>
-                )}
-                <p>{ej.ejercicioFinal?.musculo_principal}</p>
-                <p>
-                  {ej.override?.series ?? ej.series} series ×{' '}
-                  {ej.override?.repeticiones ?? ej.repeticiones} —{' '}
-                  Descanso: {ej.override?.descanso_segundos ?? ej.descanso_segundos}s —{' '}
-                  Intensidad: {ej.override?.porcentaje_fuerza ?? ej.porcentaje_fuerza}%
-                </p>
-                {(ej.override?.notas || ej.notas) && (
-                  <p>Nota: {ej.override?.notas || ej.notas}</p>
-                )}
-                {ej.ejercicioFinal?.enlace_video && (
-                  <img
-                    src={ej.ejercicioFinal.enlace_video}
-                    alt={ej.ejercicioFinal.nombre}
-                    style={{ width: '100px', marginTop: '8px' }}
-                  />
-                )}
-              </div>
-
-              <div>
-                <button onClick={() => editando ? cancelarEdicion() : iniciarEdicion(ej)}>
-                  {editando ? 'Cancelar' : 'Modificar'}
-                </button>
-                {ej.tieneOverride && (
-                  <button onClick={() => eliminarOverride(ej)}>
-                    Restaurar original
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Panel de edición */}
-            {editando && (
-              <div style={{ marginTop: '12px', padding: '12px', background: '#f9f9f9' }}>
-                <h3>Modificar solo para este cliente</h3>
-
-                {/* Buscador de ejercicio con dropdown */}
-                <div style={{ position: 'relative', marginBottom: '12px' }}>
-                  <label>Ejercicio</label>
-                  <input
-                    type="text"
-                    value={busquedaEjercicio}
-                    onChange={e => {
-                      setBusquedaEjercicio(e.target.value)
-                      setMostrarDropdown(true)
-                      setEjercicioEditando(prev => ({ ...prev, ejercicio_id: '' }))
-                    }}
-                    onFocus={() => setMostrarDropdown(true)}
-                    onBlur={() => setTimeout(() => setMostrarDropdown(false), 200)}
-                    placeholder="Buscá por nombre o músculo..."
-                    autoComplete="off"
-                  />
-                  {mostrarDropdown && busquedaEjercicio && (
-                    <div style={{
-                      position: 'absolute',
-                      background: 'white',
-                      border: '1px solid #ccc',
-                      width: '100%',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      zIndex: 10
-                    }}>
-                      {ejerciciosFiltrados.length === 0 ? (
-                        <div style={{ padding: '8px' }}>No se encontraron ejercicios</div>
-                      ) : (
-                        ejerciciosFiltrados.map(e => (
-                          <div
-                            key={e.id}
-                            onMouseDown={() => seleccionarEjercicioOverride(e)}
-                            style={{ padding: '8px', cursor: 'pointer' }}
-                          >
-                            {e.nombre} — {e.musculo_principal}
-                          </div>
-                        ))
-                      )}
+          return (
+            <div
+              key={ej.id}
+              className={`ent-ej-override-card${ej.tieneOverride ? ' modificado' : ''}`}
+            >
+              <div className="ent-ej-override-top">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="ent-ej-override-nombre">
+                    {index + 1}. {ej.ejercicioFinal?.nombre}
+                  </div>
+                  {ej.tieneOverride && (
+                    <span className="badge badge-acento" style={{ marginBottom: '6px', display: 'inline-block' }}>
+                      Modificado para este cliente
+                    </span>
+                  )}
+                  <div className="ent-ej-override-musculo">{ej.ejercicioFinal?.musculo_principal}</div>
+                  <div className="ent-ej-override-meta">
+                    {ej.override?.series ?? ej.series} series ×{' '}
+                    {ej.override?.repeticiones ?? ej.repeticiones} ·{' '}
+                    Descanso: {ej.override?.descanso_segundos ?? ej.descanso_segundos}s ·{' '}
+                    Intensidad: {ej.override?.porcentaje_fuerza ?? ej.porcentaje_fuerza}%
+                  </div>
+                  {(ej.override?.notas || ej.notas) && (
+                    <div className="ent-ej-override-nota">
+                      Nota: {ej.override?.notas || ej.notas}
                     </div>
                   )}
                 </div>
 
-                {ejercicioEditando.ejercicioNombre && (
-                  <p style={{ color: 'green' }}>✓ Ejercicio seleccionado: {ejercicioEditando.ejercicioNombre}</p>
-                )}
-
-                <div>
-                  <label>Series</label>
-                  <input
-                    type="number"
-                    value={ejercicioEditando.series}
-                    onChange={e => setEjercicioEditando(prev => ({ ...prev, series: e.target.value }))}
-                    min={1} max={20}
-                  />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexShrink: 0 }}>
+                  {ej.ejercicioFinal?.enlace_video && (
+                    <img
+                      src={ej.ejercicioFinal.enlace_video}
+                      alt={ej.ejercicioFinal.nombre}
+                      className="ent-ej-override-gif"
+                    />
+                  )}
+                  <div className="ent-ej-override-acciones">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => editando ? cancelarEdicion() : iniciarEdicion(ej)}
+                    >
+                      {editando ? 'Cancelar' : 'Modificar'}
+                    </button>
+                    {ej.tieneOverride && (
+                      <button
+                        className="btn btn-ghost"
+                        onClick={() => setConfirmRestore({ overrideId: ej.override.id, nombre: ej.ejercicios?.nombre })}
+                      >
+                        Restaurar
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                <div>
-                  <label>Repeticiones</label>
-                  <input
-                    type="text"
-                    value={ejercicioEditando.repeticiones}
-                    onChange={e => setEjercicioEditando(prev => ({ ...prev, repeticiones: e.target.value }))}
-                    placeholder="Ej: 10-12 o Al fallo"
-                  />
-                </div>
-
-                <div>
-                  <label>Descanso (segundos)</label>
-                  <input
-                    type="number"
-                    value={ejercicioEditando.descanso_segundos}
-                    onChange={e => setEjercicioEditando(prev => ({ ...prev, descanso_segundos: e.target.value }))}
-                    min={0} max={600}
-                  />
-                </div>
-
-                <div>
-                  <label>Intensidad (%)</label>
-                  <input
-                    type="number"
-                    value={ejercicioEditando.porcentaje_fuerza}
-                    onChange={e => setEjercicioEditando(prev => ({ ...prev, porcentaje_fuerza: e.target.value }))}
-                    min={1} max={100}
-                  />
-                </div>
-
-                <div>
-                  <label>Notas</label>
-                  <input
-                    type="text"
-                    value={ejercicioEditando.notas}
-                    onChange={e => setEjercicioEditando(prev => ({ ...prev, notas: e.target.value }))}
-                    placeholder="Instrucciones especiales para este cliente"
-                  />
-                </div>
-
-                <button onClick={guardarOverride}>Guardar cambios</button>
               </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+
+              {/* Panel de edición */}
+              {editando && (
+                <div className="ent-override-panel">
+                  <div className="ent-override-panel-title">Modificar solo para este cliente</div>
+
+                  {/* Buscador de ejercicio */}
+                  <div className="input-group ent-search-wrap" style={{ marginBottom: '12px' }}>
+                    <label className="input-label">Ejercicio</label>
+                    <input
+                      className="input"
+                      type="text"
+                      value={busquedaEjercicio}
+                      onChange={e => {
+                        setBusquedaEjercicio(e.target.value)
+                        setMostrarDropdown(true)
+                        setEjercicioEditando(prev => ({ ...prev, ejercicio_id: '' }))
+                      }}
+                      onFocus={() => setMostrarDropdown(true)}
+                      onBlur={() => setTimeout(() => setMostrarDropdown(false), 200)}
+                      placeholder="Buscá por nombre o músculo..."
+                      autoComplete="off"
+                    />
+                    {mostrarDropdown && busquedaEjercicio && (
+                      <div className="ent-dropdown">
+                        {ejerciciosFiltrados.length === 0 ? (
+                          <div className="ent-dropdown-empty">No se encontraron ejercicios</div>
+                        ) : (
+                          ejerciciosFiltrados.map(e => (
+                            <div
+                              key={e.id}
+                              className="ent-dropdown-item"
+                              onMouseDown={() => seleccionarEjercicioOverride(e)}
+                            >
+                              {e.nombre} — {e.musculo_principal}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {ejercicioEditando.ejercicioNombre && (
+                    <div className="ent-ejercicio-seleccionado">
+                      Seleccionado: {ejercicioEditando.ejercicioNombre}
+                    </div>
+                  )}
+
+                  <div className="ent-override-grid">
+                    <div className="input-group">
+                      <label className="input-label">Series</label>
+                      <input
+                        className="input"
+                        type="number"
+                        value={ejercicioEditando.series}
+                        onChange={e => setEjercicioEditando(prev => ({ ...prev, series: e.target.value }))}
+                        min={1} max={20}
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Repeticiones</label>
+                      <input
+                        className="input"
+                        type="text"
+                        value={ejercicioEditando.repeticiones}
+                        onChange={e => setEjercicioEditando(prev => ({ ...prev, repeticiones: e.target.value }))}
+                        placeholder="Ej: 10-12 o Al fallo"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Descanso (seg)</label>
+                      <input
+                        className="input"
+                        type="number"
+                        value={ejercicioEditando.descanso_segundos}
+                        onChange={e => setEjercicioEditando(prev => ({ ...prev, descanso_segundos: e.target.value }))}
+                        min={0} max={600}
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Intensidad (%)</label>
+                      <input
+                        className="input"
+                        type="number"
+                        value={ejercicioEditando.porcentaje_fuerza}
+                        onChange={e => setEjercicioEditando(prev => ({ ...prev, porcentaje_fuerza: e.target.value }))}
+                        min={1} max={100}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="input-group" style={{ marginBottom: '12px' }}>
+                    <label className="input-label">Notas</label>
+                    <input
+                      className="input"
+                      type="text"
+                      value={ejercicioEditando.notas}
+                      onChange={e => setEjercicioEditando(prev => ({ ...prev, notas: e.target.value }))}
+                      placeholder="Instrucciones especiales para este cliente"
+                    />
+                  </div>
+
+                  <button className="btn btn-primary" onClick={guardarOverride}>
+                    Guardar cambios
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <ConfirmModal
+        open={Boolean(confirmRestore)}
+        titulo="¿Restaurar ejercicio original?"
+        desc={confirmRestore ? `Se restaurará el ejercicio original de la plantilla para "${confirmRestore.nombre}". Los cambios de este cliente se perderán.` : ''}
+        onConfirm={eliminarOverride}
+        onCancel={() => setConfirmRestore(null)}
+        loading={restaurando}
+      />
+    </>
   )
 }
