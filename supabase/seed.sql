@@ -2,23 +2,27 @@
 -- GymFlow — Datos de Demo
 -- =============================================================================
 --
--- ANTES de ejecutar este script, creá los 4 usuarios en:
--- Supabase → Authentication → Users → Add user
+-- PASO 1: Reducir la longitud mínima del PIN a 4 caracteres
+--   Supabase → Authentication → Sign In / Up → Password strength → Min length: 4
 --
---  Email                        Contraseña   Rol
---  ─────────────────────────────────────────────────
---  admin@retofitness.com        Admin1234!   admin
---  12345678@retofitness.com     123456       entrenador
---  87654321@retofitness.com     123456       cliente
---  11223344@retofitness.com     123456       cliente
+-- PASO 2: Crear los 4 usuarios en:
+--   Supabase → Authentication → Users → Add user → "Create new user"
+--   Tildar "Auto Confirm User" para que no requiera verificación de email.
 --
--- Login en la app:
---   Admin      → DNI: admin      / PIN: Admin1234!
---   Entrenador → DNI: 12345678   / PIN: 123456
---   Cliente 1  → DNI: 87654321   / PIN: 123456
---   Cliente 2  → DNI: 11223344   / PIN: 123456
+--  Email                        Contraseña
+--  ──────────────────────────────────────────
+--  100000@retofitness.com       1000
+--  12345678@retofitness.com     1234
+--  87654321@retofitness.com     5678
+--  11223344@retofitness.com     4321
 --
--- Después pegá este script en SQL Editor y ejecutalo.
+-- Login en la app (DNI + PIN):
+--   Admin      → DNI: 100000    / PIN: 1000
+--   Entrenador → DNI: 12345678  / PIN: 1234
+--   Cliente 1  → DNI: 87654321  / PIN: 5678
+--   Cliente 2  → DNI: 11223344  / PIN: 4321
+--
+-- PASO 3: Ejecutar este script en SQL Editor → Run
 -- =============================================================================
 
 DO $$
@@ -53,7 +57,7 @@ DECLARE
 BEGIN
 
   -- ── Obtener UIDs de auth ────────────────────────────────────────────────
-  SELECT id INTO uid_admin      FROM auth.users WHERE email = 'admin@retofitness.com';
+  SELECT id INTO uid_admin      FROM auth.users WHERE email = '100000@retofitness.com';
   SELECT id INTO uid_entrenador FROM auth.users WHERE email = '12345678@retofitness.com';
   SELECT id INTO uid_cliente1   FROM auth.users WHERE email = '87654321@retofitness.com';
   SELECT id INTO uid_cliente2   FROM auth.users WHERE email = '11223344@retofitness.com';
@@ -89,7 +93,7 @@ BEGIN
     (uid_cliente1, 'Juan',  'Pérez',    '87654321@retofitness.com', true,
      25, 75, 178, 'M', 'Medio',
      'Ganar masa muscular y mejorar fuerza', '2026-12-31'),
-    (uid_cliente2, 'María', 'González', '11223344@retofitness.com', true,
+    (uid_cliente2, 'Maria', 'Gonzalez', '11223344@retofitness.com', true,
      28, 60, 165, 'F', 'Alto',
      'Tonificar y bajar grasa corporal', '2026-12-31')
   ON CONFLICT (user_id) DO NOTHING;
