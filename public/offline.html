@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>GymFlow — Sin conexión</title>
+  <meta name="theme-color" content="#0D0D0D" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #0D0D0D;
+      color: #F5F5F5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      padding-top: max(24px, env(safe-area-inset-top));
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      text-align: center;
+      gap: 16px;
+    }
+
+    .icono {
+      width: 64px;
+      height: 64px;
+      background: rgba(255, 51, 0, 0.1);
+      border: 1px solid rgba(255, 51, 0, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    p {
+      font-size: 14px;
+      color: #999;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    button {
+      margin-top: 8px;
+      background: #FF3300;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    button:active { opacity: 0.85; }
+
+    .logo {
+      margin-bottom: 8px;
+    }
+    .logo svg { border-radius: 14px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <svg width="56" height="56" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="120" fill="#FF3300"/>
+      <rect x="152" y="236" width="208" height="40" fill="white" rx="6"/>
+      <rect x="128" y="200" width="32" height="112" fill="white" rx="7"/>
+      <rect x="104" y="216" width="28" height="80" fill="white" rx="6"/>
+      <rect x="352" y="200" width="32" height="112" fill="white" rx="7"/>
+      <rect x="380" y="216" width="28" height="80" fill="white" rx="6"/>
+    </svg>
+  </div>
+
+  <div class="icono">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF3300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="1" y1="1" x2="23" y2="23"/>
+      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+      <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+      <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+      <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+      <line x1="12" y1="20" x2="12.01" y2="20"/>
+    </svg>
+  </div>
+
+  <h1>Sin conexión</h1>
+  <p>Parece que no tenés internet. Revisá tu conexión y volvé a intentarlo.</p>
+
+  <button onclick="window.location.reload()">
+    Reintentar
+  </button>
+</body>
+</html>

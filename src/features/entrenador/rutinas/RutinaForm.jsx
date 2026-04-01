@@ -26,6 +26,10 @@ export default function RutinaForm() {
   const [ejerciciosDisponibles, setEjerciciosDisponibles] = useState([])
   const [nuevoEjercicio, setNuevoEjercicio] = useState(ejercicioVacio)
   const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState(null)
+  const [busquedaPrin, setBusquedaPrin] = useState('')
+  const [mostrarDropdownPrin, setMostrarDropdownPrin] = useState(false)
+  const [busquedaAlt, setBusquedaAlt] = useState('')
+  const [mostrarDropdownAlt, setMostrarDropdownAlt] = useState(false)
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
@@ -83,10 +87,16 @@ export default function RutinaForm() {
     setNuevoEjercicio(prev => ({ ...prev, [name]: value }))
   }
 
+  function resetPanel() {
+    setEjercicioSeleccionado(null)
+    setNuevoEjercicio(ejercicioVacio)
+    setBusquedaPrin('')
+    setBusquedaAlt('')
+  }
+
   function seleccionarEjercicio(index) {
     if (ejercicioSeleccionado === index) {
-      setEjercicioSeleccionado(null)
-      setNuevoEjercicio(ejercicioVacio)
+      resetPanel()
       return
     }
     const ej = ejerciciosRutina[index]
@@ -100,6 +110,12 @@ export default function RutinaForm() {
       porcentaje_fuerza: ej.porcentaje_fuerza,
       notas: ej.notas ?? '',
     })
+    // Pre-fill búsquedas con los nombres actuales
+    setBusquedaPrin(ejerciciosDisponibles.find(e => e.id === ej.ejercicio_id)?.nombre ?? '')
+    setBusquedaAlt(ej.ejercicio_alternativo_id
+      ? ejerciciosDisponibles.find(e => e.id === ej.ejercicio_alternativo_id)?.nombre ?? ''
+      : ''
+    )
   }
 
   function guardarEdicionEjercicio() {
@@ -125,8 +141,7 @@ export default function RutinaForm() {
       }
     }))
 
-    setEjercicioSeleccionado(null)
-    setNuevoEjercicio(ejercicioVacio)
+    resetPanel()
     setError('')
   }
 
@@ -152,14 +167,13 @@ export default function RutinaForm() {
       }
     ])
 
-    setNuevoEjercicio(ejercicioVacio)
+    resetPanel()
     setError('')
   }
 
   function eliminarEjercicioDeRutina(index) {
     if (ejercicioSeleccionado === index) {
-      setEjercicioSeleccionado(null)
-      setNuevoEjercicio(ejercicioVacio)
+      resetPanel()
     }
     setEjerciciosRutina(prev => prev.filter((_, i) => i !== index))
   }
@@ -308,25 +322,135 @@ export default function RutinaForm() {
             </div>
 
             <div className="admin-form-grid">
-              <div className="input-group">
+              <div className="input-group ent-search-wrap">
                 <label className="input-label">Ejercicio</label>
-                <select className="input" name="ejercicio_id" value={nuevoEjercicio.ejercicio_id} onChange={handleNuevoEjercicioChange}>
-                  <option value="">Seleccionar ejercicio</option>
-                  {ejerciciosDisponibles.map(e => (
-                    <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
-                  ))}
-                </select>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="input"
+                    type="text"
+                    value={busquedaPrin}
+                    onChange={e => {
+                      setBusquedaPrin(e.target.value)
+                      setMostrarDropdownPrin(true)
+                      setNuevoEjercicio(prev => ({ ...prev, ejercicio_id: '' }))
+                    }}
+                    onFocus={() => setMostrarDropdownPrin(true)}
+                    onBlur={() => setTimeout(() => setMostrarDropdownPrin(false), 200)}
+                    placeholder="Buscar ejercicio..."
+                    autoComplete="off"
+                  />
+                  {nuevoEjercicio.ejercicio_id && (
+                    <button
+                      type="button"
+                      onClick={() => { setBusquedaPrin(''); setNuevoEjercicio(prev => ({ ...prev, ejercicio_id: '' })) }}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18, lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  )}
+                  {mostrarDropdownPrin && (
+                    <div className="ent-dropdown">
+                      {ejerciciosDisponibles
+                        .filter(e =>
+                          busquedaPrin === '' ||
+                          e.nombre.toLowerCase().includes(busquedaPrin.toLowerCase()) ||
+                          e.musculo_principal?.toLowerCase().includes(busquedaPrin.toLowerCase())
+                        )
+                        .map(e => (
+                          <div
+                            key={e.id}
+                            className="ent-dropdown-item"
+                            onMouseDown={() => {
+                              const mismoQueAlt = nuevoEjercicio.ejercicio_alternativo_id === String(e.id)
+                              setNuevoEjercicio(prev => ({
+                                ...prev,
+                                ejercicio_id: String(e.id),
+                                ejercicio_alternativo_id: mismoQueAlt ? '' : prev.ejercicio_alternativo_id,
+                              }))
+                              setBusquedaPrin(e.nombre)
+                              if (mismoQueAlt) setBusquedaAlt('')
+                              setMostrarDropdownPrin(false)
+                            }}
+                          >
+                            {e.nombre} — {e.musculo_principal}
+                          </div>
+                        ))
+                      }
+                      {ejerciciosDisponibles.filter(e =>
+                        busquedaPrin === '' ||
+                        e.nombre.toLowerCase().includes(busquedaPrin.toLowerCase()) ||
+                        e.musculo_principal?.toLowerCase().includes(busquedaPrin.toLowerCase())
+                      ).length === 0 && (
+                        <div className="ent-dropdown-empty">No se encontraron ejercicios</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="input-group">
+              <div className="input-group ent-search-wrap">
                 <label className="input-label">Alternativo (opcional)</label>
-                <select className="input" name="ejercicio_alternativo_id" value={nuevoEjercicio.ejercicio_alternativo_id} onChange={handleNuevoEjercicioChange}>
-                  <option value="">Sin alternativo</option>
-                  {ejerciciosDisponibles
-                    .filter(e => e.id !== Number(nuevoEjercicio.ejercicio_id))
-                    .map(e => (
-                      <option key={e.id} value={e.id}>{e.nombre} — {e.musculo_principal}</option>
-                    ))}
-                </select>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="input"
+                    type="text"
+                    value={busquedaAlt}
+                    onChange={e => {
+                      setBusquedaAlt(e.target.value)
+                      setMostrarDropdownAlt(true)
+                      setNuevoEjercicio(prev => ({ ...prev, ejercicio_alternativo_id: '' }))
+                    }}
+                    onFocus={() => setMostrarDropdownAlt(true)}
+                    onBlur={() => setTimeout(() => setMostrarDropdownAlt(false), 200)}
+                    placeholder="Buscar ejercicio alternativo..."
+                    autoComplete="off"
+                  />
+                  {nuevoEjercicio.ejercicio_alternativo_id && (
+                    <button
+                      type="button"
+                      onClick={() => { setBusquedaAlt(''); setNuevoEjercicio(prev => ({ ...prev, ejercicio_alternativo_id: '' })) }}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18, lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  )}
+                  {mostrarDropdownAlt && (
+                    <div className="ent-dropdown">
+                      {busquedaAlt === '' && (
+                        <div
+                          className="ent-dropdown-item"
+                          onMouseDown={() => {
+                            setBusquedaAlt('')
+                            setNuevoEjercicio(prev => ({ ...prev, ejercicio_alternativo_id: '' }))
+                            setMostrarDropdownAlt(false)
+                          }}
+                        >
+                          Sin alternativo
+                        </div>
+                      )}
+                      {ejerciciosDisponibles
+                        .filter(e =>
+                          e.id !== Number(nuevoEjercicio.ejercicio_id) &&
+                          (busquedaAlt === '' ||
+                            e.nombre.toLowerCase().includes(busquedaAlt.toLowerCase()) ||
+                            e.musculo_principal?.toLowerCase().includes(busquedaAlt.toLowerCase()))
+                        )
+                        .map(e => (
+                          <div
+                            key={e.id}
+                            className="ent-dropdown-item"
+                            onMouseDown={() => {
+                              setNuevoEjercicio(prev => ({ ...prev, ejercicio_alternativo_id: String(e.id) }))
+                              setBusquedaAlt(e.nombre)
+                              setMostrarDropdownAlt(false)
+                            }}
+                          >
+                            {e.nombre} — {e.musculo_principal}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="input-group">
                 <label className="input-label">Series</label>
@@ -396,7 +520,7 @@ export default function RutinaForm() {
                   <button
                     type="button"
                     className="btn btn-ghost"
-                    onClick={() => { setEjercicioSeleccionado(null); setNuevoEjercicio(ejercicioVacio) }}
+                    onClick={resetPanel}
                   >
                     Cancelar edición
                   </button>

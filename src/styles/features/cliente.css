@@ -105,7 +105,7 @@
 
 /* ── Routine container ── */
 .rutina-container {
-  padding-bottom: 32px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
 }
 
 /* ── Routine header ── */
@@ -180,6 +180,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 0 8px;
+  padding-top: calc(20px + env(safe-area-inset-top));
 }
 
 .cliente-header-info {
@@ -222,7 +223,8 @@
 .modal-sheet {
   background: var(--bg-card);
   border-radius: var(--radio-xl) var(--radio-xl) 0 0;
-  padding: 24px 20px 36px;
+  padding: 24px 20px;
+  padding-bottom: calc(36px + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 480px;
   border: 1px solid var(--border);

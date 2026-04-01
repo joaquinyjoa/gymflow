@@ -28,6 +28,7 @@
   gap: 14px;
   padding: 14px;
   flex: 1;
+  min-width: 0;
 }
 
 .ent-ejercicio-thumb {
@@ -104,8 +105,23 @@
 /* ══════════════════════════════════════════
    EJERCICIO DETALLE
 ══════════════════════════════════════════ */
+.detalle-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.detalle-texto {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+
 .ent-detalle-page {
   max-width: 680px;
+  width: 100%;
 }
 
 .ent-detalle-header {
@@ -377,6 +393,7 @@
   border-radius: var(--radio-lg);
   overflow: hidden;
   transition: border-color 0.15s;
+  min-width: 0;
 }
 
 .ent-cliente-card.expandido {
@@ -701,6 +718,8 @@
    RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 767px) {
+
+  /* Grids a 1 columna */
   .ent-ejercicios-grid {
     grid-template-columns: 1fr;
   }
@@ -709,8 +728,68 @@
     grid-template-columns: 1fr;
   }
 
+  /* Card de ejercicio — acciones en columna */
+  .ent-ejercicio-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .ent-ejercicio-card-actions .btn {
+    flex: 1 1 auto;
+    min-width: 70px;
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+
+  /* Item de ejercicio en RutinaForm — columna */
+  .ent-ej-item {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ent-ej-item-acciones {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Fila de rutina en ClientesEntrenador — columna */
+  .ent-rutina-row {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .ent-rutina-row-acciones {
+    width: 100%;
+  }
+
+  .ent-rutina-row-acciones .btn {
+    flex: 1;
+  }
+
+  /* Días libres en columna */
+  .ent-dia-libre {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Tabs de días — scroll horizontal sin desborde */
+  .ent-dia-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ent-dia-tabs::-webkit-scrollbar { display: none; }
+
+  .ent-dia-tab {
+    flex-shrink: 0;
+  }
+
+  /* Override card — columna */
   .ent-ej-override-top {
     flex-direction: column;
+    gap: 10px;
   }
 
   .ent-ej-override-acciones {
@@ -719,5 +798,49 @@
 
   .ent-ej-override-acciones .btn {
     flex: 1;
+  }
+
+  .ent-ej-override-gif {
+    width: 56px;
+    height: 56px;
+  }
+
+  /* Tabla de asignaciones — scroll interno */
+  .admin-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Panel de override — full width */
+  .ent-override-panel {
+    padding: 12px;
+  }
+
+  /* Header de rutina info card — no overflow */
+  .ent-rutina-info-card {
+    overflow: hidden;
+  }
+
+  /* Panel de ejercicio en RutinaForm */
+  .ent-panel-actions {
+    flex-direction: column;
+  }
+
+  .ent-panel-actions .btn {
+    width: 100%;
+  }
+
+  /* Pendientes de asignar */
+  .ent-pendiente-item {
+    gap: 6px;
+  }
+
+  /* Tag list wrap correctamente */
+  .ent-tag-row {
+    flex-direction: column;
+  }
+
+  .ent-tag-row .btn {
+    align-self: flex-start;
   }
 }

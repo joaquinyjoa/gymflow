@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '../store/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
+import ErrorBoundary from '../components/ErrorBoundary'
+import InstallPrompt from '../components/InstallPrompt'
 import { ROUTES, ROLES } from '../lib/constants'
 
 import LoginPage from '../features/auth/LoginPage'
@@ -32,6 +34,7 @@ import EjercicioDetalleCliente from '../features/cliente/EjercicioDetalle'
 
 export default function AppRouter() {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -82,7 +85,9 @@ export default function AppRouter() {
 
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
         </Routes>
+        <InstallPrompt />
       </AuthProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }

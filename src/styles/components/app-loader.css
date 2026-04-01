@@ -1,0 +1,47 @@
+.app-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  z-index: 9999;
+}
+
+.app-loader-logo {
+  animation: app-loader-pulse 1.8s ease-in-out infinite;
+}
+
+.app-loader-logo svg {
+  border-radius: 20px;
+  display: block;
+}
+
+@keyframes app-loader-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(0.95); }
+}
+
+/* Barra de progreso indeterminada */
+.app-loader-spinner {
+  width: 120px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.app-loader-bar {
+  height: 100%;
+  width: 40%;
+  background: var(--acento);
+  border-radius: 99px;
+  animation: app-loader-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes app-loader-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}

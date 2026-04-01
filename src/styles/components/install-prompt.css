@@ -1,0 +1,268 @@
+/* ── Android / Chrome banner ─────────────────────────────────────────────── */
+.install-prompt {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-xl);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  animation: install-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes install-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.install-prompt-icon {
+  flex-shrink: 0;
+}
+
+.install-prompt-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.install-prompt-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.install-prompt-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.install-prompt-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.install-prompt-btn {
+  border: none;
+  border-radius: var(--radio-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 7px 12px;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.install-prompt-btn:active { opacity: 0.75; }
+
+.install-prompt-btn-primary {
+  background: var(--acento);
+  color: #fff;
+}
+
+.install-prompt-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+.install-prompt-btn-ghost:hover { color: var(--text-secondary); }
+
+
+/* ── iOS bottom sheet ────────────────────────────────────────────────────── */
+.install-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: overlay-in 0.25s ease;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.install-ios-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border-radius: var(--radio-xl) var(--radio-xl) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  padding: 12px 20px 0;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  animation: sheet-in 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.install-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-hover);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+/* Header con ícono + título */
+.install-ios-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.install-ios-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.install-ios-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Pasos */
+.install-ios-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.install-ios-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.install-ios-step:last-child { border-bottom: none; }
+
+.install-ios-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--acento-bg);
+  border: 1px solid var(--acento-border);
+  color: var(--acento-glow);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.install-ios-step-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.install-ios-step-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.install-ios-step-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.install-ios-step-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radio-md);
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.install-ios-step-icon--acento {
+  background: var(--acento-bg);
+  border-color: var(--acento-border);
+  color: var(--acento-glow);
+}
+
+/* Flecha indicando la toolbar de Safari */
+.install-ios-arrow-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.install-ios-arrow-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+.install-ios-arrow {
+  font-size: 20px;
+  color: var(--acento);
+  animation: arrow-bounce 1.2s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+/* Botón cerrar */
+.install-ios-dismiss {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-family: var(--font);
+  font-weight: 500;
+  padding: 14px 0;
+  cursor: pointer;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  transition: color 0.15s;
+}
+.install-ios-dismiss:hover { color: var(--text-secondary); }
+.install-ios-dismiss:active { opacity: 0.7; }

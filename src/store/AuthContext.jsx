@@ -78,7 +78,6 @@ export function AuthProvider({ children }) {
 
       setPerfilListo(true)
     } catch (error) {
-      console.error('Error cargando perfil:', error.message)
       setAuthError(error.message)
       setPerfilListo(false)
       await supabase.auth.signOut()

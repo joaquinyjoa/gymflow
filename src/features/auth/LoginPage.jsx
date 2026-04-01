@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
+import AppLoader from '../../components/AppLoader'
 import '../../styles/features/login.css'
 
 export default function LoginPage() {
@@ -11,7 +12,7 @@ export default function LoginPage() {
   const [cargando, setCargando] = useState(false)
   const [intentoLogin, setIntentoLogin] = useState(false)
 
-  const { login, getRutaInicial, perfilListo, rol, authError, setAuthError } = useAuth()
+  const { login, getRutaInicial, perfilListo, rol, authError, setAuthError, loading } = useAuth()
   const { tema, toggleTema } = useTheme()
   const navigate = useNavigate()
 
@@ -32,6 +33,8 @@ export default function LoginPage() {
       setIntentoLogin(false)
     }
   }, [authError])
+
+  if (loading) return <AppLoader />
 
   async function handleSubmit(e) {
     e.preventDefault()

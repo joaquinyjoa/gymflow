@@ -47,7 +47,7 @@ export default function DashboardEntrenador() {
 
       <div className="dashboard-stats">
         <div
-          className="stat-card"
+          className="stat-card clickable"
           onClick={() => navigate(ROUTES.ENTRENADOR_EJERCICIOS)}
         >
           <div className="stat-card-icon stat-card-icon-acento">
@@ -62,7 +62,7 @@ export default function DashboardEntrenador() {
         </div>
 
         <div
-          className="stat-card"
+          className="stat-card clickable"
           onClick={() => navigate(ROUTES.ENTRENADOR_RUTINAS)}
         >
           <div className="stat-card-icon stat-card-icon-success">
@@ -80,7 +80,7 @@ export default function DashboardEntrenador() {
         </div>
 
         <div
-          className="stat-card"
+          className="stat-card clickable"
           onClick={() => navigate(ROUTES.ENTRENADOR_CLIENTES)}
         >
           <div className="stat-card-icon stat-card-icon-neutral">

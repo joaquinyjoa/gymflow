@@ -1,0 +1,15 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo naranja — cubre todo para maskable -->
+  <rect width="512" height="512" fill="#FF3300"/>
+  <!-- Barbell centrado — safe zone: 102px a 410px -->
+  <!-- Barra central -->
+  <rect x="152" y="236" width="208" height="40" fill="white" rx="6"/>
+  <!-- Plato interior izquierdo -->
+  <rect x="128" y="200" width="32" height="112" fill="white" rx="7"/>
+  <!-- Plato exterior izquierdo -->
+  <rect x="104" y="216" width="28" height="80" fill="white" rx="6"/>
+  <!-- Plato interior derecho -->
+  <rect x="352" y="200" width="32" height="112" fill="white" rx="7"/>
+  <!-- Plato exterior derecho -->
+  <rect x="380" y="216" width="28" height="80" fill="white" rx="6"/>
+</svg>

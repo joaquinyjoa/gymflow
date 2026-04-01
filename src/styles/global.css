@@ -62,6 +62,14 @@ html, body, #root {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  /* Evita zoom en iOS al hacer focus en inputs */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Elimina el flash azul/gris al tocar en mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Scrollbar ── */
@@ -159,6 +167,16 @@ p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 .input:focus { border-color: var(--acento); }
 .input::placeholder { color: var(--text-muted); }
 
+/* iOS: evita zoom automático al hacer focus (requiere font-size >= 16px en el input activo).
+   Aplica a TODOS los inputs, no solo a los que tienen la clase .input */
+@supports (-webkit-touch-callout: none) {
+  input:focus,
+  select:focus,
+  textarea:focus {
+    font-size: 16px !important;
+  }
+}
+
 .input-group {
   display: flex;
   flex-direction: column;
@@ -221,6 +239,7 @@ textarea.input {
 /* ── Layout base ── */
 .page {
   min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport — evita el problema con la barra del browser en mobile */
   background: var(--bg-base);
 }
 
@@ -228,6 +247,9 @@ textarea.input {
   max-width: 480px;
   margin: 0 auto;
   padding: 0 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ── Íconos SVG inline ── */
