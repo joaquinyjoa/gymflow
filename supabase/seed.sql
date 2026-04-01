@@ -91,10 +91,10 @@ BEGIN
     objetivo, fecha_vencimiento
   ) VALUES
     (uid_cliente1, 'Juan',  'Pérez',    '87654321@retofitness.com', true,
-     25, 75, 178, 'M', 'Medio',
+     25, 75, 178, 'Hombre', 'Medio',
      'Ganar masa muscular y mejorar fuerza', '2026-12-31'),
     (uid_cliente2, 'Maria', 'Gonzalez', '11223344@retofitness.com', true,
-     28, 60, 165, 'F', 'Alto',
+     28, 60, 165, 'Mujer', 'Alto',
      'Tonificar y bajar grasa corporal', '2026-12-31')
   ON CONFLICT (user_id) DO NOTHING;
 
@@ -146,7 +146,7 @@ BEGIN
   RETURNING id INTO ej_press_frances;
 
   INSERT INTO ejercicios (nombre, descripcion, categoria, musculo_principal, musculos_secundarios, nivel_dificultad, equipamiento, instrucciones, consejos, activo, created_by)
-  VALUES ('Plancha Abdominal', 'Ejercicio isométrico para fortalecer el core completo.', 'resistencia', 'Core', ARRAY['Hombros', 'Glúteos'], 'principiante', ARRAY['Esterilla (opcional)'],
+  VALUES ('Plancha Abdominal', 'Ejercicio isométrico para fortalecer el core completo.', 'general', 'Core', ARRAY['Hombros', 'Glúteos'], 'principiante', ARRAY['Esterilla (opcional)'],
     E'1. Apoyate sobre los antebrazos y las puntas de los pies.\n2. Cuerpo en línea recta de cabeza a talones.\n3. Glúteos y abdomen contraídos.\n4. Mantené la posición el tiempo indicado.\n5. Respirá de forma constante.',
     'No dejés que las caderas suban ni bajen. Si te cuesta, bajá las rodillas al suelo.', true, id_entrenador)
   RETURNING id INTO ej_plancha;
