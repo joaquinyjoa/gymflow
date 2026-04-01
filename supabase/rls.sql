@@ -29,17 +29,17 @@ AS $$
   SELECT rol FROM users WHERE id = auth.uid()
 $$;
 
--- Devuelve el ID de perfil del entrenador autenticado (entrenadores.id)
+-- Devuelve el ID de perfil del entrenador autenticado (entrenadores.id — bigint)
 CREATE OR REPLACE FUNCTION get_entrenador_id()
-RETURNS uuid
+RETURNS bigint
 LANGUAGE sql STABLE SECURITY DEFINER
 AS $$
   SELECT id FROM entrenadores WHERE user_id = auth.uid() LIMIT 1
 $$;
 
--- Devuelve el ID de perfil del cliente autenticado (clientes.id)
+-- Devuelve el ID de perfil del cliente autenticado (clientes.id — bigint)
 CREATE OR REPLACE FUNCTION get_cliente_id()
-RETURNS uuid
+RETURNS bigint
 LANGUAGE sql STABLE SECURITY DEFINER
 AS $$
   SELECT id FROM clientes WHERE user_id = auth.uid() LIMIT 1
