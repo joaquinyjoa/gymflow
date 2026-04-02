@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { EMAIL_DOMAIN, ROLES, ROUTES } from '../lib/constants'
 
@@ -12,22 +12,36 @@ export function AuthProvider({ children }) {
   const [perfilListo, setPerfilListo] = useState(false)
   const [authError, setAuthError] = useState(null)
   const [clienteVencido, setClienteVencido] = useState(false)
+  const initialized = useRef(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) cargarPerfil(session.user)
-      else setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) cargarPerfil(session.user)
-      else {
+    // onAuthStateChange maneja TODO — no llamar getSession por separado
+    // para evitar doble carga y condiciones de carrera
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        // Solo limpiar estado en logout explícito
         setUser(null)
         setPerfil(null)
         setRol(null)
         setLoading(false)
         setPerfilListo(false)
         setClienteVencido(false)
+        initialized.current = false
+        return
+      }
+
+      if (session?.user) {
+        // SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION con sesión activa
+        if (!initialized.current || event === 'SIGNED_IN') {
+          initialized.current = true
+          cargarPerfil(session.user)
+        }
+        return
+      }
+
+      // INITIAL_SESSION sin sesión (usuario no logueado)
+      if (event === 'INITIAL_SESSION') {
+        setLoading(false)
       }
     })
 
@@ -57,7 +71,6 @@ export function AuthProvider({ children }) {
           .single()
         setPerfil(data)
 
-        // Verificar vencimiento
         if (data?.fecha_vencimiento) {
           const hoy = new Date().toISOString().split('T')[0]
           setClienteVencido(data.fecha_vencimiento < hoy)
@@ -80,10 +93,9 @@ export function AuthProvider({ children }) {
     } catch (error) {
       setAuthError(error.message)
       setPerfilListo(false)
-      // Solo cerrar sesión si el usuario no existe o está desactivado,
-      // no por errores de red o transitorios
       const esErrorDeAuth = error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado'
       if (esErrorDeAuth) {
+        initialized.current = false
         await supabase.auth.signOut()
       }
     } finally {
