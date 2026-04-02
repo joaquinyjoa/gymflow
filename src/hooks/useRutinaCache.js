@@ -151,7 +151,7 @@ export async function getRutinas(clienteId) {
     return { rutinas, desdeCache: false }
   }
 
-  // Si hay cache, verificar timestamps
+  // Si hay cache, verificar timestamps y cantidad de filas
   try {
     const timestamps = await fetchTimestamps(clienteId)
     const ultimoTimestampRemoto = timestamps
@@ -159,10 +159,14 @@ export async function getRutinas(clienteId) {
       .sort()
       .pop()
 
-    // Si el timestamp remoto es más nuevo, actualizar cache
-    if (ultimoTimestampRemoto > cache.timestamp) {
+    const cantidadRemota = timestamps.length
+    const cantidadCache = Array.isArray(cache.rutina) ? cache.rutina.length : 0
+
+    // Actualizar si cambió el timestamp O si se eliminó/agregó alguna asignación
+    if (ultimoTimestampRemoto > cache.timestamp || cantidadRemota !== cantidadCache) {
       const rutinas = await fetchRutinaCompleta(clienteId)
-      guardarEnCache(clienteId, rutinas, ultimoTimestampRemoto)
+      const nuevoTimestamp = ultimoTimestampRemoto ?? new Date().toISOString()
+      guardarEnCache(clienteId, rutinas, nuevoTimestamp)
       return { rutinas, desdeCache: false }
     }
 
