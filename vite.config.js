@@ -47,11 +47,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,gif,webp}'],
-        navigateFallback: null,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         offlineGoogleAnalytics: false,
-        additionalManifestEntries: [
-          { url: '/offline.html', revision: '1' },
-        ],
         navigationPreload: false,
         runtimeCaching: [
           {
