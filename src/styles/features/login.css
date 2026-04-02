@@ -81,7 +81,7 @@
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radio-md);
-  color: var(--text-muted);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   font-family: var(--font);
@@ -89,7 +89,7 @@
   transition: color 0.15s, border-color 0.15s;
 }
 .login-get-app-btn:hover {
-  color: var(--text-secondary);
+  color: #ffffff;
   border-color: var(--border-hover);
 }
 .login-get-app-btn:active { opacity: 0.7; }
