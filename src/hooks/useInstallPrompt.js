@@ -4,6 +4,7 @@ const DISMISS_KEY = 'gymflow_install_dismissed'
 const DISMISS_DAYS = 14
 
 function detectIos() {
+  if (/android/i.test(navigator.userAgent)) return false
   if (/iphone|ipod/i.test(navigator.userAgent)) return true
   if (/ipad/i.test(navigator.userAgent)) return true
   if (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) return true

@@ -24,6 +24,16 @@ function IconShare() {
   )
 }
 
+function IconMenu() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="5" r="1" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor"/>
+      <circle cx="12" cy="19" r="1" fill="currentColor"/>
+    </svg>
+  )
+}
+
 function IconAddHome() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,7 +52,7 @@ function IconCheck() {
   )
 }
 
-// ── Banner para Android / Chrome ──────────────────────────────────────────────
+// ── Banner automático para Android / Chrome (prompt nativo) ───────────────────
 function AndroidBanner({ onInstall, onDismiss }) {
   return (
     <div className="install-prompt">
@@ -65,7 +75,95 @@ function AndroidBanner({ onInstall, onDismiss }) {
   )
 }
 
-// ── Sheet de instrucciones (iOS + dispositivos sin prompt nativo) ─────────────
+// ── Sheet instrucciones iOS (Safari) ─────────────────────────────────────────
+function IosSheetContent() {
+  return (
+    <>
+      <div className="install-ios-steps">
+        <div className="install-ios-step">
+          <div className="install-ios-step-num">1</div>
+          <div className="install-ios-step-body">
+            <p className="install-ios-step-text">
+              Tocá el botón <strong>Compartir</strong> en la barra inferior de Safari
+            </p>
+            <div className="install-ios-step-icon">
+              <IconShare />
+            </div>
+          </div>
+        </div>
+        <div className="install-ios-step">
+          <div className="install-ios-step-num">2</div>
+          <div className="install-ios-step-body">
+            <p className="install-ios-step-text">
+              Bajá y tocá <strong>"Agregar a la pantalla de inicio"</strong>
+            </p>
+            <div className="install-ios-step-icon">
+              <IconAddHome />
+            </div>
+          </div>
+        </div>
+        <div className="install-ios-step">
+          <div className="install-ios-step-num">3</div>
+          <div className="install-ios-step-body">
+            <p className="install-ios-step-text">
+              Confirmá tocando <strong>"Agregar"</strong> arriba a la derecha
+            </p>
+            <div className="install-ios-step-icon install-ios-step-icon--acento">
+              <IconCheck />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="install-ios-arrow-wrap">
+        <div className="install-ios-arrow-label">El botón compartir está acá abajo</div>
+        <div className="install-ios-arrow">↓</div>
+      </div>
+    </>
+  )
+}
+
+// ── Sheet instrucciones Android (Chrome manual) ───────────────────────────────
+function AndroidSheetContent() {
+  return (
+    <div className="install-ios-steps">
+      <div className="install-ios-step">
+        <div className="install-ios-step-num">1</div>
+        <div className="install-ios-step-body">
+          <p className="install-ios-step-text">
+            Tocá el menú <strong>⋮</strong> (tres puntos) arriba a la derecha en Chrome
+          </p>
+          <div className="install-ios-step-icon">
+            <IconMenu />
+          </div>
+        </div>
+      </div>
+      <div className="install-ios-step">
+        <div className="install-ios-step-num">2</div>
+        <div className="install-ios-step-body">
+          <p className="install-ios-step-text">
+            Tocá <strong>"Agregar a pantalla de inicio"</strong> o <strong>"Instalar aplicación"</strong>
+          </p>
+          <div className="install-ios-step-icon">
+            <IconAddHome />
+          </div>
+        </div>
+      </div>
+      <div className="install-ios-step">
+        <div className="install-ios-step-num">3</div>
+        <div className="install-ios-step-body">
+          <p className="install-ios-step-text">
+            Confirmá tocando <strong>"Agregar"</strong> o <strong>"Instalar"</strong>
+          </p>
+          <div className="install-ios-step-icon install-ios-step-icon--acento">
+            <IconCheck />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Sheet genérico (wrapper) ──────────────────────────────────────────────────
 export function IosSheet({ onDismiss, isIos }) {
   return (
     <div className="install-overlay" onClick={onDismiss}>
@@ -76,57 +174,16 @@ export function IosSheet({ onDismiss, isIos }) {
           <AppIcon />
           <div>
             <p className="install-ios-title">Agregar GymFlow</p>
-            <p className="install-ios-sub">Instalá la app en tu dispositivo</p>
+            <p className="install-ios-sub">
+              {isIos ? 'Instalá la app en tu iPhone o iPad' : 'Instalá la app en tu Android'}
+            </p>
           </div>
         </div>
 
-        <div className="install-ios-steps">
-          <div className="install-ios-step">
-            <div className="install-ios-step-num">1</div>
-            <div className="install-ios-step-body">
-              <p className="install-ios-step-text">
-                Tocá el botón <strong>Compartir</strong> en la barra{isIos ? ' inferior de Safari' : ' del navegador'}
-              </p>
-              <div className="install-ios-step-icon">
-                <IconShare />
-              </div>
-            </div>
-          </div>
-
-          <div className="install-ios-step">
-            <div className="install-ios-step-num">2</div>
-            <div className="install-ios-step-body">
-              <p className="install-ios-step-text">
-                Bajá y tocá <strong>"Agregar a la pantalla de inicio"</strong>
-              </p>
-              <div className="install-ios-step-icon">
-                <IconAddHome />
-              </div>
-            </div>
-          </div>
-
-          <div className="install-ios-step">
-            <div className="install-ios-step-num">3</div>
-            <div className="install-ios-step-body">
-              <p className="install-ios-step-text">
-                Confirmá tocando <strong>"Agregar"</strong> arriba a la derecha
-              </p>
-              <div className="install-ios-step-icon install-ios-step-icon--acento">
-                <IconCheck />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {isIos && (
-          <div className="install-ios-arrow-wrap">
-            <div className="install-ios-arrow-label">El botón compartir está acá abajo</div>
-            <div className="install-ios-arrow">↓</div>
-          </div>
-        )}
+        {isIos ? <IosSheetContent /> : <AndroidSheetContent />}
 
         <button className="install-ios-dismiss" onClick={onDismiss}>
-          Ahora no
+          Cerrar
         </button>
       </div>
     </div>
