@@ -80,7 +80,12 @@ export function AuthProvider({ children }) {
     } catch (error) {
       setAuthError(error.message)
       setPerfilListo(false)
-      await supabase.auth.signOut()
+      // Solo cerrar sesión si el usuario no existe o está desactivado,
+      // no por errores de red o transitorios
+      const esErrorDeAuth = error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado'
+      if (esErrorDeAuth) {
+        await supabase.auth.signOut()
+      }
     } finally {
       setLoading(false)
     }
