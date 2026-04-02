@@ -1,7 +1,6 @@
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
 import '../styles/components/install-prompt.css'
 
-// Ícono de la app (barbell)
 function AppIcon() {
   return (
     <svg width="44" height="44" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: 12, display: 'block' }}>
@@ -15,7 +14,6 @@ function AppIcon() {
   )
 }
 
-// Ícono compartir de Safari (cuadrado con flecha hacia arriba)
 function IconShare() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -26,7 +24,6 @@ function IconShare() {
   )
 }
 
-// Ícono "agregar a pantalla de inicio" (cuadrado con +)
 function IconAddHome() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -37,7 +34,6 @@ function IconAddHome() {
   )
 }
 
-// Ícono check
 function IconCheck() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -69,8 +65,8 @@ function AndroidBanner({ onInstall, onDismiss }) {
   )
 }
 
-// ── Sheet de instrucciones para iOS ──────────────────────────────────────────
-function IosSheet({ onDismiss }) {
+// ── Sheet de instrucciones (iOS + dispositivos sin prompt nativo) ─────────────
+export function IosSheet({ onDismiss, isIos }) {
   return (
     <div className="install-overlay" onClick={onDismiss}>
       <div className="install-ios-sheet" onClick={e => e.stopPropagation()}>
@@ -80,7 +76,7 @@ function IosSheet({ onDismiss }) {
           <AppIcon />
           <div>
             <p className="install-ios-title">Agregar GymFlow</p>
-            <p className="install-ios-sub">Instalá la app en tu iPhone o iPad</p>
+            <p className="install-ios-sub">Instalá la app en tu dispositivo</p>
           </div>
         </div>
 
@@ -89,7 +85,7 @@ function IosSheet({ onDismiss }) {
             <div className="install-ios-step-num">1</div>
             <div className="install-ios-step-body">
               <p className="install-ios-step-text">
-                Tocá el botón <strong>Compartir</strong> en la barra inferior de Safari
+                Tocá el botón <strong>Compartir</strong> en la barra{isIos ? ' inferior de Safari' : ' del navegador'}
               </p>
               <div className="install-ios-step-icon">
                 <IconShare />
@@ -122,11 +118,12 @@ function IosSheet({ onDismiss }) {
           </div>
         </div>
 
-        {/* Flecha apuntando a la barra inferior donde está el botón compartir */}
-        <div className="install-ios-arrow-wrap">
-          <div className="install-ios-arrow-label">El botón compartir está acá abajo</div>
-          <div className="install-ios-arrow">↓</div>
-        </div>
+        {isIos && (
+          <div className="install-ios-arrow-wrap">
+            <div className="install-ios-arrow-label">El botón compartir está acá abajo</div>
+            <div className="install-ios-arrow">↓</div>
+          </div>
+        )}
 
         <button className="install-ios-dismiss" onClick={onDismiss}>
           Ahora no
@@ -136,16 +133,16 @@ function IosSheet({ onDismiss }) {
   )
 }
 
-// ── Export principal ──────────────────────────────────────────────────────────
+// ── Export principal (auto-show global) ───────────────────────────────────────
 export default function InstallPrompt() {
-  const { canInstall, promptNative, showIosSheet, dismiss } = useInstallPrompt()
+  const { canInstall, promptNative, showIosSheet, isIos, dismiss } = useInstallPrompt()
 
   if (canInstall) {
     return <AndroidBanner onInstall={promptNative} onDismiss={dismiss} />
   }
 
   if (showIosSheet) {
-    return <IosSheet onDismiss={dismiss} />
+    return <IosSheet onDismiss={dismiss} isIos={isIos} />
   }
 
   return null

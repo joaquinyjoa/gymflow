@@ -68,3 +68,28 @@
   top: 16px;
   right: 16px;
 }
+
+/* ── Botón obtener app ── */
+.login-get-app-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.login-get-app-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-hover);
+}
+.login-get-app-btn:active { opacity: 0.7; }

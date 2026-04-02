@@ -4,19 +4,14 @@ const DISMISS_KEY = 'gymflow_install_dismissed'
 const DISMISS_DAYS = 14
 
 function detectIos() {
-  // iPhone/iPod
   if (/iphone|ipod/i.test(navigator.userAgent)) return true
-  // iPad: iOS 13+ reports as MacIntel with touch
   if (/ipad/i.test(navigator.userAgent)) return true
-  // iPadOS 13+ reports as Macintosh but has touch support
   if (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) return true
   return false
 }
 
 function isStandalone() {
-  // CSS media query (works in Chrome/Edge)
   if (window.matchMedia('(display-mode: standalone)').matches) return true
-  // iOS Safari standalone property
   if ('standalone' in window.navigator && window.navigator.standalone === true) return true
   return false
 }
@@ -46,12 +41,10 @@ export function useInstallPrompt() {
     if (wasDismissed()) return
 
     if (detectIos()) {
-      // Delay to not compete with first render
       const t = setTimeout(() => setShowIosSheet(true), 2500)
       return () => clearTimeout(t)
     }
 
-    // Android / Chrome / Edge
     const handler = (e) => {
       e.preventDefault()
       setPromptEvent(e)
@@ -78,13 +71,24 @@ export function useInstallPrompt() {
     setShowIosSheet(false)
   }
 
+  // Llamado desde el botón "Obtener app"
+  const triggerInstall = () => {
+    if (installed) return
+    if (promptEvent) {
+      promptNative()
+      return
+    }
+    // iOS o cualquier dispositivo sin prompt nativo: mostrar instrucciones
+    setShowIosSheet(true)
+  }
+
   return {
-    // Android/Chrome: native install banner
     canInstall: !!promptEvent && !installed,
     promptNative,
-    // iOS: show manual instructions sheet
     showIosSheet: showIosSheet && !installed,
     isIos: detectIos(),
+    isInstalled: installed,
+    triggerInstall,
     dismiss,
   }
 }

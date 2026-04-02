@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
+import { useInstallPrompt } from '../../hooks/useInstallPrompt'
+import { IosSheet } from '../../components/InstallPrompt'
 import AppLoader from '../../components/AppLoader'
 import '../../styles/features/login.css'
 
@@ -14,6 +16,7 @@ export default function LoginPage() {
 
   const { login, getRutaInicial, perfilListo, rol, authError, setAuthError, loading } = useAuth()
   const { tema, toggleTema } = useTheme()
+  const { triggerInstall, showIosSheet, isIos, isInstalled, dismiss } = useInstallPrompt()
   const navigate = useNavigate()
 
   // Navegar cuando el perfil esté listo
@@ -136,7 +139,21 @@ export default function LoginPage() {
           </form>
         </div>
 
+        {/* Botón obtener app */}
+        {!isInstalled && (
+          <button className="login-get-app-btn" onClick={triggerInstall}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+              <path d="M8 12l4 4 4-4"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+            </svg>
+            Obtener app
+          </button>
+        )}
+
       </div>
+
+      {showIosSheet && <IosSheet onDismiss={dismiss} isIos={isIos} />}
     </div>
   )
 }
