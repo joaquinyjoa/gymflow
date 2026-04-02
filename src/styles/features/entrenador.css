@@ -17,7 +17,14 @@
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s;
+  animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(1) { animation-delay: 0.10s; }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(2) { animation-delay: 0.16s; }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(3) { animation-delay: 0.22s; }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(4) { animation-delay: 0.28s; }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(5) { animation-delay: 0.34s; }
+.ent-ejercicios-grid .ent-ejercicio-card:nth-child(6) { animation-delay: 0.40s; }
 
 .ent-ejercicio-card:hover {
   border-color: var(--border-hover);
@@ -394,7 +401,13 @@
   overflow: hidden;
   transition: border-color 0.15s;
   min-width: 0;
+  animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.ent-clientes-lista .ent-cliente-card:nth-child(1) { animation-delay: 0.10s; }
+.ent-clientes-lista .ent-cliente-card:nth-child(2) { animation-delay: 0.17s; }
+.ent-clientes-lista .ent-cliente-card:nth-child(3) { animation-delay: 0.24s; }
+.ent-clientes-lista .ent-cliente-card:nth-child(4) { animation-delay: 0.31s; }
+.ent-clientes-lista .ent-cliente-card:nth-child(5) { animation-delay: 0.38s; }
 
 .ent-cliente-card.expandido {
   border-color: var(--border-hover);

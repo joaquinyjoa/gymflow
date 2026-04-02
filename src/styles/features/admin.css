@@ -4,6 +4,24 @@
 @import '../components/stats.css';
 
 /* ══════════════════════════════════════════
+   ANIMACIONES
+══════════════════════════════════════════ */
+@keyframes admin-slide-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes admin-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes admin-fade-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════
    SHELL LAYOUT
 ══════════════════════════════════════════ */
 .admin-shell {
@@ -27,8 +45,8 @@
   left: 0;
   bottom: 0;
   z-index: 10;
-  /* Safe area — sidebar izquierdo en modo landscape con notch */
   padding-left: env(safe-area-inset-left);
+  animation: admin-slide-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .admin-sidebar-logo {
@@ -80,7 +98,13 @@
   text-decoration: none;
   border: 1px solid transparent;
   transition: background 0.1s, color 0.1s;
+  animation: admin-slide-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.admin-nav-link:nth-child(1) { animation-delay: 0.08s; }
+.admin-nav-link:nth-child(2) { animation-delay: 0.14s; }
+.admin-nav-link:nth-child(3) { animation-delay: 0.20s; }
+.admin-nav-link:nth-child(4) { animation-delay: 0.26s; }
+.admin-nav-link:nth-child(5) { animation-delay: 0.32s; }
 
 .admin-nav-link:hover {
   background: var(--bg-card2);
@@ -171,6 +195,7 @@
 .admin-page-header {
   display: flex;
   align-items: flex-start;
+  animation: admin-fade-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
   justify-content: space-between;
   margin-bottom: 24px;
   gap: 16px;
@@ -206,10 +231,16 @@
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
+  animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   border-radius: var(--radio-lg);
   padding: 20px;
   transition: border-color 0.15s;
 }
+
+.dashboard-stats .stat-card:nth-child(1) { animation-delay: 0.10s; }
+.dashboard-stats .stat-card:nth-child(2) { animation-delay: 0.17s; }
+.dashboard-stats .stat-card:nth-child(3) { animation-delay: 0.24s; }
+.dashboard-stats .stat-card:nth-child(4) { animation-delay: 0.31s; }
 
 .stat-card.clickable {
   cursor: pointer;
