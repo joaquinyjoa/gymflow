@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 
 export async function invocarFuncion(nombre, body) {
   const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('No hay sesión activa')
 
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${nombre}`,

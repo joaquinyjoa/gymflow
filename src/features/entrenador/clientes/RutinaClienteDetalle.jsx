@@ -327,7 +327,7 @@ export default function RutinaClienteDetalle() {
                     {ej.tieneOverride && (
                       <button
                         className="btn btn-ghost"
-                        onClick={() => setConfirmRestore({ overrideId: ej.override.id, nombre: ej.ejercicios?.nombre })}
+                        onClick={() => setConfirmRestore({ overrideId: ej.override?.id, nombre: ej.ejercicioFinal?.nombre ?? ej.ejercicios?.nombre ?? 'este ejercicio' })}
                       >
                         Restaurar
                       </button>

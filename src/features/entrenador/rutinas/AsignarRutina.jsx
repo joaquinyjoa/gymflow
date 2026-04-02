@@ -120,8 +120,9 @@ export default function AsignarRutina() {
       .select('id')
       .eq('cliente_id', cliente.id)
       .eq('dia_semana', diaSemana)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         setLoading(false)
+        if (error) { setError('Error al verificar disponibilidad'); return }
         if (data && data.length > 0) {
           setError(`${cliente.apellido}, ${cliente.nombre} ya tiene una rutina el ${DIAS.find(d => d.value === Number(diaSemana))?.label}`)
           return
@@ -129,6 +130,10 @@ export default function AsignarRutina() {
         setClientesSeleccionados(prev => [...prev, { cliente, dia: Number(diaSemana) }])
         setBusquedaCliente('')
         setMostrarDropdown(false)
+      })
+      .catch(() => {
+        setLoading(false)
+        setError('Error de conexión al verificar disponibilidad')
       })
   }
 

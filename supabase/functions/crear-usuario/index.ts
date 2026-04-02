@@ -1,106 +1,93 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
+const EMAIL_DOMAIN = '@retofitness.com'
+
+const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: CORS })
   }
 
-  try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error('No autorizado')
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+  // ── Verificar que el caller es admin ──────────────────────────────────
+  const token = req.headers.get('Authorization')?.replace('Bearer ', '')
+  if (!token) {
+    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: CORS })
+  }
 
-    const supabaseUser = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    )
+  const { data: { user: caller } } = await supabase.auth.getUser(token)
+  if (!caller) {
+    return new Response(JSON.stringify({ error: 'Token inválido' }), { status: 401, headers: CORS })
+  }
 
-    // Verificar que quien llama es admin
-    const { data: { user } } = await supabaseUser.auth.getUser()
-    if (!user) throw new Error('No autorizado')
+  const { data: callerData } = await supabase
+    .from('users').select('rol').eq('id', caller.id).single()
 
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
-
-    if (userData?.rol !== 'admin') throw new Error('Sin permisos')
-
-    const body = await req.json()
-    const { dni, pin, rol, perfil } = body
-
-    // Validaciones del lado del servidor
-    if (!dni || !pin || !rol) throw new Error('Faltan campos obligatorios')
-    if (typeof dni !== 'string' || !/^\d{6,11}$/.test(dni)) throw new Error('DNI inválido')
-    if (typeof pin !== 'string' || !/^\d{4}$/.test(pin)) throw new Error('PIN inválido')
-    if (!['cliente', 'entrenador'].includes(rol)) throw new Error('Rol inválido')
-    if (!perfil?.nombre || typeof perfil.nombre !== 'string') throw new Error('Nombre inválido')
-    if (!perfil?.apellido || typeof perfil.apellido !== 'string') throw new Error('Apellido inválido')
-
-    // Verificar que el DNI no esté en uso
-    const { data: usuariosData } = await supabaseAdmin.auth.admin.listUsers()
-    const emailBuscado = `${dni}@retofitness.com`
-    const yaExiste = usuariosData.users.some(u => u.email === emailBuscado)
-    if (yaExiste) throw new Error(`El DNI ${dni} ya está registrado en el sistema`)
-
-    const email = emailBuscado
-
-    // 1. Crear usuario en Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: pin,
-      email_confirm: true,
-    })
-    if (authError) throw new Error(authError.message)
-
-    const uid = authData.user.id
-
-    // 2. Insertar en tabla users
-    const { error: userError } = await supabaseAdmin
-      .from('users')
-      .insert({ id: uid, rol, activo: true })
-    if (userError) throw new Error(userError.message)
-
-    // 3. Insertar perfil según rol
-    if (rol === 'cliente') {
-      const perfilLimpio = {
-        ...perfil,
-        edad: perfil.edad ? parseInt(perfil.edad) : null,
-        peso: perfil.peso ? parseFloat(perfil.peso) : null,
-        altura: perfil.altura ? parseInt(perfil.altura) : null,
-        horas_sueno: perfil.horas_sueno ? parseInt(perfil.horas_sueno) : null,
-      }
-      const { error: perfilError } = await supabaseAdmin
-        .from('clientes')
-        .insert({ user_id: uid, correo: email, ...perfilLimpio })
-      if (perfilError) throw new Error(perfilError.message)
-    } else if (rol === 'entrenador') {
-      const { error: perfilError } = await supabaseAdmin
-        .from('entrenadores')
-        .insert({ user_id: uid, correo: email, nombre: perfil.nombre, apellido: perfil.apellido })
-      if (perfilError) throw new Error(perfilError.message)
-    }
-
+  if (callerData?.rol !== 'admin') {
     return new Response(
-      JSON.stringify({ ok: true, uid }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Solo el administrador puede crear usuarios' }),
+      { status: 403, headers: CORS }
     )
   }
+
+  // ── Procesar request ───────────────────────────────────────────────────
+  const { dni, pin, rol, perfil } = await req.json()
+
+  if (!dni || !pin || !rol || !perfil) {
+    return new Response(
+      JSON.stringify({ error: 'Faltan campos obligatorios' }),
+      { status: 400, headers: CORS }
+    )
+  }
+
+  const email = `${dni}${EMAIL_DOMAIN}`
+
+  // 1. Crear usuario en Auth
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    password: pin,
+    email_confirm: true,
+  })
+
+  if (authError) {
+    return new Response(
+      JSON.stringify({ error: authError.message }),
+      { status: 400, headers: CORS }
+    )
+  }
+
+  const userId = authData.user.id
+
+  // 2. Insertar en tabla users
+  const { error: userError } = await supabase
+    .from('users')
+    .insert({ id: userId, rol, activo: true })
+
+  if (userError) {
+    await supabase.auth.admin.deleteUser(userId)
+    return new Response(JSON.stringify({ error: userError.message }), { status: 400, headers: CORS })
+  }
+
+  // 3. Insertar perfil en clientes o entrenadores
+  const tabla = rol === 'cliente' ? 'clientes' : 'entrenadores'
+  const { error: perfilError } = await supabase
+    .from(tabla)
+    .insert({ user_id: userId, correo: email, ...perfil })
+
+  if (perfilError) {
+    await supabase.from('users').delete().eq('id', userId)
+    await supabase.auth.admin.deleteUser(userId)
+    return new Response(JSON.stringify({ error: perfilError.message }), { status: 400, headers: CORS })
+  }
+
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS })
 })
