@@ -86,10 +86,25 @@ export default function LoginPage() {
         {/* Branding */}
         <div className="login-logo">
           <div className="login-logo-icono">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 11V8a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-              <path d="M14 10V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"/>
-              <path d="M10 10.5V9a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v7a6 6 0 0 0 6 6h2a6 6 0 0 0 6-6v-5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v1"/>
+            <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Cabeza */}
+              <circle cx="32" cy="10" r="6" fill="white"/>
+              {/* Cuerpo */}
+              <line x1="32" y1="16" x2="32" y2="36" stroke="white" strokeWidth="3.5" strokeLinecap="round"/>
+              {/* Barra de pesas — brazos extendidos arriba */}
+              <line x1="10" y1="22" x2="54" y2="22" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+              {/* Pesa izquierda */}
+              <rect x="6" y="17" width="6" height="10" rx="2" fill="white"/>
+              {/* Pesa derecha */}
+              <rect x="52" y="17" width="6" height="10" rx="2" fill="white"/>
+              {/* Brazo izquierdo */}
+              <line x1="32" y1="22" x2="16" y2="22" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+              {/* Brazo derecho */}
+              <line x1="32" y1="22" x2="48" y2="22" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+              {/* Pierna izquierda */}
+              <line x1="32" y1="36" x2="22" y2="52" stroke="white" strokeWidth="3.5" strokeLinecap="round"/>
+              {/* Pierna derecha */}
+              <line x1="32" y1="36" x2="42" y2="52" stroke="white" strokeWidth="3.5" strokeLinecap="round"/>
             </svg>
           </div>
           <p className="login-logo-titulo">GymFlow</p>
