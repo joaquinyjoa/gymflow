@@ -48,6 +48,9 @@ export function AuthProvider({ children }) {
 
   async function cargarPerfil(authUser) {
     setPerfilListo(false)
+    // Marcar como autenticado de inmediato para que ProtectedRoute no redirija
+    // mientras se cargan los datos del perfil
+    setUser(authUser)
     try {
       const { data: userData, error } = await supabase
         .from('users')
@@ -58,7 +61,6 @@ export function AuthProvider({ children }) {
       if (error || !userData) throw new Error('Usuario no encontrado')
       if (!userData.activo) throw new Error('Usuario desactivado')
 
-      setUser(authUser)
       setRol(userData.rol)
 
       if (userData.rol === ROLES.CLIENTE) {
@@ -91,8 +93,11 @@ export function AuthProvider({ children }) {
       setPerfilListo(false)
       // Solo cerrar sesión si el usuario realmente no existe o está desactivado
       if (error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado') {
+        setUser(null)
+        setRol(null)
         await supabase.auth.signOut()
       }
+      // Errores de red: el usuario queda autenticado (setUser ya fue llamado arriba)
     } finally {
       setLoading(false)
     }
