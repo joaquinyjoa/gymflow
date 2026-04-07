@@ -177,7 +177,63 @@ export default function RutinaDelDia() {
   )
 }
 
+function useTemporizador(segundos) {
+  const [activo, setActivo] = useState(false)
+  const [restante, setRestante] = useState(segundos)
+  const intervaloRef = useRef(null)
+
+  function iniciar() {
+    setRestante(segundos)
+    setActivo(true)
+  }
+
+  function cancelar() {
+    clearInterval(intervaloRef.current)
+    setActivo(false)
+    setRestante(segundos)
+  }
+
+  useEffect(() => {
+    if (!activo) return
+    intervaloRef.current = setInterval(() => {
+      setRestante(prev => {
+        if (prev <= 1) {
+          clearInterval(intervaloRef.current)
+          setActivo(false)
+          // Vibración (Android Chrome / algunos browsers)
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200])
+          // Beep via AudioContext
+          try {
+            const AudioCtx = window.AudioContext || window['webkitAudioContext']
+          const ctx = new AudioCtx()
+            const osc = ctx.createOscillator()
+            const gain = ctx.createGain()
+            osc.connect(gain)
+            gain.connect(ctx.destination)
+            osc.frequency.value = 880
+            gain.gain.setValueAtTime(0.3, ctx.currentTime)
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+            osc.start(ctx.currentTime)
+            osc.stop(ctx.currentTime + 0.5)
+          } catch {}
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(intervaloRef.current)
+  }, [activo])
+
+  return { activo, restante, iniciar, cancelar }
+}
+
 function EjercicioCard({ ej, index, rutinaClienteId, completado, onCompletar, onVerMas }) {
+  const timer = useTemporizador(ej.descanso_segundos)
+
+  const mm = String(Math.floor(timer.restante / 60)).padStart(2, '0')
+  const ss = String(timer.restante % 60).padStart(2, '0')
+  const progreso = timer.restante / ej.descanso_segundos
+
   return (
     <div className={`ejercicio-card${completado ? ' completado' : ''}`}>
 
@@ -236,6 +292,38 @@ function EjercicioCard({ ej, index, rutinaClienteId, completado, onCompletar, on
           <div className="stat-val">{ej.descanso_segundos}s</div>
           <div className="stat-label">Descanso</div>
         </div>
+      </div>
+
+      {/* Temporizador de descanso */}
+      <div className="timer-descanso">
+        {!timer.activo ? (
+          <button className="btn-timer-iniciar" onClick={timer.iniciar}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Iniciar descanso ({ej.descanso_segundos}s)
+          </button>
+        ) : (
+          <div className="timer-activo">
+            <svg className="timer-ring" viewBox="0 0 44 44" width="44" height="44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" strokeWidth="3"/>
+              <circle
+                cx="22" cy="22" r="18" fill="none"
+                stroke="var(--acento)" strokeWidth="3"
+                strokeDasharray={`${2 * Math.PI * 18}`}
+                strokeDashoffset={`${2 * Math.PI * 18 * (1 - progreso)}`}
+                strokeLinecap="round"
+                style={{ transform: 'rotate(-90deg)', transformOrigin: '22px 22px', transition: 'stroke-dashoffset 1s linear' }}
+              />
+              <text x="22" y="26" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--text-primary)">{mm}:{ss}</text>
+            </svg>
+            <span className="timer-label">
+              {timer.restante === 0 ? '¡Listo!' : `Descansando ${mm}:${ss}`}
+            </span>
+            <button className="btn-timer-cancelar" onClick={timer.cancelar}>✕</button>
+          </div>
+        )}
       </div>
 
       {/* Registro de peso */}
