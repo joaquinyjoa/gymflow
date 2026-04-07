@@ -141,17 +141,21 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  /* Sin gap — las cards deben ocupar exactamente el ancho visible */
+  /* Rompe el padding del container para control total */
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  scroll-padding-left: 16px;
   animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 .ejercicios-carrusel::-webkit-scrollbar { display: none; }
 
 .ejercicios-carrusel .ejercicio-card {
-  min-width: 100%;
-  width: 100%;
+  /* Ancho exacto = pantalla - padding izq y der del container */
+  flex: 0 0 calc(100vw - 32px);
+  max-width: 448px; /* 480 (max container) - 32px padding */
   scroll-snap-align: start;
-  flex-shrink: 0;
-  box-sizing: border-box;
 }
 
 /* ── Dots ── */
