@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { EMAIL_DOMAIN, ROLES, ROUTES } from '../lib/constants'
 
@@ -12,37 +12,35 @@ export function AuthProvider({ children }) {
   const [perfilListo, setPerfilListo] = useState(false)
   const [authError, setAuthError] = useState(null)
   const [clienteVencido, setClienteVencido] = useState(false)
-  const initialized = useRef(false)
 
   useEffect(() => {
-    // onAuthStateChange maneja TODO — no llamar getSession por separado
-    // para evitar doble carga y condiciones de carrera
+    // 1. Restaurar sesión guardada en localStorage al cargar la página
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        cargarPerfil(session.user)
+      } else {
+        setLoading(false)
+      }
+    })
+
+    // 2. Escuchar solo eventos activos: nuevo login y logout explícito
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        // Solo limpiar estado en logout explícito
+      if (event === 'SIGNED_IN') {
+        // Login nuevo — cargar perfil
+        cargarPerfil(session.user)
+      } else if (event === 'SIGNED_OUT') {
+        // Logout explícito — limpiar todo
         setUser(null)
         setPerfil(null)
         setRol(null)
-        setLoading(false)
         setPerfilListo(false)
         setClienteVencido(false)
-        initialized.current = false
-        return
-      }
-
-      if (session?.user) {
-        // SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION con sesión activa
-        if (!initialized.current || event === 'SIGNED_IN') {
-          initialized.current = true
-          cargarPerfil(session.user)
-        }
-        return
-      }
-
-      // INITIAL_SESSION sin sesión (usuario no logueado)
-      if (event === 'INITIAL_SESSION') {
         setLoading(false)
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        // Token renovado automáticamente — solo actualizar el objeto user silenciosamente
+        setUser(session.user)
       }
+      // INITIAL_SESSION: ignorado — ya lo manejamos con getSession() arriba
     })
 
     return () => subscription.unsubscribe()
@@ -70,14 +68,12 @@ export function AuthProvider({ children }) {
           .eq('user_id', authUser.id)
           .single()
         setPerfil(data)
-
         if (data?.fecha_vencimiento) {
           const hoy = new Date().toISOString().split('T')[0]
           setClienteVencido(data.fecha_vencimiento < hoy)
         } else {
           setClienteVencido(false)
         }
-
       } else if (userData.rol === ROLES.ENTRENADOR) {
         const { data } = await supabase
           .from('entrenadores')
@@ -93,9 +89,8 @@ export function AuthProvider({ children }) {
     } catch (error) {
       setAuthError(error.message)
       setPerfilListo(false)
-      const esErrorDeAuth = error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado'
-      if (esErrorDeAuth) {
-        initialized.current = false
+      // Solo cerrar sesión si el usuario realmente no existe o está desactivado
+      if (error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado') {
         await supabase.auth.signOut()
       }
     } finally {
