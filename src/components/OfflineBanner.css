@@ -1,0 +1,30 @@
+@keyframes banner-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+  font-size: 13px;
+  font-weight: 600;
+  background: #1a1a1a;
+  color: #fff;
+  animation: banner-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.offline-banner.online {
+  background: #166534;
+  color: #bbf7d0;
+  border-bottom: 1px solid rgba(187, 247, 208, 0.2);
+}

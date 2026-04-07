@@ -3,6 +3,7 @@ import { AuthProvider } from '../store/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 import ErrorBoundary from '../components/ErrorBoundary'
 import InstallPrompt from '../components/InstallPrompt'
+import OfflineBanner from '../components/OfflineBanner'
 import { ROUTES, ROLES } from '../lib/constants'
 
 const ROL_KEY = 'gymflow_rol'
@@ -97,6 +98,7 @@ export default function AppRouter() {
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
         </Routes>
         <InstallPrompt />
+        <OfflineBanner />
       </AuthProvider>
     </BrowserRouter>
     </ErrorBoundary>
