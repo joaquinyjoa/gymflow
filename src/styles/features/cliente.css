@@ -176,6 +176,56 @@
   transform: scale(1.25);
 }
 
+/* ── Ejercicio completado ── */
+.ejercicio-card.completado {
+  opacity: 0.6;
+}
+
+.ejercicio-card.completado .ejercicio-body h3 {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.ejercicio-acciones {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ejercicio-acciones .btn-ver-mas {
+  width: auto;
+  flex-shrink: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  background: var(--bg-card2);
+}
+
+.btn-completar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: var(--radio-md);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-card2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn-completar.completado {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #22C55E;
+}
+
 /* ── Weight tracking ── */
 .registro-peso {
   padding: 12px 16px;

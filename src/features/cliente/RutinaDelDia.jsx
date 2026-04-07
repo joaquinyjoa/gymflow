@@ -28,7 +28,11 @@ export default function RutinaDelDia() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [completados, setCompletados] = useState(new Set())
   const carruselRef = useRef(null)
+
+  // Resetear completados al cambiar de día
+  useEffect(() => { setCompletados(new Set()); setCurrentIndex(0) }, [diaSeleccionado])
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
@@ -138,6 +142,13 @@ export default function RutinaDelDia() {
                 ej={ej}
                 index={index}
                 rutinaClienteId={rutinaDelDia.id}
+                completado={completados.has(ej.id)}
+                onCompletar={() => setCompletados(prev => {
+                  const next = new Set(prev)
+                  if (next.has(ej.id)) next.delete(ej.id)
+                  else next.add(ej.id)
+                  return next
+                })}
                 onVerMas={() => navigate(`/rutina/ejercicio/${ej.ejercicioFinal?.id}`, {
                   state: { ejercicio: ej.ejercicioFinal }
                 })}
@@ -166,9 +177,9 @@ export default function RutinaDelDia() {
   )
 }
 
-function EjercicioCard({ ej, index, rutinaClienteId, onVerMas }) {
+function EjercicioCard({ ej, index, rutinaClienteId, completado, onCompletar, onVerMas }) {
   return (
-    <div className="ejercicio-card">
+    <div className={`ejercicio-card${completado ? ' completado' : ''}`}>
 
       {/* Número del ejercicio */}
       <div className="ejercicio-numero-header">
@@ -234,11 +245,22 @@ function EjercicioCard({ ej, index, rutinaClienteId, onVerMas }) {
         series={ej.series}
       />
 
-      {/* Ver más */}
-      <button className="btn-ver-mas" onClick={onVerMas}>
-        Ver instrucciones
-        <IconChevron />
-      </button>
+      {/* Acciones */}
+      <div className="ejercicio-acciones">
+        <button className={`btn-completar${completado ? ' completado' : ''}`} onClick={onCompletar}>
+          {completado ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Completado
+            </>
+          ) : 'Marcar como completado'}
+        </button>
+        <button className="btn-ver-mas" onClick={onVerMas}>
+          <IconChevron />
+        </button>
+      </div>
     </div>
   )
 }
