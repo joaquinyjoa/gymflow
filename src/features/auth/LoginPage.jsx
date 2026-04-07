@@ -23,7 +23,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (intentoLogin && perfilListo && rol) {
       setCargando(false)
-      navigate(getRutaInicial())
+      const redirect = sessionStorage.getItem('gymflow_redirect')
+      sessionStorage.removeItem('gymflow_redirect')
+      navigate(redirect || getRutaInicial())
     }
   }, [perfilListo, rol, intentoLogin])
 
