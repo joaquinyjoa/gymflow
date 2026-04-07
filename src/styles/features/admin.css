@@ -280,6 +280,71 @@
   border: 1px solid var(--border);
 }
 
+.stat-card-icon-rutina {
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.stat-card-icon-ejercicio {
+  background: rgba(251, 146, 60, 0.1);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+/* ── Dashboard chart ── */
+.dashboard-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  padding: 20px;
+  animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+
+.dashboard-chart-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.dashboard-chart-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.dashboard-chart-leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-leyenda-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-leyenda-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.chart-leyenda-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .stat-card-val {
   font-size: 30px;
   font-weight: 800;
