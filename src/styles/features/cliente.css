@@ -141,15 +141,17 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  gap: 12px;
+  /* Sin gap — las cards deben ocupar exactamente el ancho visible */
   animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 .ejercicios-carrusel::-webkit-scrollbar { display: none; }
 
 .ejercicios-carrusel .ejercicio-card {
   min-width: 100%;
+  width: 100%;
   scroll-snap-align: start;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 /* ── Dots ── */
