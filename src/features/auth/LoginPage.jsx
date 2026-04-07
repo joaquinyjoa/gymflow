@@ -14,18 +14,27 @@ export default function LoginPage() {
   const [cargando, setCargando] = useState(false)
   const [intentoLogin, setIntentoLogin] = useState(false)
 
-  const { login, getRutaInicial, perfilListo, rol, authError, setAuthError, loading } = useAuth()
+  const { login, getRutaInicial, perfilListo, rol, user, authError, setAuthError, loading } = useAuth()
   const { tema, toggleTema } = useTheme()
   const { triggerInstall, showIosSheet, isIos, isInstalled, dismiss } = useInstallPrompt()
   const navigate = useNavigate()
 
-  // Navegar cuando el perfil esté listo
+  // Si ya hay sesión activa, redirigir directo al panel correspondiente
+  useEffect(() => {
+    if (!loading && user && rol) {
+      const redirect = sessionStorage.getItem('gymflow_redirect')
+      sessionStorage.removeItem('gymflow_redirect')
+      navigate(redirect || getRutaInicial(), { replace: true })
+    }
+  }, [loading, user, rol])
+
+  // Navegar cuando el perfil esté listo tras un login nuevo
   useEffect(() => {
     if (intentoLogin && perfilListo && rol) {
       setCargando(false)
       const redirect = sessionStorage.getItem('gymflow_redirect')
       sessionStorage.removeItem('gymflow_redirect')
-      navigate(redirect || getRutaInicial())
+      navigate(redirect || getRutaInicial(), { replace: true })
     }
   }, [perfilListo, rol, intentoLogin])
 

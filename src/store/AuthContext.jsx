@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { EMAIL_DOMAIN, ROLES, ROUTES } from '../lib/constants'
 
 const AuthContext = createContext(null)
+const ROL_KEY = 'gymflow_rol'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -14,22 +15,21 @@ export function AuthProvider({ children }) {
   const [clienteVencido, setClienteVencido] = useState(false)
 
   useEffect(() => {
-    // 1. Restaurar sesión guardada en localStorage al cargar la página
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         cargarPerfil(session.user)
       } else {
+        // Sin sesión — limpiar rol cacheado por si quedó algo
+        localStorage.removeItem(ROL_KEY)
         setLoading(false)
       }
     })
 
-    // 2. Escuchar solo eventos activos: nuevo login y logout explícito
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
-        // Login nuevo — cargar perfil
         cargarPerfil(session.user)
       } else if (event === 'SIGNED_OUT') {
-        // Logout explícito — limpiar todo
+        localStorage.removeItem(ROL_KEY)
         setUser(null)
         setPerfil(null)
         setRol(null)
@@ -37,10 +37,8 @@ export function AuthProvider({ children }) {
         setClienteVencido(false)
         setLoading(false)
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        // Token renovado automáticamente — solo actualizar el objeto user silenciosamente
         setUser(session.user)
       }
-      // INITIAL_SESSION: ignorado — ya lo manejamos con getSession() arriba
     })
 
     return () => subscription.unsubscribe()
@@ -48,8 +46,6 @@ export function AuthProvider({ children }) {
 
   async function cargarPerfil(authUser) {
     setPerfilListo(false)
-    // Marcar como autenticado de inmediato para que ProtectedRoute no redirija
-    // mientras se cargan los datos del perfil
     setUser(authUser)
     try {
       const { data: userData, error } = await supabase
@@ -61,6 +57,8 @@ export function AuthProvider({ children }) {
       if (error || !userData) throw new Error('Usuario no encontrado')
       if (!userData.activo) throw new Error('Usuario desactivado')
 
+      // Guardar rol en localStorage para redirect inmediato al reabrir
+      localStorage.setItem(ROL_KEY, userData.rol)
       setRol(userData.rol)
 
       if (userData.rol === ROLES.CLIENTE) {
@@ -91,13 +89,12 @@ export function AuthProvider({ children }) {
     } catch (error) {
       setAuthError(error.message)
       setPerfilListo(false)
-      // Solo cerrar sesión si el usuario realmente no existe o está desactivado
       if (error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado') {
+        localStorage.removeItem(ROL_KEY)
         setUser(null)
         setRol(null)
         await supabase.auth.signOut()
       }
-      // Errores de red: el usuario queda autenticado (setUser ya fue llamado arriba)
     } finally {
       setLoading(false)
     }

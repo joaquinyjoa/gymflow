@@ -5,6 +5,16 @@ import ErrorBoundary from '../components/ErrorBoundary'
 import InstallPrompt from '../components/InstallPrompt'
 import { ROUTES, ROLES } from '../lib/constants'
 
+const ROL_KEY = 'gymflow_rol'
+
+function RootRedirect() {
+  const rolCacheado = localStorage.getItem(ROL_KEY)
+  if (rolCacheado === ROLES.ADMIN) return <Navigate to={ROUTES.ADMIN} replace />
+  if (rolCacheado === ROLES.ENTRENADOR) return <Navigate to={ROUTES.ENTRENADOR} replace />
+  if (rolCacheado === ROLES.CLIENTE) return <Navigate to={ROUTES.CLIENTE} replace />
+  return <Navigate to={ROUTES.LOGIN} replace />
+}
+
 import LoginPage from '../features/auth/LoginPage'
 
 // Páginas de admin
@@ -83,6 +93,7 @@ export default function AppRouter() {
           <Route path="ejercicio/:ejercicioId" element={<EjercicioDetalleCliente />} />
         </Route>
 
+          <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
         </Routes>
         <InstallPrompt />
