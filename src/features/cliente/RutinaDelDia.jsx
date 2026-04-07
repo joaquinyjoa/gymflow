@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { getRutinas, guardarPeso, leerPeso } from '../../hooks/useRutinaCache'
@@ -26,8 +26,9 @@ export default function RutinaDelDia() {
   const [rutinas, setRutinas] = useState([])
   const [diaSeleccionado, setDiaSeleccionado] = useState(null)
   const [loading, setLoading] = useState(true)
-
   const [error, setError] = useState(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const carruselRef = useRef(null)
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
@@ -121,11 +122,16 @@ export default function RutinaDelDia() {
             </div>
           </div>
 
-          {/* Lista de ejercicios */}
-          {rutinaDelDia.ejercicios.length > 1 && (
-            <p className="scroll-hint">Scroll hacia abajo para ver el siguiente ejercicio</p>
-          )}
-          <div className="ejercicios-lista">
+          {/* Carrusel de ejercicios */}
+          <div
+            className="ejercicios-carrusel"
+            ref={carruselRef}
+            onScroll={() => {
+              if (!carruselRef.current) return
+              const idx = Math.round(carruselRef.current.scrollLeft / carruselRef.current.offsetWidth)
+              setCurrentIndex(idx)
+            }}
+          >
             {rutinaDelDia.ejercicios.map((ej, index) => (
               <EjercicioCard
                 key={ej.id}
@@ -138,6 +144,22 @@ export default function RutinaDelDia() {
               />
             ))}
           </div>
+
+          {/* Dots */}
+          {rutinaDelDia.ejercicios.length > 1 && (
+            <div className="carrusel-dots">
+              {rutinaDelDia.ejercicios.map((_, i) => (
+                <button
+                  key={i}
+                  className={`carrusel-dot${i === currentIndex ? ' activo' : ''}`}
+                  onClick={() => {
+                    carruselRef.current?.scrollTo({ left: i * carruselRef.current.offsetWidth, behavior: 'smooth' })
+                    setCurrentIndex(i)
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -134,29 +134,46 @@
   margin-top: 8px;
 }
 
-/* ── Exercise list ── */
-.ejercicios-lista {
+/* ── Carrusel de ejercicios ── */
+.ejercicios-carrusel {
   display: flex;
-  flex-direction: column;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   gap: 12px;
+  animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+.ejercicios-carrusel::-webkit-scrollbar { display: none; }
+
+.ejercicios-carrusel .ejercicio-card {
+  min-width: 100%;
+  scroll-snap-align: start;
+  flex-shrink: 0;
 }
 
-.ejercicios-lista .ejercicio-card {
-  animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* ── Dots ── */
+.carrusel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0 4px;
 }
-.ejercicios-lista .ejercicio-card:nth-child(1) { animation-delay: 0.2s; }
-.ejercicios-lista .ejercicio-card:nth-child(2) { animation-delay: 0.28s; }
-.ejercicios-lista .ejercicio-card:nth-child(3) { animation-delay: 0.36s; }
-.ejercicios-lista .ejercicio-card:nth-child(4) { animation-delay: 0.44s; }
-.ejercicios-lista .ejercicio-card:nth-child(5) { animation-delay: 0.52s; }
-.ejercicios-lista .ejercicio-card:nth-child(6) { animation-delay: 0.58s; }
 
-.scroll-hint {
-  text-align: center;
-  padding: 20px 0 4px;
-  font-size: 11px;
-  color: var(--text-muted);
-  letter-spacing: 0.3px;
+.carrusel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-hover);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.carrusel-dot.activo {
+  background: var(--acento);
+  transform: scale(1.25);
 }
 
 /* ── Weight tracking ── */
