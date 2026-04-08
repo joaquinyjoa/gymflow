@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { getRutinas, guardarPeso, leerPeso } from '../../hooks/useRutinaCache'
+import { useWakeLock } from '../../hooks/useWakeLock'
 import '../../styles/features/cliente.css'
 
 const DIAS = [
@@ -36,6 +37,7 @@ export default function RutinaDelDia() {
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
+  useWakeLock(true) // Evita que la pantalla se apague durante el entrenamiento
 
   useEffect(() => {
     if (perfil?.id) cargarRutinas()
@@ -125,6 +127,26 @@ export default function RutinaDelDia() {
               </div>
             </div>
           </div>
+
+          {/* Barra de progreso */}
+          {rutinaDelDia.ejercicios.length > 0 && (
+            <div className="progreso-sesion">
+              <div className="progreso-header">
+                <span className="progreso-texto">
+                  {completados.size} de {rutinaDelDia.ejercicios.length} ejercicios
+                </span>
+                {completados.size === rutinaDelDia.ejercicios.length && (
+                  <span className="progreso-completo">Sesion completada</span>
+                )}
+              </div>
+              <div className="progreso-barra">
+                <div
+                  className="progreso-fill"
+                  style={{ width: `${(completados.size / rutinaDelDia.ejercicios.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Carrusel de ejercicios */}
           <div

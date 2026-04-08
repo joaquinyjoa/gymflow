@@ -42,6 +42,7 @@ import RutinaClienteDetalle from '../features/entrenador/clientes/RutinaClienteD
 import ClientePage from '../features/cliente/ClientePage'
 import RutinaDelDia from '../features/cliente/RutinaDelDia'
 import EjercicioDetalleCliente from '../features/cliente/EjercicioDetalle'
+import PerfilCliente from '../features/cliente/PerfilCliente'
 
 export default function AppRouter() {
   return (
@@ -92,6 +93,7 @@ export default function AppRouter() {
         }>
           <Route index element={<RutinaDelDia />} />
           <Route path="ejercicio/:ejercicioId" element={<EjercicioDetalleCliente />} />
+          <Route path="perfil" element={<PerfilCliente />} />
         </Route>
 
           <Route path="/" element={<RootRedirect />} />

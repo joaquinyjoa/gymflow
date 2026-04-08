@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import '../../styles/features/cliente.css'
@@ -52,6 +52,8 @@ export default function ClientePage() {
   const { perfil, logout } = useAuth()
   const { tema, toggleTema } = useTheme()
   const navigate = useNavigate()
+  const location = useLocation()
+  const enPerfil = location.pathname === '/rutina/perfil'
   const [confirmLogout, setConfirmLogout] = useState(false)
 
   async function handleLogout() {
@@ -78,6 +80,16 @@ export default function ClientePage() {
           <div className="cliente-acciones">
             <button className="btn btn-icon" onClick={toggleTema} title="Cambiar tema">
               {tema === 'dark' ? <IconSol /> : <IconLuna />}
+            </button>
+            <button
+              className={`btn btn-icon${enPerfil ? ' active' : ''}`}
+              onClick={() => navigate(enPerfil ? '/rutina' : '/rutina/perfil')}
+              title="Mi perfil"
+            >
+              <svg className="icon" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </button>
             <button
               className="btn btn-icon btn-icon-danger"
