@@ -40,7 +40,12 @@ Deno.serve(async (req) => {
     const { user_id } = await req.json()
     if (!user_id) throw new Error('Falta user_id')
 
-    // Eliminar de Auth — esto elimina en cascada users y clientes/entrenadores
+    // Eliminar registros relacionados explícitamente (por si no hay CASCADE en FK)
+    await supabaseAdmin.from('clientes').delete().eq('user_id', user_id)
+    await supabaseAdmin.from('entrenadores').delete().eq('user_id', user_id)
+    await supabaseAdmin.from('users').delete().eq('id', user_id)
+
+    // Eliminar de Auth
     const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id)
     if (error) throw new Error(error.message)
 
