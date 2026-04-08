@@ -4,6 +4,7 @@ import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import { ROUTES } from '../../lib/constants'
 import CambiarPinModal from '../../components/CambiarPinModal'
+import ConfirmModal from '../../components/ConfirmModal'
 import '../../styles/features/entrenador.css'
 
 function IconGrid() {
@@ -119,6 +120,7 @@ export default function EntrenadorPage() {
   const location = useLocation()
   const [drawerAbierto, setDrawerAbierto] = useState(false)
   const [mostrarCambiarPin, setMostrarCambiarPin] = useState(false)
+  const [confirmarLogout, setConfirmarLogout] = useState(false)
   const drawerRef = useRef(null)
 
   // Cerrar drawer al cambiar de ruta
@@ -209,7 +211,7 @@ export default function EntrenadorPage() {
             </svg>
             <span>Cambiar PIN</span>
           </button>
-          <button className="admin-nav-link ent-nav-salida" onClick={handleLogout}>
+          <button className="admin-nav-link ent-nav-salida" onClick={() => { setDrawerAbierto(false); setConfirmarLogout(true) }}>
             <IconSalida />
             <span>Cerrar sesión</span>
           </button>
@@ -217,6 +219,14 @@ export default function EntrenadorPage() {
       </aside>
 
       {mostrarCambiarPin && <CambiarPinModal onClose={() => setMostrarCambiarPin(false)} />}
+
+      <ConfirmModal
+        open={confirmarLogout}
+        titulo="¿Cerrar sesión?"
+        desc="Tu sesión se cerrará y tendrás que volver a ingresar tu PIN."
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmarLogout(false)}
+      />
 
       {/* ── Contenido ── */}
       <main className="ent-main">
