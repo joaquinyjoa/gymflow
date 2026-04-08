@@ -6,6 +6,20 @@ import { useWakeLock } from '../../hooks/useWakeLock'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import '../../styles/features/cliente.css'
 
+function fmtFecha(iso) {
+  if (!iso) return null
+  const [y, m, d] = iso.split('-')
+  return `${d}/${m}/${y}`
+}
+
+function diasHastaVencer(iso) {
+  if (!iso) return null
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const venc = new Date(iso)
+  return Math.round((venc - hoy) / (1000 * 60 * 60 * 24))
+}
+
 const DIAS = [
   { value: 1, label: 'Lun' },
   { value: 2, label: 'Mar' },
@@ -104,6 +118,32 @@ export default function RutinaDelDia() {
           </svg>
         </div>
       )}
+
+      {/* Banner vencimiento */}
+      {(() => {
+        const dias = diasHastaVencer(perfil?.fecha_vencimiento)
+        if (dias === null) return null
+        if (dias > 30) return null
+        const urgente = dias <= 7
+        const pronto = dias <= 14
+        return (
+          <div className={`cuota-banner${urgente ? ' cuota-urgente' : pronto ? ' cuota-pronto' : ' cuota-ok'}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            {dias < 0
+              ? 'Tu cuota está vencida'
+              : dias === 0
+              ? 'Tu cuota vence hoy'
+              : dias === 1
+              ? 'Tu cuota vence mañana'
+              : `Tu cuota vence el ${fmtFecha(perfil.fecha_vencimiento)} (${dias} días)`}
+          </div>
+        )
+      })()}
 
       {/* Selector de días */}
       <div className="dias-selector">
