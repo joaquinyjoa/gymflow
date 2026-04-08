@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import CambiarPinModal from '../../components/CambiarPinModal'
+import ConfirmModal from '../../components/ConfirmModal'
 import '../../styles/features/admin.css'
 
 function IconGrid() {
@@ -89,11 +90,38 @@ function IconPersona() {
   )
 }
 
+const NAV_ITEMS = [
+  { to: '/admin', label: 'Dashboard', icon: <IconGrid />, end: true },
+  { to: '/admin/clientes', label: 'Clientes', icon: <IconUsers /> },
+  { to: '/admin/entrenadores', label: 'Entrenadores', icon: <IconEntrenador /> },
+]
+
 export default function AdminPage() {
   const { perfil, logout } = useAuth()
   const { tema, toggleTema } = useTheme()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [drawerAbierto, setDrawerAbierto] = useState(false)
   const [mostrarCambiarPin, setMostrarCambiarPin] = useState(false)
+  const [confirmarLogout, setConfirmarLogout] = useState(false)
+  const drawerRef = useRef(null)
+
+  useEffect(() => { setDrawerAbierto(false) }, [location.pathname])
+
+  useEffect(() => {
+    if (!drawerAbierto) return
+    function handleClick(e) {
+      if (drawerRef.current && !drawerRef.current.contains(e.target)) {
+        setDrawerAbierto(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('touchstart', handleClick)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('touchstart', handleClick)
+    }
+  }, [drawerAbierto])
 
   async function handleLogout() {
     await logout()
@@ -101,66 +129,81 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="admin-shell">
+    <div className="ent-shell">
 
-      {/* ── Sidebar ── */}
-      <aside className="admin-sidebar">
-
-        <div className="admin-sidebar-logo">
-          <div className="admin-logo-icono">
-            <IconPuno />
-          </div>
+      {/* ── Topbar ── */}
+      <header className="ent-topbar">
+        <div className="ent-topbar-logo">
+          <div className="admin-logo-icono"><IconPuno /></div>
           <span className="admin-logo-texto">GymFlow</span>
         </div>
+        <div className="ent-topbar-acciones">
+          <button className="btn btn-icon btn-icon-sm" onClick={toggleTema} title="Cambiar tema">
+            {tema === 'dark' ? <IconSol /> : <IconLuna />}
+          </button>
+          <button
+            className={`ent-hamburguesa${drawerAbierto ? ' abierto' : ''}`}
+            onClick={() => setDrawerAbierto(v => !v)}
+            aria-label="Menú"
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+      </header>
 
-        <nav className="admin-sidebar-nav">
-          <NavLink to="/admin" end className="admin-nav-link">
-            <IconGrid />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/admin/clientes" className="admin-nav-link">
-            <IconUsers />
-            <span>Clientes</span>
-          </NavLink>
-          <NavLink to="/admin/entrenadores" className="admin-nav-link">
-            <IconEntrenador />
-            <span>Entrenadores</span>
-          </NavLink>
-        </nav>
+      {drawerAbierto && (
+        <div className="ent-drawer-overlay" onClick={() => setDrawerAbierto(false)} />
+      )}
 
-        <div className="admin-sidebar-footer">
+      {/* ── Drawer ── */}
+      <aside ref={drawerRef} className={`ent-drawer${drawerAbierto ? ' abierto' : ''}`}>
+        <div className="ent-drawer-header">
           <div className="admin-user-row">
-            <div className="admin-user-avatar">
-              <IconPersona />
-            </div>
+            <div className="admin-user-avatar"><IconPersona /></div>
             <div className="admin-user-info">
               <div className="admin-user-nombre">{perfil?.nombre ?? 'Admin'}</div>
               <div className="admin-user-rol">Administrador</div>
             </div>
           </div>
-          <div className="admin-footer-actions">
-            <button className="btn btn-icon btn-icon-sm" onClick={toggleTema} title="Cambiar tema">
-              {tema === 'dark' ? <IconSol /> : <IconLuna />}
-            </button>
-            <button className="btn btn-icon btn-icon-sm" onClick={() => setMostrarCambiarPin(true)} title="Cambiar PIN">
-              <svg className="icon" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </button>
-            <button className="btn btn-icon btn-icon-sm btn-icon-danger" onClick={handleLogout} title="Cerrar sesión">
-              <IconSalida />
-            </button>
-          </div>
         </div>
 
+        <nav className="ent-drawer-nav">
+          {NAV_ITEMS.map(item => (
+            <NavLink key={item.to} to={item.to} end={item.end} className="admin-nav-link">
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="ent-drawer-footer">
+          <button className="admin-nav-link" onClick={() => { setDrawerAbierto(false); setMostrarCambiarPin(true) }}>
+            <svg className="icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Cambiar PIN</span>
+          </button>
+          <button className="admin-nav-link ent-nav-salida" onClick={() => { setDrawerAbierto(false); setConfirmarLogout(true) }}>
+            <IconSalida />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </aside>
 
       {mostrarCambiarPin && <CambiarPinModal onClose={() => setMostrarCambiarPin(false)} />}
 
-      {/* ── Main ── */}
-      <main className="admin-main">
-        <div className="admin-content">
+      <ConfirmModal
+        open={confirmarLogout}
+        titulo="¿Cerrar sesión?"
+        desc="Tu sesión se cerrará y tendrás que volver a ingresar tu PIN."
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmarLogout(false)}
+      />
+
+      {/* ── Contenido ── */}
+      <main className="ent-main">
+        <div className="ent-content">
           <Outlet />
         </div>
       </main>
