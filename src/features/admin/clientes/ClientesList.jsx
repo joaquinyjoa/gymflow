@@ -36,6 +36,7 @@ export default function ClientesList() {
   const [filtroEstado, setFiltroEstado] = useState('todos') // todos | activos | vencidos
   const [renovandoId, setRenovandoId] = useState(null)
   const [nuevaFecha, setNuevaFecha] = useState('')
+  const [metodoPagoRenovar, setMetodoPagoRenovar] = useState('efectivo')
   const [guardandoFecha, setGuardandoFecha] = useState(false)
   const [resetPinId, setResetPinId] = useState(null)
   const [nuevoPin, setNuevoPin] = useState('')
@@ -77,17 +78,26 @@ export default function ClientesList() {
   async function renovarMembresia() {
     if (!nuevaFecha || !renovandoId) return
     setGuardandoFecha(true)
-    const { error } = await supabase
-      .from('clientes')
-      .update({ fecha_vencimiento: nuevaFecha, estado: true })
-      .eq('id', renovandoId)
 
-    if (!error) {
+    const [{ error }, { error: errorRenovacion }] = await Promise.all([
+      supabase.from('clientes')
+        .update({ fecha_vencimiento: nuevaFecha, estado: true, metodo_pago: metodoPagoRenovar })
+        .eq('id', renovandoId),
+      supabase.from('renovaciones').insert({
+        cliente_id: renovandoId,
+        fecha_vencimiento: nuevaFecha,
+        metodo_pago: metodoPagoRenovar,
+        fecha_renovacion: new Date().toISOString().split('T')[0],
+      }),
+    ])
+
+    if (!error && !errorRenovacion) {
       setClientes(prev => prev.map(c =>
-        c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, estado: true } : c
+        c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, estado: true, metodo_pago: metodoPagoRenovar } : c
       ))
       setRenovandoId(null)
       setNuevaFecha('')
+      setMetodoPagoRenovar('efectivo')
     } else {
       setError('Error al renovar membresía')
     }
@@ -325,7 +335,7 @@ export default function ClientesList() {
                 {/* Panel renovar membresía */}
                 {renovando && (
                   <div className="admin-renovar-panel">
-                    <p className="admin-renovar-label">Nueva fecha de vencimiento</p>
+                    <p className="admin-renovar-label">Renovar membresía — {cliente.nombre}</p>
                     <div className="admin-renovar-row">
                       <input
                         className="input"
@@ -334,6 +344,17 @@ export default function ClientesList() {
                         min={hoy}
                         onChange={e => setNuevaFecha(e.target.value)}
                       />
+                      <select
+                        className="input"
+                        value={metodoPagoRenovar}
+                        onChange={e => setMetodoPagoRenovar(e.target.value)}
+                        style={{ minWidth: 0 }}
+                      >
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                      </select>
+                    </div>
+                    <div className="admin-renovar-row" style={{ marginTop: '8px' }}>
                       <button
                         className="btn btn-primary"
                         onClick={renovarMembresia}
@@ -341,7 +362,7 @@ export default function ClientesList() {
                       >
                         {guardandoFecha ? '...' : 'Guardar'}
                       </button>
-                      <button className="btn btn-ghost" onClick={() => { setRenovandoId(null); setNuevaFecha('') }}>
+                      <button className="btn btn-ghost" onClick={() => { setRenovandoId(null); setNuevaFecha(''); setMetodoPagoRenovar('efectivo') }}>
                         Cancelar
                       </button>
                     </div>

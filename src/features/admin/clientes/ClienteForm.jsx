@@ -19,6 +19,7 @@ const estadoInicial = {
   nivel_actividad: 'Medio',
   fecha_vencimiento: getFechaProximoMes(),
   objetivo: '',
+  metodo_pago: 'efectivo',
   horas_sueno: '',
   enfermedad_cronica: false,
   descripcion_enfermedad: '',
@@ -68,6 +69,7 @@ export default function ClienteForm() {
         nivel_actividad: data.nivel_actividad ?? 'Medio',
         fecha_vencimiento: data.fecha_vencimiento ?? '',
         objetivo: data.objetivo ?? '',
+        metodo_pago: data.metodo_pago ?? 'efectivo',
         horas_sueno: data.horas_sueno ?? '',
         enfermedad_cronica: data.enfermedad_cronica ?? false,
         descripcion_enfermedad: data.descripcion_enfermedad ?? '',
@@ -322,6 +324,13 @@ export default function ClienteForm() {
                 value={form.fecha_vencimiento}
                 onChange={handleChange}
               />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Método de pago</label>
+              <select className="input" name="metodo_pago" value={form.metodo_pago} onChange={handleChange}>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
             </div>
           </div>
         </div>
