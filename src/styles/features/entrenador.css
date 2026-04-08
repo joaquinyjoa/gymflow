@@ -1,6 +1,115 @@
 @import './admin.css';
 
 /* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+.ent-dash-alerta {
+  background: rgba(255, 68, 68, 0.06);
+  border: 1px solid rgba(255, 68, 68, 0.25);
+  border-radius: var(--radio-lg);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.ent-dash-alerta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff4444;
+  margin-bottom: 10px;
+}
+
+.ent-dash-alerta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 4px 0;
+  color: var(--text-primary);
+  border-top: 1px solid rgba(255, 68, 68, 0.1);
+}
+
+.ent-dash-pronto {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.ent-dash-section {
+  margin-bottom: 16px;
+}
+
+.ent-dash-section-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.ent-dash-clientes {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+}
+
+.ent-dash-cliente-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ent-dash-cliente-row:last-child { border-bottom: none; }
+.ent-dash-cliente-row:hover { background: var(--bg-card2); }
+
+.ent-dash-cliente-info { flex: 1; min-width: 0; }
+
+.ent-dash-cliente-nombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ent-dash-cliente-dni {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.ent-dash-dias {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ent-dash-dia-chip {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--acento-bg);
+  color: var(--acento-glow);
+  border: 1px solid var(--acento-border);
+  border-radius: 4px;
+  padding: 2px 5px;
+  letter-spacing: 0.3px;
+}
+
+.ent-dash-sin-rutina {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════════════════
    FILTROS
 ══════════════════════════════════════════ */
 .ent-filtros {
