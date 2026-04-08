@@ -36,6 +36,10 @@ export default function ClientesList() {
   const [renovandoId, setRenovandoId] = useState(null)
   const [nuevaFecha, setNuevaFecha] = useState('')
   const [guardandoFecha, setGuardandoFecha] = useState(false)
+  const [resetPinId, setResetPinId] = useState(null)
+  const [nuevoPin, setNuevoPin] = useState('')
+  const [guardandoPin, setGuardandoPin] = useState(false)
+  const [pinMsg, setPinMsg] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => { cargarClientes() }, [])
@@ -86,6 +90,39 @@ export default function ClientesList() {
       setError('Error al renovar membresía')
     }
     setGuardandoFecha(false)
+  }
+
+  async function resetearPin() {
+    if (!nuevoPin || nuevoPin.length < 4) { setPinMsg('El PIN debe tener al menos 4 caracteres'); return }
+    setGuardandoPin(true)
+    setPinMsg('')
+    const cliente = clientes.find(c => c.id === resetPinId)
+    if (!cliente) { setGuardandoPin(false); return }
+
+    const { data: clienteData } = await supabase
+      .from('clientes').select('user_id').eq('id', resetPinId).single()
+
+    if (!clienteData?.user_id) {
+      setPinMsg('Error: cliente sin usuario asociado')
+      setGuardandoPin(false)
+      return
+    }
+
+    const { data, error } = await supabase.functions.invoke('actualizar-pin', {
+      body: { user_id: clienteData.user_id, pin: nuevoPin }
+    })
+
+    if (error || data?.error) {
+      setPinMsg('Error al resetear PIN')
+    } else {
+      setPinMsg('PIN reseteado correctamente')
+      setTimeout(() => {
+        setResetPinId(null)
+        setNuevoPin('')
+        setPinMsg('')
+      }, 1500)
+    }
+    setGuardandoPin(false)
   }
 
   async function toggleEstado(cliente) {
@@ -248,6 +285,38 @@ export default function ClientesList() {
                   )}
                 </div>
 
+                {/* Panel reset PIN */}
+                {resetPinId === cliente.id && (
+                  <div className="admin-renovar-panel">
+                    <p className="admin-renovar-label">Nuevo PIN para {cliente.nombre}</p>
+                    {pinMsg && (
+                      <div className={pinMsg.includes('Error') ? 'msg-error' : 'msg-exito'} style={{ marginBottom: '8px' }}>
+                        {pinMsg}
+                      </div>
+                    )}
+                    <div className="admin-renovar-row">
+                      <input
+                        className="input"
+                        type="password"
+                        inputMode="numeric"
+                        placeholder="Nuevo PIN (mín. 4 caracteres)"
+                        value={nuevoPin}
+                        onChange={e => setNuevoPin(e.target.value)}
+                      />
+                      <button
+                        className="btn btn-primary"
+                        onClick={resetearPin}
+                        disabled={guardandoPin}
+                      >
+                        {guardandoPin ? '...' : 'Guardar'}
+                      </button>
+                      <button className="btn btn-ghost" onClick={() => { setResetPinId(null); setNuevoPin(''); setPinMsg('') }}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Panel renovar membresía */}
                 {renovando && (
                   <div className="admin-renovar-panel">
@@ -293,6 +362,12 @@ export default function ClientesList() {
                     onClick={() => toggleEstado(cliente)}
                   >
                     {cliente.estado ? 'Desactivar' : 'Activar'}
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => { setResetPinId(cliente.id); setNuevoPin(''); setPinMsg('') }}
+                  >
+                    Reset PIN
                   </button>
                 </div>
 
