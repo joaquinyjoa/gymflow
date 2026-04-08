@@ -105,12 +105,8 @@ export default function EjercicioForm() {
 
   async function subirGif() {
     if (!gifFile) return null
-    const extension = gifFile.name.split('.').pop()
-    const nombreLimpio = form.nombre
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // quita tildes
-      .replace(/[^a-zA-Z0-9_\-]/g, '_')                  // reemplaza cualquier carácter inválido
-      .replace(/_+/g, '_')                                // colapsa guiones bajos múltiples
-    const nombreArchivo = `${Date.now()}_${nombreLimpio}.${extension}`
+    const extension = gifFile.name.split('.').pop().toLowerCase()
+    const nombreArchivo = `${Date.now()}.${extension}`
     const ruta = `ejercicios/${nombreArchivo}`
 
     const { error } = await supabase.storage
