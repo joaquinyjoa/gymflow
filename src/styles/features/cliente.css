@@ -136,6 +136,7 @@
 
 /* ── Carrusel de ejercicios ── */
 .ejercicios-carrusel {
+  padding-bottom: 4px; /* espacio para sombra */
   display: flex;
   overflow-x: scroll;
   scroll-snap-type: x mandatory;
