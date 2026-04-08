@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import { ROUTES } from '../../lib/constants'
+import CambiarPinModal from '../../components/CambiarPinModal'
 import '../../styles/features/entrenador.css'
 
 function IconGrid() {
@@ -109,6 +111,7 @@ export default function EntrenadorPage() {
   const { perfil, logout } = useAuth()
   const { tema, toggleTema } = useTheme()
   const navigate = useNavigate()
+  const [mostrarCambiarPin, setMostrarCambiarPin] = useState(false)
 
   async function handleLogout() {
     await logout()
@@ -163,6 +166,12 @@ export default function EntrenadorPage() {
             <button className="btn btn-icon btn-icon-sm" onClick={toggleTema} title="Cambiar tema">
               {tema === 'dark' ? <IconSol /> : <IconLuna />}
             </button>
+            <button className="btn btn-icon btn-icon-sm" onClick={() => setMostrarCambiarPin(true)} title="Cambiar PIN">
+              <svg className="icon" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </button>
             <button className="btn btn-icon btn-icon-sm btn-icon-danger" onClick={handleLogout} title="Cerrar sesión">
               <IconSalida />
             </button>
@@ -170,6 +179,8 @@ export default function EntrenadorPage() {
         </div>
 
       </aside>
+
+      {mostrarCambiarPin && <CambiarPinModal onClose={() => setMostrarCambiarPin(false)} />}
 
       {/* ── Main ── */}
       <main className="admin-main">

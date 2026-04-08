@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
+import Onboarding, { useOnboarding } from '../../components/Onboarding'
 import '../../styles/features/cliente.css'
 
 function IconSol() {
@@ -54,6 +55,8 @@ export default function ClientePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const enPerfil = location.pathname === '/rutina/perfil'
+  const mostrarOnboarding = useOnboarding()
+  const [onboardingVisible, setOnboardingVisible] = useState(mostrarOnboarding)
   const [confirmLogout, setConfirmLogout] = useState(false)
 
   async function handleLogout() {
@@ -106,6 +109,10 @@ export default function ClientePage() {
       </div>
 
       {/* Modal confirmación logout */}
+      {onboardingVisible && (
+        <Onboarding onTerminar={() => setOnboardingVisible(false)} />
+      )}
+
       {confirmLogout && (
         <div className="modal-overlay">
           <div className="modal-sheet">
