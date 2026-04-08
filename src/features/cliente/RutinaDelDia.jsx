@@ -44,11 +44,25 @@ export default function RutinaDelDia() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [completados, setCompletados] = useState(new Set())
+  const [completados, setCompletados] = useState(() => {
+    try {
+      const guardado = sessionStorage.getItem('gymflow_completados')
+      return guardado ? new Set(JSON.parse(guardado)) : new Set()
+    } catch { return new Set() }
+  })
   const carruselRef = useRef(null)
 
+  // Persistir completados en sessionStorage al cambiar
+  useEffect(() => {
+    try { sessionStorage.setItem('gymflow_completados', JSON.stringify([...completados])) } catch {}
+  }, [completados])
+
   // Resetear completados al cambiar de día
-  useEffect(() => { setCompletados(new Set()); setCurrentIndex(0) }, [diaSeleccionado])
+  useEffect(() => {
+    setCompletados(new Set())
+    sessionStorage.removeItem('gymflow_completados')
+    setCurrentIndex(0)
+  }, [diaSeleccionado])
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
