@@ -204,27 +204,29 @@ export default function RutinaDelDia() {
             ref={carruselRef}
             onScroll={() => {
               if (!carruselRef.current) return
-              const idx = Math.round(carruselRef.current.scrollLeft / carruselRef.current.offsetWidth)
+              const slideW = carruselRef.current.firstElementChild?.offsetWidth || carruselRef.current.offsetWidth
+              const idx = Math.round(carruselRef.current.scrollLeft / slideW)
               setCurrentIndex(idx)
             }}
           >
             {rutinaDelDia.ejercicios.map((ej, index) => (
-              <EjercicioCard
-                key={ej.id}
-                ej={ej}
-                index={index}
-                rutinaClienteId={rutinaDelDia.id}
-                completado={completados.has(ej.id)}
-                onCompletar={() => setCompletados(prev => {
-                  const next = new Set(prev)
-                  if (next.has(ej.id)) next.delete(ej.id)
-                  else next.add(ej.id)
-                  return next
-                })}
-                onVerMas={() => navigate(`/rutina/ejercicio/${ej.ejercicioFinal?.id}`, {
-                  state: { ejercicio: ej.ejercicioFinal }
-                })}
-              />
+              <div key={ej.id} className="carrusel-slide">
+                <EjercicioCard
+                  ej={ej}
+                  index={index}
+                  rutinaClienteId={rutinaDelDia.id}
+                  completado={completados.has(ej.id)}
+                  onCompletar={() => setCompletados(prev => {
+                    const next = new Set(prev)
+                    if (next.has(ej.id)) next.delete(ej.id)
+                    else next.add(ej.id)
+                    return next
+                  })}
+                  onVerMas={() => navigate(`/rutina/ejercicio/${ej.ejercicioFinal?.id}`, {
+                    state: { ejercicio: ej.ejercicioFinal }
+                  })}
+                />
+              </div>
             ))}
           </div>
 

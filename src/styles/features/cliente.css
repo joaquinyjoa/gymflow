@@ -164,27 +164,24 @@
 
 /* ── Carrusel de ejercicios ── */
 .ejercicios-carrusel {
-  padding-bottom: 4px; /* espacio para sombra */
   display: flex;
   overflow-x: scroll;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  /* Rompe el padding del container para control total */
   margin-left: -16px;
   margin-right: -16px;
-  padding-left: 16px;
-  padding-right: 16px;
-  scroll-padding-left: 16px;
   animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 .ejercicios-carrusel::-webkit-scrollbar { display: none; }
 
-.ejercicios-carrusel .ejercicio-card {
-  /* Ancho exacto = pantalla - padding izq y der del container */
-  flex: 0 0 calc(100vw - 32px);
-  max-width: 448px; /* 480 (max container) - 32px padding */
+/* Slide wrapper: ocupa exactamente el viewport */
+.carrusel-slide {
+  flex: 0 0 100vw;
+  max-width: 100vw;
   scroll-snap-align: start;
+  padding: 0 16px 4px;
+  box-sizing: border-box;
 }
 
 /* ── Dots ── */
