@@ -126,6 +126,44 @@
 .ent-nav-salida { color: var(--acento) !important; }
 .ent-nav-salida .icon { stroke: var(--acento) !important; }
 
+/* Forzar labels visibles dentro del drawer (el CSS de admin los oculta en mobile) */
+.ent-drawer .admin-nav-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radio-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ent-drawer .admin-nav-link span {
+  display: block !important;
+}
+
+.ent-drawer .admin-nav-link:hover {
+  background: var(--bg-card2);
+  color: var(--text-primary);
+}
+
+.ent-drawer .admin-nav-link.active {
+  background: var(--acento-bg);
+  color: var(--acento);
+  font-weight: 600;
+}
+
+.ent-drawer .admin-nav-link.active .icon {
+  stroke: var(--acento);
+}
+
 /* ── Main content ── */
 .ent-main {
   padding-top: 56px;
