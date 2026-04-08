@@ -428,6 +428,28 @@
   gap: 10px;
 }
 
+/* ── Pull to refresh ── */
+@keyframes ptr-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.ptr-indicador {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  transition: opacity 0.15s;
+}
+
+.ptr-spinner {
+  width: 24px;
+  height: 24px;
+}
+
+.ptr-spinner.girando {
+  animation: ptr-spin 0.7s linear infinite;
+}
+
 /* ── Barra de progreso de sesión ── */
 .progreso-sesion {
   margin-bottom: 12px;

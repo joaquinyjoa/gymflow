@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { getRutinas, guardarPeso, leerPeso } from '../../hooks/useRutinaCache'
 import { useWakeLock } from '../../hooks/useWakeLock'
+import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import '../../styles/features/cliente.css'
 
 const DIAS = [
@@ -37,7 +38,8 @@ export default function RutinaDelDia() {
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
-  useWakeLock(true) // Evita que la pantalla se apague durante el entrenamiento
+  useWakeLock(true)
+  const { tirando, progreso, refrescando } = usePullToRefresh(() => cargarRutinas()) // Evita que la pantalla se apague durante el entrenamiento
 
   useEffect(() => {
     if (perfil?.id) cargarRutinas()
@@ -94,6 +96,14 @@ export default function RutinaDelDia() {
 
   return (
     <div className="rutina-container">
+      {/* Indicador pull to refresh */}
+      {(tirando || refrescando) && (
+        <div className="ptr-indicador" style={{ opacity: refrescando ? 1 : progreso, transform: `scale(${0.6 + 0.4 * progreso})` }}>
+          <svg className={`ptr-spinner${refrescando ? ' girando' : ''}`} viewBox="0 0 24 24" fill="none" stroke="var(--acento)" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+        </div>
+      )}
 
       {/* Selector de días */}
       <div className="dias-selector">
