@@ -21,6 +21,7 @@ export default function EntrenadoresList() {
   const [error, setError] = useState(null)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [togglingId, setTogglingId] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => { cargarEntrenadores() }, [])
@@ -38,13 +39,15 @@ export default function EntrenadoresList() {
   }
 
   async function toggleEstado(entrenador) {
+    setTogglingId(entrenador.id)
     const { error } = await supabase
       .from('users')
       .update({ activo: !entrenador.activo })
       .eq('id', entrenador.user_id)
 
-    if (error) { setError('Error al actualizar estado'); return }
-    setEntrenadores(prev => prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e))
+    if (error) { setError('Error al actualizar estado') }
+    else setEntrenadores(prev => prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e))
+    setTogglingId(null)
   }
 
   async function eliminarEntrenador() {
@@ -131,8 +134,9 @@ export default function EntrenadoresList() {
                 <button
                   className="btn btn-ghost"
                   onClick={() => toggleEstado(entrenador)}
+                  disabled={togglingId === entrenador.id}
                 >
-                  {entrenador.activo ? 'Desactivar' : 'Activar'}
+                  {togglingId === entrenador.id ? '...' : (entrenador.activo ? 'Desactivar' : 'Activar')}
                 </button>
               </div>
 

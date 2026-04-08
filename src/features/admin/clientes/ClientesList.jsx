@@ -41,6 +41,7 @@ export default function ClientesList() {
   const [nuevoPin, setNuevoPin] = useState('')
   const [guardandoPin, setGuardandoPin] = useState(false)
   const [pinMsg, setPinMsg] = useState('')
+  const [togglingId, setTogglingId] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => { cargarClientes() }, [])
@@ -127,13 +128,15 @@ export default function ClientesList() {
   }
 
   async function toggleEstado(cliente) {
+    setTogglingId(cliente.id)
     const { error } = await supabase
       .from('clientes')
       .update({ estado: !cliente.estado })
       .eq('id', cliente.id)
 
-    if (error) { setError('Error al actualizar estado'); return }
-    setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c))
+    if (error) { setError('Error al actualizar estado') }
+    else setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c))
+    setTogglingId(null)
   }
 
   async function eliminarCliente() {
@@ -362,8 +365,9 @@ export default function ClientesList() {
                   <button
                     className="btn btn-ghost"
                     onClick={() => toggleEstado(cliente)}
+                    disabled={togglingId === cliente.id}
                   >
-                    {cliente.estado ? 'Desactivar' : 'Activar'}
+                    {togglingId === cliente.id ? '...' : (cliente.estado ? 'Desactivar' : 'Activar')}
                   </button>
                   <button
                     className="btn btn-ghost"
