@@ -1,6 +1,144 @@
 @import './admin.css';
 
 /* ══════════════════════════════════════════
+   SHELL ENTRENADOR (topbar + drawer)
+══════════════════════════════════════════ */
+.ent-shell {
+  min-height: 100vh;
+  background: var(--bg-base);
+}
+
+/* ── Topbar ── */
+.ent-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 56px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.ent-topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ent-topbar-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Hamburguesa ── */
+.ent-hamburguesa {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+  padding: 0;
+}
+
+.ent-hamburguesa span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+
+.ent-hamburguesa.abierto span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.ent-hamburguesa.abierto span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.ent-hamburguesa.abierto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Overlay ── */
+.ent-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+
+/* ── Drawer ── */
+.ent-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 120;
+  width: 260px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-left: env(safe-area-inset-left);
+}
+
+.ent-drawer.abierto {
+  transform: translateX(0);
+}
+
+.ent-drawer-header {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.ent-drawer-nav {
+  flex: 1;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.ent-drawer-footer {
+  padding: 10px 8px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ent-nav-salida { color: var(--acento) !important; }
+.ent-nav-salida .icon { stroke: var(--acento) !important; }
+
+/* ── Main content ── */
+.ent-main {
+  padding-top: 56px;
+}
+
+.ent-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+
+/* ══════════════════════════════════════════
    DASHBOARD
 ══════════════════════════════════════════ */
 .ent-dash-alerta {

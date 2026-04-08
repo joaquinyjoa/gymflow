@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import { ROUTES } from '../../lib/constants'
@@ -22,8 +22,6 @@ function IconDumbbell() {
     <svg className="icon" viewBox="0 0 24 24">
       <path d="M6.5 6.5h11"/>
       <path d="M6.5 17.5h11"/>
-      <path d="M3 9.5v5"/>
-      <path d="M21 9.5v5"/>
       <path d="M3 9.5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h0a2 2 0 0 1-2-2v-5z"/>
       <path d="M17 9.5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h0a2 2 0 0 1-2-2v-5z"/>
     </svg>
@@ -107,11 +105,40 @@ function IconPersona() {
   )
 }
 
+const NAV_ITEMS = [
+  { to: '/entrenador', label: 'Dashboard', icon: <IconGrid />, end: true },
+  { to: '/entrenador/ejercicios', label: 'Ejercicios', icon: <IconDumbbell /> },
+  { to: '/entrenador/rutinas', label: 'Rutinas', icon: <IconList /> },
+  { to: '/entrenador/clientes', label: 'Clientes', icon: <IconUsers /> },
+]
+
 export default function EntrenadorPage() {
   const { perfil, logout } = useAuth()
   const { tema, toggleTema } = useTheme()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [drawerAbierto, setDrawerAbierto] = useState(false)
   const [mostrarCambiarPin, setMostrarCambiarPin] = useState(false)
+  const drawerRef = useRef(null)
+
+  // Cerrar drawer al cambiar de ruta
+  useEffect(() => { setDrawerAbierto(false) }, [location.pathname])
+
+  // Cerrar al tocar fuera
+  useEffect(() => {
+    if (!drawerAbierto) return
+    function handleClick(e) {
+      if (drawerRef.current && !drawerRef.current.contains(e.target)) {
+        setDrawerAbierto(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('touchstart', handleClick)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('touchstart', handleClick)
+    }
+  }, [drawerAbierto])
 
   async function handleLogout() {
     await logout()
@@ -119,72 +146,81 @@ export default function EntrenadorPage() {
   }
 
   return (
-    <div className="admin-shell">
+    <div className="ent-shell">
 
-      {/* ── Sidebar ── */}
-      <aside className="admin-sidebar">
-
-        <div className="admin-sidebar-logo">
+      {/* ── Topbar ── */}
+      <header className="ent-topbar">
+        <div className="ent-topbar-logo">
           <div className="admin-logo-icono">
             <IconPuno />
           </div>
           <span className="admin-logo-texto">GymFlow</span>
         </div>
+        <div className="ent-topbar-acciones">
+          <button className="btn btn-icon btn-icon-sm" onClick={toggleTema} title="Cambiar tema">
+            {tema === 'dark' ? <IconSol /> : <IconLuna />}
+          </button>
+          <button
+            className={`ent-hamburguesa${drawerAbierto ? ' abierto' : ''}`}
+            onClick={() => setDrawerAbierto(v => !v)}
+            aria-label="Menú"
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+      </header>
 
-        <nav className="admin-sidebar-nav">
-          <NavLink to="/entrenador" end className="admin-nav-link">
-            <IconGrid />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/entrenador/ejercicios" className="admin-nav-link">
-            <IconDumbbell />
-            <span>Ejercicios</span>
-          </NavLink>
-          <NavLink to="/entrenador/rutinas" className="admin-nav-link">
-            <IconList />
-            <span>Rutinas</span>
-          </NavLink>
-          <NavLink to="/entrenador/clientes" className="admin-nav-link">
-            <IconUsers />
-            <span>Clientes</span>
-          </NavLink>
-        </nav>
+      {/* ── Overlay ── */}
+      {drawerAbierto && (
+        <div className="ent-drawer-overlay" onClick={() => setDrawerAbierto(false)} />
+      )}
 
-        <div className="admin-sidebar-footer">
+      {/* ── Drawer ── */}
+      <aside ref={drawerRef} className={`ent-drawer${drawerAbierto ? ' abierto' : ''}`}>
+        <div className="ent-drawer-header">
           <div className="admin-user-row">
-            <div className="admin-user-avatar">
-              <IconPersona />
-            </div>
+            <div className="admin-user-avatar"><IconPersona /></div>
             <div className="admin-user-info">
-              <div className="admin-user-nombre">
-                {perfil?.nombre ?? ''} {perfil?.apellido ?? ''}
-              </div>
+              <div className="admin-user-nombre">{perfil?.nombre ?? ''} {perfil?.apellido ?? ''}</div>
               <div className="admin-user-rol">Entrenador</div>
             </div>
           </div>
-          <div className="admin-footer-actions">
-            <button className="btn btn-icon btn-icon-sm" onClick={toggleTema} title="Cambiar tema">
-              {tema === 'dark' ? <IconSol /> : <IconLuna />}
-            </button>
-            <button className="btn btn-icon btn-icon-sm" onClick={() => setMostrarCambiarPin(true)} title="Cambiar PIN">
-              <svg className="icon" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </button>
-            <button className="btn btn-icon btn-icon-sm btn-icon-danger" onClick={handleLogout} title="Cerrar sesión">
-              <IconSalida />
-            </button>
-          </div>
         </div>
 
+        <nav className="ent-drawer-nav">
+          {NAV_ITEMS.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className="admin-nav-link"
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="ent-drawer-footer">
+          <button className="admin-nav-link" onClick={() => { setDrawerAbierto(false); setMostrarCambiarPin(true) }}>
+            <svg className="icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Cambiar PIN</span>
+          </button>
+          <button className="admin-nav-link ent-nav-salida" onClick={handleLogout}>
+            <IconSalida />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </aside>
 
       {mostrarCambiarPin && <CambiarPinModal onClose={() => setMostrarCambiarPin(false)} />}
 
-      {/* ── Main ── */}
-      <main className="admin-main">
-        <div className="admin-content">
+      {/* ── Contenido ── */}
+      <main className="ent-main">
+        <div className="ent-content">
           <Outlet />
         </div>
       </main>
