@@ -31,6 +31,11 @@ export default function ClientesList() {
   const [error, setError] = useState(null)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('todos') // todos | activos | vencidos
+  const [renovandoId, setRenovandoId] = useState(null)
+  const [nuevaFecha, setNuevaFecha] = useState('')
+  const [guardandoFecha, setGuardandoFecha] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => { cargarClientes() }, [])
@@ -45,6 +50,42 @@ export default function ClientesList() {
     if (error) setError(error.message)
     else setClientes(data)
     setLoading(false)
+  }
+
+  const hoy = new Date().toISOString().split('T')[0]
+
+  const clientesFiltrados = clientes.filter(c => {
+    const q = busqueda.toLowerCase()
+    const dni = c.correo?.split('@')[0] ?? ''
+    const matchBusqueda = !q || dni.includes(q) ||
+      c.nombre.toLowerCase().includes(q) ||
+      c.apellido.toLowerCase().includes(q)
+    const vencido = estaVencido(c.fecha_vencimiento)
+    const matchEstado =
+      filtroEstado === 'todos' ? true :
+      filtroEstado === 'activos' ? (c.estado && !vencido) :
+      filtroEstado === 'vencidos' ? vencido : true
+    return matchBusqueda && matchEstado
+  })
+
+  async function renovarMembresia() {
+    if (!nuevaFecha || !renovandoId) return
+    setGuardandoFecha(true)
+    const { error } = await supabase
+      .from('clientes')
+      .update({ fecha_vencimiento: nuevaFecha, estado: true })
+      .eq('id', renovandoId)
+
+    if (!error) {
+      setClientes(prev => prev.map(c =>
+        c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, estado: true } : c
+      ))
+      setRenovandoId(null)
+      setNuevaFecha('')
+    } else {
+      setError('Error al renovar membresía')
+    }
+    setGuardandoFecha(false)
   }
 
   async function toggleEstado(cliente) {
@@ -100,15 +141,39 @@ export default function ClientesList() {
 
       {error && <div className="msg-error mb-16">{error}</div>}
 
-      {clientes.length === 0 ? (
+      {/* Búsqueda y filtros */}
+      <div className="admin-filtros">
+        <input
+          className="input"
+          type="text"
+          placeholder="Buscar por nombre, apellido o DNI..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          autoComplete="off"
+        />
+        <div className="admin-filtro-tabs">
+          {[['todos','Todos'],['activos','Activos'],['vencidos','Vencidos']].map(([val, label]) => (
+            <button
+              key={val}
+              className={`admin-filtro-tab${filtroEstado === val ? ' activo' : ''}`}
+              onClick={() => setFiltroEstado(val)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {clientesFiltrados.length === 0 ? (
         <div className="admin-empty">
-          <h3>Sin clientes registrados</h3>
-          <p>Creá el primer cliente con el botón de arriba.</p>
+          <h3>{clientes.length === 0 ? 'Sin clientes registrados' : 'Sin resultados'}</h3>
+          <p>{clientes.length === 0 ? 'Creá el primer cliente con el botón de arriba.' : 'Probá con otro término o filtro.'}</p>
         </div>
       ) : (
         <div className="admin-cards-list">
-          {clientes.map(cliente => {
+          {clientesFiltrados.map(cliente => {
             const vencido = estaVencido(cliente.fecha_vencimiento)
+            const renovando = renovandoId === cliente.id
             return (
               <div key={cliente.id} className="admin-card">
 
@@ -183,6 +248,32 @@ export default function ClientesList() {
                   )}
                 </div>
 
+                {/* Panel renovar membresía */}
+                {renovando && (
+                  <div className="admin-renovar-panel">
+                    <p className="admin-renovar-label">Nueva fecha de vencimiento</p>
+                    <div className="admin-renovar-row">
+                      <input
+                        className="input"
+                        type="date"
+                        value={nuevaFecha}
+                        min={hoy}
+                        onChange={e => setNuevaFecha(e.target.value)}
+                      />
+                      <button
+                        className="btn btn-primary"
+                        onClick={renovarMembresia}
+                        disabled={!nuevaFecha || guardandoFecha}
+                      >
+                        {guardandoFecha ? '...' : 'Guardar'}
+                      </button>
+                      <button className="btn btn-ghost" onClick={() => { setRenovandoId(null); setNuevaFecha('') }}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Acciones */}
                 <div className="admin-card-actions">
                   <button
@@ -190,6 +281,12 @@ export default function ClientesList() {
                     onClick={() => navigate(`/admin/clientes/${cliente.id}/editar`)}
                   >
                     Editar
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => { setRenovandoId(cliente.id); setNuevaFecha('') }}
+                  >
+                    Renovar
                   </button>
                   <button
                     className="btn btn-ghost"
