@@ -26,6 +26,9 @@ export default function RutinaClienteDetalle() {
   const [exito, setExito] = useState('')
   const [confirmRestore, setConfirmRestore] = useState(null)
   const [restaurando, setRestaurando] = useState(false)
+  const [notasEntrenador, setNotasEntrenador] = useState('')
+  const [guardandoNota, setGuardandoNota] = useState(false)
+  const [notaGuardada, setNotaGuardada] = useState(false)
 
   const { clienteId, rutinaClienteId } = useParams()
   const navigate = useNavigate()
@@ -45,8 +48,32 @@ export default function RutinaClienteDetalle() {
 
   async function cargarDatos() {
     setLoading(true)
-    await Promise.all([cargarRutina(), cargarEjerciciosDisponibles(), cargarTodasLasAsignaciones()])
+    await Promise.all([cargarRutina(), cargarEjerciciosDisponibles(), cargarTodasLasAsignaciones(), cargarNota()])
     setLoading(false)
+  }
+
+  async function cargarNota() {
+    const { data } = await supabase
+      .from('clientes')
+      .select('notas_entrenador')
+      .eq('id', clienteId)
+      .single()
+    if (data?.notas_entrenador !== undefined) {
+      setNotasEntrenador(data.notas_entrenador ?? '')
+    }
+  }
+
+  async function guardarNota() {
+    setGuardandoNota(true)
+    const { error } = await supabase
+      .from('clientes')
+      .update({ notas_entrenador: notasEntrenador })
+      .eq('id', clienteId)
+    if (!error) {
+      setNotaGuardada(true)
+      setTimeout(() => setNotaGuardada(false), 2000)
+    }
+    setGuardandoNota(false)
   }
 
   async function cargarRutina() {
@@ -274,6 +301,24 @@ export default function RutinaClienteDetalle() {
 
       {exito && <div className="msg-exito mb-16">{exito}</div>}
       {error && <div className="msg-error mb-16">{error}</div>}
+
+      {/* Notas del entrenador */}
+      <div className="ent-notas-card">
+        <div className="ent-notas-header">
+          <span className="ent-notas-titulo">Notas del entrenador</span>
+          {notaGuardada && <span className="ent-notas-guardada">Guardado</span>}
+        </div>
+        <textarea
+          className="input ent-notas-textarea"
+          value={notasEntrenador}
+          onChange={e => setNotasEntrenador(e.target.value)}
+          placeholder="Observaciones, indicaciones especiales, progreso del cliente..."
+          rows={3}
+        />
+        <button className="btn btn-secondary" onClick={guardarNota} disabled={guardandoNota}>
+          {guardandoNota ? 'Guardando...' : 'Guardar nota'}
+        </button>
+      </div>
 
       {/* Lista de ejercicios */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
