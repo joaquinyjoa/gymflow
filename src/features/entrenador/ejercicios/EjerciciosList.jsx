@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
 import ConfirmModal from '../../../components/ConfirmModal'
+import EmptyState from '../../../components/EmptyState'
 
 function IconTrash() {
   return (
@@ -130,10 +131,11 @@ export default function EjerciciosList() {
       </div>
 
       {ejerciciosFiltrados.length === 0 ? (
-        <div className="admin-empty">
-          <h3>{ejercicios.length === 0 ? 'Sin ejercicios creados' : 'Sin resultados'}</h3>
-          <p>{ejercicios.length === 0 ? 'Creá tu primer ejercicio con el botón de arriba.' : 'Probá con otro término de búsqueda.'}</p>
-        </div>
+        <EmptyState
+          tipo={ejercicios.length === 0 ? 'ejercicios' : 'busqueda'}
+          titulo={ejercicios.length === 0 ? 'Sin ejercicios creados' : 'Sin resultados'}
+          descripcion={ejercicios.length === 0 ? 'Creá tu primer ejercicio con el botón de arriba.' : 'Probá con otro término de búsqueda.'}
+        />
       ) : (
         <div className="ent-ejercicios-grid">
           {ejerciciosFiltrados.map(ejercicio => (

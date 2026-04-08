@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
+import EmptyState from '../../../components/EmptyState'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -165,10 +166,11 @@ export default function ClientesEntrenador() {
       </div>
 
       {clientesFiltrados.length === 0 ? (
-        <div className="admin-empty">
-          <h3>Sin resultados</h3>
-          <p>No se encontraron clientes con esos filtros.</p>
-        </div>
+        <EmptyState
+          tipo="busqueda"
+          titulo="Sin resultados"
+          descripcion="No se encontraron clientes con esos filtros."
+        />
       ) : (
         <div className="ent-clientes-lista">
           {clientesFiltrados.map(cliente => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
 import ConfirmModal from '../../../components/ConfirmModal'
+import EmptyState from '../../../components/EmptyState'
 
 function IconTrash() {
   return (
@@ -94,10 +95,11 @@ export default function RutinasList() {
       {error && <div className="msg-error mb-16">{error}</div>}
 
       {rutinas.length === 0 ? (
-        <div className="admin-empty">
-          <h3>Sin rutinas creadas</h3>
-          <p>Creá tu primera rutina con el botón de arriba.</p>
-        </div>
+        <EmptyState
+          tipo="rutinas"
+          titulo="Sin rutinas creadas"
+          descripcion="Creá tu primera rutina con el botón de arriba."
+        />
       ) : (
         <div className="admin-cards-list">
           {rutinas.map(rutina => {

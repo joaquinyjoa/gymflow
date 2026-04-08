@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
+import EmptyState from '../../../components/EmptyState'
 
 function IconTrash() {
   return (
@@ -80,10 +81,11 @@ export default function EntrenadoresList() {
       {error && <div className="msg-error mb-16">{error}</div>}
 
       {entrenadores.length === 0 ? (
-        <div className="admin-empty">
-          <h3>Sin entrenadores registrados</h3>
-          <p>Creá el primer entrenador con el botón de arriba.</p>
-        </div>
+        <EmptyState
+          tipo="clientes"
+          titulo="Sin entrenadores registrados"
+          descripcion="Creá el primer entrenador con el botón de arriba."
+        />
       ) : (
         <div className="admin-cards-list">
           {entrenadores.map(entrenador => (

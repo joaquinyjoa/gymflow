@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
+import EmptyState from '../../../components/EmptyState'
 
 function formatFecha(iso) {
   if (!iso) return '—'
@@ -202,10 +203,11 @@ export default function ClientesList() {
       </div>
 
       {clientesFiltrados.length === 0 ? (
-        <div className="admin-empty">
-          <h3>{clientes.length === 0 ? 'Sin clientes registrados' : 'Sin resultados'}</h3>
-          <p>{clientes.length === 0 ? 'Creá el primer cliente con el botón de arriba.' : 'Probá con otro término o filtro.'}</p>
-        </div>
+        <EmptyState
+          tipo={clientes.length === 0 ? 'clientes' : 'busqueda'}
+          titulo={clientes.length === 0 ? 'Sin clientes registrados' : 'Sin resultados'}
+          descripcion={clientes.length === 0 ? 'Creá el primer cliente con el botón de arriba.' : 'Probá con otro término o filtro.'}
+        />
       ) : (
         <div className="admin-cards-list">
           {clientesFiltrados.map(cliente => {
