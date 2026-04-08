@@ -15,12 +15,16 @@ function IconTrash() {
   )
 }
 
+const CATEGORIAS = ['Todos', 'fuerza', 'cardio', 'general', 'stretching']
+
 export default function EjerciciosList() {
   const [ejercicios, setEjercicios] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const { perfil } = useAuth()
   const navigate = useNavigate()
 
@@ -75,6 +79,13 @@ export default function EjerciciosList() {
     setConfirmItem(null)
   }
 
+  const ejerciciosFiltrados = ejercicios.filter(e => {
+    const q = busqueda.toLowerCase()
+    const matchBusqueda = !q || e.nombre.toLowerCase().includes(q) || e.musculo_principal?.toLowerCase().includes(q)
+    const matchCategoria = categoriaFiltro === 'Todos' || e.categoria === categoriaFiltro
+    return matchBusqueda && matchCategoria
+  })
+
   if (loading) return (
     <div className="admin-loading">
       <p className="text-muted">Cargando ejercicios...</p>
@@ -86,7 +97,7 @@ export default function EjerciciosList() {
       <div className="admin-page-header">
         <div className="admin-page-header-left">
           <h1 className="admin-page-title">Ejercicios</h1>
-          <p className="admin-page-subtitle">{ejercicios.length} creados</p>
+          <p className="admin-page-subtitle">{ejerciciosFiltrados.length} de {ejercicios.length}</p>
         </div>
         <button className="btn btn-primary" onClick={() => navigate('/entrenador/ejercicios/nuevo')}>
           + Nuevo ejercicio
@@ -95,14 +106,37 @@ export default function EjerciciosList() {
 
       {error && <div className="msg-error mb-16">{error}</div>}
 
-      {ejercicios.length === 0 ? (
+      {/* Filtros */}
+      <div className="ent-filtros">
+        <input
+          className="input ent-filtro-busqueda"
+          type="text"
+          placeholder="Buscar por nombre o músculo..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          autoComplete="off"
+        />
+        <div className="ent-filtro-cats">
+          {CATEGORIAS.map(cat => (
+            <button
+              key={cat}
+              className={`ent-filtro-cat${categoriaFiltro === cat ? ' activo' : ''}`}
+              onClick={() => setCategoriaFiltro(cat)}
+            >
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {ejerciciosFiltrados.length === 0 ? (
         <div className="admin-empty">
-          <h3>Sin ejercicios creados</h3>
-          <p>Creá tu primer ejercicio con el botón de arriba.</p>
+          <h3>{ejercicios.length === 0 ? 'Sin ejercicios creados' : 'Sin resultados'}</h3>
+          <p>{ejercicios.length === 0 ? 'Creá tu primer ejercicio con el botón de arriba.' : 'Probá con otro término de búsqueda.'}</p>
         </div>
       ) : (
         <div className="ent-ejercicios-grid">
-          {ejercicios.map(ejercicio => (
+          {ejerciciosFiltrados.map(ejercicio => (
             <div key={ejercicio.id} className="ent-ejercicio-card">
 
               <div className="ent-ejercicio-card-body">

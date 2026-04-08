@@ -1,6 +1,45 @@
 @import './admin.css';
 
 /* ══════════════════════════════════════════
+   FILTROS
+══════════════════════════════════════════ */
+.ent-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ent-filtro-busqueda {
+  width: 100%;
+}
+
+.ent-filtro-cats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ent-filtro-cat {
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-card2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.ent-filtro-cat.activo {
+  background: var(--acento-bg);
+  color: var(--acento-glow);
+  border-color: var(--acento-border);
+}
+
+/* ══════════════════════════════════════════
    EJERCICIOS — GRID & CARDS
 ══════════════════════════════════════════ */
 .ent-ejercicios-grid {
