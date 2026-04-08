@@ -178,11 +178,23 @@ export async function getRutinas(clienteId) {
   }
 }
 
+const CACHE_KEY_HIST = (rutinaClienteId, ejercicioId) => `peso_hist_${rutinaClienteId}_${ejercicioId}`
+
 // Guardar y leer peso por ejercicio
-export function guardarPeso(rutinaClienteId, ejercicioId, series, valores) {
+export function guardarPeso(rutinaClienteId, ejercicioId, series, valores, ejercicioNombre = '') {
   const key = CACHE_KEY_PESO(rutinaClienteId, ejercicioId)
-  const datos = { series, valores, fecha: new Date().toISOString() }
-  localStorage.setItem(key, JSON.stringify(datos))
+  const entrada = { series, valores, fecha: new Date().toISOString() }
+  localStorage.setItem(key, JSON.stringify(entrada))
+
+  // Guardar en historial (máx 10 entradas)
+  if (valores.some(v => v !== '' && v !== null)) {
+    const histKey = CACHE_KEY_HIST(rutinaClienteId, ejercicioId)
+    let hist = []
+    try { hist = JSON.parse(localStorage.getItem(histKey) ?? '[]') } catch {}
+    hist.unshift({ valores, fecha: entrada.fecha, series, nombre: ejercicioNombre })
+    if (hist.length > 10) hist = hist.slice(0, 10)
+    localStorage.setItem(histKey, JSON.stringify(hist))
+  }
 }
 
 export function leerPeso(rutinaClienteId, ejercicioId) {
@@ -192,4 +204,19 @@ export function leerPeso(rutinaClienteId, ejercicioId) {
   } catch {
     return null
   }
+}
+
+export function leerHistorialPesos() {
+  const resultados = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (!key?.startsWith('peso_hist_')) continue
+    try {
+      const hist = JSON.parse(localStorage.getItem(key) ?? '[]')
+      if (hist.length > 0) resultados.push({ key, nombre: hist[0].nombre, entradas: hist })
+    } catch {}
+  }
+  // Ordenar por fecha más reciente
+  resultados.sort((a, b) => new Date(b.entradas[0].fecha) - new Date(a.entradas[0].fecha))
+  return resultados
 }

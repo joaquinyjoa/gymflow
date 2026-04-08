@@ -353,6 +353,7 @@ function EjercicioCard({ ej, index, rutinaClienteId, completado, onCompletar, on
         rutinaClienteId={rutinaClienteId}
         ejercicioId={ej.ejercicio_id}
         series={ej.series}
+        ejercicioNombre={ej.ejercicioFinal?.nombre ?? ''}
       />
 
       {/* Acciones */}
@@ -375,7 +376,7 @@ function EjercicioCard({ ej, index, rutinaClienteId, completado, onCompletar, on
   )
 }
 
-function RegistroPeso({ rutinaClienteId, ejercicioId, series }) {
+function RegistroPeso({ rutinaClienteId, ejercicioId, series, ejercicioNombre }) {
   const [pesos, setPesos] = useState(() => {
     const guardado = leerPeso(rutinaClienteId, ejercicioId)
     if (guardado && guardado.series === series) return guardado.valores
@@ -386,7 +387,7 @@ function RegistroPeso({ rutinaClienteId, ejercicioId, series }) {
     const nuevos = [...pesos]
     nuevos[index] = valor.replace(/[^0-9.]/g, '')
     setPesos(nuevos)
-    guardarPeso(rutinaClienteId, ejercicioId, series, nuevos)
+    guardarPeso(rutinaClienteId, ejercicioId, series, nuevos, ejercicioNombre)
   }
 
   return (

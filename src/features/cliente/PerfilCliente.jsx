@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { leerHistorialPesos } from '../../hooks/useRutinaCache'
 
 function fmtFecha(iso) {
   if (!iso) return '—'
@@ -17,6 +18,7 @@ function estaVencido(fecha) {
 export default function PerfilCliente() {
   const { perfil } = useAuth()
   const navigate = useNavigate()
+  const historial = leerHistorialPesos()
 
   const [pinActual, setPinActual]   = useState('')
   const [pinNuevo, setPinNuevo]     = useState('')
@@ -142,6 +144,32 @@ export default function PerfilCliente() {
           </div>
         )}
       </div>
+
+      {/* Historial de pesos */}
+      {historial.length > 0 && (
+        <div className="perfil-card">
+          <div className="perfil-section-title">Historial de pesos</div>
+          {historial.map((ej, i) => (
+            <div key={i} className="historial-ejercicio">
+              <div className="historial-ej-nombre">{ej.nombre || 'Ejercicio'}</div>
+              <div className="historial-entradas">
+                {ej.entradas.map((e, j) => (
+                  <div key={j} className="historial-entrada">
+                    <span className="historial-fecha">
+                      {new Date(e.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                    </span>
+                    <span className="historial-vals">
+                      {e.valores.filter(v => v !== '').map((v, k) => (
+                        <span key={k} className="historial-chip">S{k + 1}: {v}kg</span>
+                      ))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Cambio de PIN */}
       <div className="perfil-card">
