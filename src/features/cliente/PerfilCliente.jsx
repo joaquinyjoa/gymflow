@@ -20,6 +20,42 @@ export default function PerfilCliente() {
   const navigate = useNavigate()
   const historial = leerHistorialPesos()
 
+  const [editando, setEditando] = useState(false)
+  const [formEdit, setFormEdit] = useState({ peso: '', altura: '', objetivo: '' })
+  const [guardando, setGuardando] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editExito, setEditExito] = useState(false)
+
+  function abrirEdicion() {
+    setFormEdit({ peso: perfil?.peso ?? '', altura: perfil?.altura ?? '', objetivo: perfil?.objetivo ?? '' })
+    setEditError('')
+    setEditando(true)
+  }
+
+  async function guardarEdicion() {
+    setEditError('')
+    if (formEdit.peso && (isNaN(formEdit.peso) || Number(formEdit.peso) < 20 || Number(formEdit.peso) > 300)) {
+      setEditError('El peso debe estar entre 20 y 300 kg'); return
+    }
+    if (formEdit.altura && (isNaN(formEdit.altura) || Number(formEdit.altura) < 50 || Number(formEdit.altura) > 250)) {
+      setEditError('La altura debe estar entre 50 y 250 cm'); return
+    }
+    setGuardando(true)
+    const { error } = await supabase.from('clientes').update({
+      peso: formEdit.peso ? Number(formEdit.peso) : perfil.peso,
+      altura: formEdit.altura ? Number(formEdit.altura) : perfil.altura,
+      objetivo: formEdit.objetivo || perfil.objetivo,
+    }).eq('id', perfil.id)
+
+    if (error) { setEditError('Error al guardar, intentá de nuevo') }
+    else {
+      setEditExito(true)
+      setEditando(false)
+      setTimeout(() => setEditExito(false), 2500)
+    }
+    setGuardando(false)
+  }
+
   const [pinActual, setPinActual]   = useState('')
   const [pinNuevo, setPinNuevo]     = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
@@ -91,33 +127,73 @@ export default function PerfilCliente() {
       {/* Stats físicos */}
       {(perfil.edad || perfil.peso || perfil.altura) && (
         <div className="perfil-card">
-          <div className="perfil-section-title">Medidas</div>
-          <div className="perfil-stats-grid">
-            {perfil.edad && (
-              <div className="perfil-stat">
-                <span className="perfil-stat-val">{perfil.edad}</span>
-                <span className="perfil-stat-label">años</span>
-              </div>
-            )}
-            {perfil.peso && (
-              <div className="perfil-stat">
-                <span className="perfil-stat-val">{perfil.peso}</span>
-                <span className="perfil-stat-label">kg</span>
-              </div>
-            )}
-            {perfil.altura && (
-              <div className="perfil-stat">
-                <span className="perfil-stat-val">{perfil.altura}</span>
-                <span className="perfil-stat-label">cm</span>
-              </div>
-            )}
-            {perfil.nivel_actividad && (
-              <div className="perfil-stat">
-                <span className="perfil-stat-val">{perfil.nivel_actividad}</span>
-                <span className="perfil-stat-label">actividad</span>
-              </div>
+          <div className="perfil-section-title-row">
+            <span className="perfil-section-title" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>Medidas</span>
+            {!editando && (
+              <button className="btn-perfil-edit" onClick={abrirEdicion}>Editar</button>
             )}
           </div>
+
+          {editExito && <div className="msg-exito" style={{ marginTop: '8px' }}>Datos actualizados</div>}
+
+          {editando ? (
+            <div className="perfil-edit-form">
+              {editError && <div className="msg-error mb-16">{editError}</div>}
+              <div className="perfil-edit-grid">
+                <div className="input-group">
+                  <label className="input-label">Peso (kg)</label>
+                  <input className="input" type="number" value={formEdit.peso}
+                    onChange={e => setFormEdit(p => ({ ...p, peso: e.target.value }))}
+                    placeholder={String(perfil.peso ?? '')} min={20} max={300} step="0.1" />
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Altura (cm)</label>
+                  <input className="input" type="number" value={formEdit.altura}
+                    onChange={e => setFormEdit(p => ({ ...p, altura: e.target.value }))}
+                    placeholder={String(perfil.altura ?? '')} min={50} max={250} />
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Objetivo</label>
+                <textarea className="input" rows={2} value={formEdit.objetivo}
+                  onChange={e => setFormEdit(p => ({ ...p, objetivo: e.target.value }))}
+                  placeholder={perfil.objetivo ?? ''} />
+              </div>
+              <div className="perfil-pin-acciones">
+                <button className="btn btn-primary" onClick={guardarEdicion} disabled={guardando}>
+                  {guardando ? 'Guardando...' : 'Guardar'}
+                </button>
+                <button className="btn btn-ghost" onClick={() => setEditando(false)}>Cancelar</button>
+              </div>
+            </div>
+          ) : (
+            <div className="perfil-stats-grid" style={{ marginTop: '12px' }}>
+              {perfil.edad && (
+                <div className="perfil-stat">
+                  <span className="perfil-stat-val">{perfil.edad}</span>
+                  <span className="perfil-stat-label">años</span>
+                </div>
+              )}
+              {perfil.peso && (
+                <div className="perfil-stat">
+                  <span className="perfil-stat-val">{formEdit.peso || perfil.peso}</span>
+                  <span className="perfil-stat-label">kg</span>
+                </div>
+              )}
+              {perfil.altura && (
+                <div className="perfil-stat">
+                  <span className="perfil-stat-val">{formEdit.altura || perfil.altura}</span>
+                  <span className="perfil-stat-label">cm</span>
+                </div>
+              )}
+              {perfil.nivel_actividad && (
+                <div className="perfil-stat">
+                  <span className="perfil-stat-val">{perfil.nivel_actividad}</span>
+                  <span className="perfil-stat-label">actividad</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
