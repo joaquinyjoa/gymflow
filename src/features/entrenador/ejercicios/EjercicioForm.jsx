@@ -105,6 +105,13 @@ export default function EjercicioForm() {
 
   async function subirGif() {
     if (!gifFile) return null
+
+    // Borrar GIF anterior del storage si existe
+    if (form.enlace_video) {
+      const path = form.enlace_video.split('/storage/v1/object/public/ejercicios/')[1]
+      if (path) await supabase.storage.from('ejercicios').remove([path])
+    }
+
     const extension = gifFile.name.split('.').pop().toLowerCase()
     const nombreArchivo = `${Date.now()}.${extension}`
     const ruta = `ejercicios/${nombreArchivo}`
@@ -125,7 +132,7 @@ export default function EjercicioForm() {
 
     if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
     if (form.nombre.trim().length < 3) { setError('El nombre debe tener al menos 3 caracteres'); return }
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre.trim())) { setError('El nombre solo puede contener letras'); return }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-()\°\.\/]+$/.test(form.nombre.trim())) { setError('El nombre contiene caracteres no permitidos'); return }
     if (musculoSecInput.trim()) { setError('Tenés un músculo secundario sin agregar. Presioná "Agregar" o borralo'); return }
     if (form.musculos_secundarios.some(m => /^\d+$/.test(m))) { setError('Los músculos secundarios no pueden contener solo números'); return }
     if (form.musculos_secundarios.length === 0) { setError('Agregá al menos un músculo secundario. Si no hay escribí "Ninguno"'); return }
@@ -199,7 +206,7 @@ export default function EjercicioForm() {
                 type="text"
                 name="nombre"
                 value={form.nombre}
-                onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '') }))}
+                onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value }))}
                 placeholder="Ej: Press de banca"
               />
             </div>
@@ -348,18 +355,23 @@ export default function EjercicioForm() {
         <div className="admin-form-section">
           <p className="admin-form-section-title">GIF demostrativo{!esEdicion && ' *'}</p>
           <div className="ent-gif-section">
-            {gifPreview && (
-              <div className="ent-gif-preview-wrap">
-                <img src={gifPreview} alt="Preview" className="ent-gif-preview" />
+            {gifPreview ? (
+              <>
+                <div className="ent-gif-preview-wrap">
+                  <img src={gifPreview} alt="Preview" className="ent-gif-preview" />
+                </div>
+                <label className="ent-gif-cambiar-btn">
+                  <input type="file" accept=".gif,.webp" onChange={handleGifChange} style={{ display: 'none' }} />
+                  Cambiar GIF
+                </label>
+              </>
+            ) : (
+              <div className="ent-gif-upload">
+                <input type="file" accept=".gif,.webp" onChange={handleGifChange} />
+                <div className="ent-gif-upload-label">＋ Seleccionar GIF o WebP</div>
+                <div className="ent-gif-hint">Formatos: GIF, WebP · Máximo 2MB</div>
               </div>
             )}
-            <div className="ent-gif-upload">
-              <input type="file" accept=".gif,.webp" onChange={handleGifChange} />
-              <div className="ent-gif-upload-label">
-                {gifPreview ? '↺ Cambiar GIF' : '＋ Seleccionar GIF o WebP'}
-              </div>
-              <div className="ent-gif-hint">Formatos: GIF, WebP · Máximo 2MB</div>
-            </div>
           </div>
         </div>
 
