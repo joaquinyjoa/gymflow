@@ -12,34 +12,42 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: CORS })
   }
 
-  const supabase = createClient(
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: CORS })
+  }
+
+  // Cliente con anon key + JWT del usuario para verificar identidad
+  const supabaseUser = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  )
+
+  // Cliente con service role para operaciones admin
+  const supabaseAdmin = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  // ── Verificar que el caller es admin ──────────────────────────────────
-  const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: CORS })
-  }
-
-  const { data: { user: caller } } = await supabase.auth.getUser(token)
-  if (!caller) {
+  // Verificar que el caller es admin
+  const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
+  if (userError || !user) {
     return new Response(JSON.stringify({ error: 'Token inválido' }), { status: 401, headers: CORS })
   }
 
-  const { data: callerData } = await supabase
-    .from('users').select('rol').eq('id', caller.id).single()
+  const { data: userData } = await supabaseAdmin
+    .from('users').select('rol').eq('id', user.id).single()
 
-  if (callerData?.rol !== 'admin') {
+  if (userData?.rol !== 'admin') {
     return new Response(
       JSON.stringify({ error: 'Solo el administrador puede crear usuarios' }),
       { status: 403, headers: CORS }
     )
   }
 
-  // ── Procesar request ───────────────────────────────────────────────────
+  // Procesar request
   const { dni, pin, rol, perfil } = await req.json()
 
   if (!dni || !pin || !rol || !perfil) {
@@ -52,7 +60,7 @@ Deno.serve(async (req) => {
   const email = `${dni}${EMAIL_DOMAIN}`
 
   // 1. Crear usuario en Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email,
     password: pin,
     email_confirm: true,
@@ -68,28 +76,36 @@ Deno.serve(async (req) => {
   const userId = authData.user.id
 
   // 2. Insertar en tabla users
-  const { error: userError } = await supabase
+  const { error: userInsertError } = await supabaseAdmin
     .from('users')
     .insert({ id: userId, rol, activo: true })
 
-  if (userError) {
-    await supabase.auth.admin.deleteUser(userId)
-    return new Response(JSON.stringify({ error: userError.message }), { status: 400, headers: CORS })
+  if (userInsertError) {
+    await supabaseAdmin.auth.admin.deleteUser(userId)
+    return new Response(JSON.stringify({ error: userInsertError.message }), { status: 400, headers: CORS })
   }
 
   // 3. Insertar perfil en clientes o entrenadores
   const tabla = rol === 'cliente' ? 'clientes' : 'entrenadores'
-  const { data: perfilData, error: perfilError } = await supabase
+  const { error: perfilError } = await supabaseAdmin
     .from(tabla)
     .insert({ user_id: userId, correo: email, ...perfil })
-    .select('id')
-    .single()
 
   if (perfilError) {
-    await supabase.from('users').delete().eq('id', userId)
-    await supabase.auth.admin.deleteUser(userId)
+    await supabaseAdmin.from('users').delete().eq('id', userId)
+    await supabaseAdmin.auth.admin.deleteUser(userId)
     return new Response(JSON.stringify({ error: perfilError.message }), { status: 400, headers: CORS })
   }
 
-  return new Response(JSON.stringify({ ok: true, cliente_id: perfilData?.id ?? null }), { status: 200, headers: CORS })
+  // 4. Obtener el ID del perfil creado
+  const { data: perfilCreado } = await supabaseAdmin
+    .from(tabla)
+    .select('id')
+    .eq('user_id', userId)
+    .single()
+
+  return new Response(
+    JSON.stringify({ ok: true, cliente_id: perfilCreado?.id ?? null }),
+    { status: 200, headers: CORS }
+  )
 })
