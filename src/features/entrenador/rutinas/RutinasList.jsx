@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
+import { SkeletonList } from '../../../components/Skeleton'
 
 function IconTrash() {
   return (
@@ -75,9 +76,16 @@ export default function RutinasList() {
   }
 
   if (loading) return (
-    <div className="admin-loading">
-      <p className="text-muted">Cargando rutinas...</p>
-    </div>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <div className="skeleton" style={{ width: '100px', height: '24px', borderRadius: '6px', marginBottom: '6px' }} />
+          <div className="skeleton" style={{ width: '80px', height: '14px', borderRadius: '6px' }} />
+        </div>
+        <div className="skeleton" style={{ width: '110px', height: '36px', borderRadius: '8px' }} />
+      </div>
+      <SkeletonList count={3} />
+    </>
   )
 
   return (

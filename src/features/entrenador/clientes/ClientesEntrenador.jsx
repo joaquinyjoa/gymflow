@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
+import { SkeletonList } from '../../../components/Skeleton'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -31,9 +32,11 @@ export default function ClientesEntrenador() {
   const [clientes, setClientes] = useState([])
   const [clienteExpandido, setClienteExpandido] = useState(null)
   const [rutinasCliente, setRutinasCliente] = useState({})
+  const [clientesConRutina, setClientesConRutina] = useState(new Set())
   const [busquedaDni, setBusquedaDni] = useState('')
   const [busquedaNombre, setBusquedaNombre] = useState('')
   const [busquedaApellido, setBusquedaApellido] = useState('')
+  const [filtroRutina, setFiltroRutina] = useState('todos') // todos | sin-rutina
   const [loading, setLoading] = useState(true)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
@@ -43,11 +46,17 @@ export default function ClientesEntrenador() {
 
   async function cargarClientes() {
     setLoading(true)
-    const { data } = await supabase
-      .from('clientes')
-      .select('id, nombre, apellido, correo, estado, fecha_vencimiento')
-      .order('apellido', { ascending: true })
-    setClientes(data ?? [])
+    const [{ data: clientesData }, { data: rutinaIds }] = await Promise.all([
+      supabase
+        .from('clientes')
+        .select('id, nombre, apellido, correo, estado, fecha_vencimiento')
+        .order('apellido', { ascending: true }),
+      supabase
+        .from('rutinas_clientes')
+        .select('cliente_id'),
+    ])
+    setClientes(clientesData ?? [])
+    setClientesConRutina(new Set((rutinaIds ?? []).map(r => r.cliente_id)))
     setLoading(false)
   }
 
@@ -67,7 +76,11 @@ export default function ClientesEntrenador() {
       .eq('cliente_id', clienteId)
       .order('dia_semana', { ascending: true })
 
-    setRutinasCliente(prev => ({ ...prev, [clienteId]: data ?? [] }))
+    const rutinas = data ?? []
+    setRutinasCliente(prev => ({ ...prev, [clienteId]: rutinas }))
+    if (rutinas.length > 0) {
+      setClientesConRutina(prev => new Set([...prev, clienteId]))
+    }
   }
 
   async function eliminarAsignacion() {
@@ -80,10 +93,13 @@ export default function ClientesEntrenador() {
       .eq('id', asignacionId)
 
     if (!error) {
-      setRutinasCliente(prev => ({
-        ...prev,
-        [clienteId]: prev[clienteId].filter(r => r.id !== asignacionId)
-      }))
+      setRutinasCliente(prev => {
+        const updated = prev[clienteId].filter(r => r.id !== asignacionId)
+        if (updated.length === 0) {
+          setClientesConRutina(s => { const next = new Set(s); next.delete(clienteId); return next })
+        }
+        return { ...prev, [clienteId]: updated }
+      })
     }
 
     setEliminando(false)
@@ -97,12 +113,16 @@ export default function ClientesEntrenador() {
 
   const clientesFiltrados = clientes.filter(c => {
     const dni = c.correo?.split('@')[0] ?? ''
-    return (
+    const matchTexto = (
       dni.includes(busquedaDni) &&
       c.nombre.toLowerCase().includes(busquedaNombre.toLowerCase()) &&
       c.apellido.toLowerCase().includes(busquedaApellido.toLowerCase())
     )
+    const matchRutina = filtroRutina === 'todos' || !clientesConRutina.has(c.id)
+    return matchTexto && matchRutina
   })
+
+  const sinRutinaCount = clientes.filter(c => !clientesConRutina.has(c.id)).length
 
   function diasOcupados(clienteId) {
     return (rutinasCliente[clienteId] ?? []).map(r => r.dia_semana)
@@ -114,9 +134,15 @@ export default function ClientesEntrenador() {
   }
 
   if (loading) return (
-    <div className="admin-loading">
-      <p className="text-muted">Cargando clientes...</p>
-    </div>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <div className="skeleton" style={{ width: '100px', height: '24px', borderRadius: '6px', marginBottom: '6px' }} />
+          <div className="skeleton" style={{ width: '120px', height: '14px', borderRadius: '6px' }} />
+        </div>
+      </div>
+      <SkeletonList count={4} />
+    </>
   )
 
   return (
@@ -126,6 +152,22 @@ export default function ClientesEntrenador() {
           <h1 className="admin-page-title">Clientes</h1>
           <p className="admin-page-subtitle">{clientes.length} registrados</p>
         </div>
+      </div>
+
+      {/* ── Tabs de rutina ── */}
+      <div className="admin-filtro-tabs" style={{ marginBottom: '12px' }}>
+        <button
+          className={`admin-filtro-tab${filtroRutina === 'todos' ? ' activo' : ''}`}
+          onClick={() => setFiltroRutina('todos')}
+        >
+          Todos
+        </button>
+        <button
+          className={`admin-filtro-tab${filtroRutina === 'sin-rutina' ? ' activo' : ''}`}
+          onClick={() => setFiltroRutina('sin-rutina')}
+        >
+          Sin rutina {sinRutinaCount > 0 && <span className="badge badge-danger" style={{ marginLeft: '6px', fontSize: '11px' }}>{sinRutinaCount}</span>}
+        </button>
       </div>
 
       {/* ── Filtros ── */}
@@ -195,6 +237,9 @@ export default function ClientesEntrenador() {
                       )}
                       {vencido && (
                         <span className="badge badge-danger">Vencido</span>
+                      )}
+                      {!clientesConRutina.has(cliente.id) && (
+                        <span className="badge badge-warning">Sin rutina</span>
                       )}
                       {expandido && rutinas.length > 0 && (
                         <span className="badge badge-acento">{rutinas.length} rutina{rutinas.length !== 1 ? 's' : ''}</span>
