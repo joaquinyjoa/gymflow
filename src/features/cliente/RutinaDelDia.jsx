@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
+import { supabase } from '../../lib/supabase'
 import { getRutinas, guardarPeso, leerPeso } from '../../hooks/useRutinaCache'
 import { useWakeLock } from '../../hooks/useWakeLock'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
@@ -64,15 +65,13 @@ export default function RutinaDelDia() {
   // Persistir completados en sessionStorage al cambiar
   useEffect(() => {
     try { sessionStorage.setItem('gymflow_completados', JSON.stringify([...completados])) } catch {}
-    // Registrar sesión en historial si hay al menos 1 ejercicio completado
-    if (completados.size > 0) {
-      try {
-        const hoy = new Date().toISOString().split('T')[0]
-        const prev = JSON.parse(localStorage.getItem('gymflow_sesiones') ?? '[]')
-        if (!prev.includes(hoy)) {
-          localStorage.setItem('gymflow_sesiones', JSON.stringify([hoy, ...prev].slice(0, 365)))
-        }
-      } catch {}
+    // Registrar sesión en Supabase si hay al menos 1 ejercicio completado
+    if (completados.size > 0 && perfil?.id) {
+      const hoy = new Date().toISOString().split('T')[0]
+      supabase.from('sesiones_cliente').upsert(
+        { cliente_id: perfil.id, fecha: hoy },
+        { onConflict: 'cliente_id,fecha', ignoreDuplicates: true }
+      )
     }
   }, [completados])
 

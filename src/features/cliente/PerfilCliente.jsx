@@ -22,6 +22,18 @@ export default function PerfilCliente() {
   const toast = useToast()
   const historial = leerHistorialPesos()
 
+  const [sesiones, setSesiones] = useState([])
+
+  useEffect(() => {
+    if (!perfil?.id) return
+    supabase
+      .from('sesiones_cliente')
+      .select('fecha')
+      .eq('cliente_id', perfil.id)
+      .order('fecha', { ascending: false })
+      .then(({ data }) => setSesiones(data ?? []))
+  }, [perfil?.id])
+
   const [editando, setEditando] = useState(false)
   const [formEdit, setFormEdit] = useState({ peso: '', altura: '', objetivo: '' })
   const [guardando, setGuardando] = useState(false)
@@ -45,14 +57,14 @@ export default function PerfilCliente() {
     const { error } = await supabase.from('clientes').update({
       peso: formEdit.peso ? Number(formEdit.peso) : perfil.peso,
       altura: formEdit.altura ? Number(formEdit.altura) : perfil.altura,
-      objetivo: formEdit.objetivo || perfil.objetivo,
+      objetivo: formEdit.objetivo !== undefined ? formEdit.objetivo : perfil.objetivo,
     }).eq('id', perfil.id)
 
     if (error) { setEditError('Error al guardar, intentá de nuevo') }
     else {
       const nuevoPeso = formEdit.peso ? Number(formEdit.peso) : perfil.peso
       const nuevaAltura = formEdit.altura ? Number(formEdit.altura) : perfil.altura
-      const nuevoObjetivo = formEdit.objetivo || perfil.objetivo
+      const nuevoObjetivo = formEdit.objetivo !== undefined ? formEdit.objetivo : perfil.objetivo
       setPerfil(prev => ({ ...prev, peso: nuevoPeso, altura: nuevaAltura, objetivo: nuevoObjetivo }))
       setEditando(false)
       toast('Datos actualizados')
@@ -100,12 +112,8 @@ export default function PerfilCliente() {
 
   if (!perfil) return null
 
-  // Historial de sesiones desde localStorage
-  const sesiones = (() => {
-    try { return JSON.parse(localStorage.getItem('gymflow_sesiones') ?? '[]') } catch { return [] }
-  })()
   const totalSesiones = sesiones.length
-  const ultimaSesion = sesiones[0] ? fmtFecha(sesiones[0]) : null
+  const ultimaSesion = sesiones[0]?.fecha ? fmtFecha(sesiones[0].fecha) : null
 
   // Días como socio
   const diasSocio = (() => {
