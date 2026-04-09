@@ -57,6 +57,7 @@ export function AuthProvider({ children }) {
         filter: `id=eq.${user.id}`,
       }, (payload) => {
         if (payload.new?.activo === false) {
+          localStorage.setItem('gymflow_desactivado', '1')
           supabase.auth.signOut()
         }
       })
