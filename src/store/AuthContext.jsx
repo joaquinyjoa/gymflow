@@ -44,6 +44,27 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Escuchar cambios en users.activo — si el admin desactiva la cuenta, cerrar sesión inmediatamente
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel(`user-status-${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'users',
+        filter: `id=eq.${user.id}`,
+      }, (payload) => {
+        if (payload.new?.activo === false) {
+          supabase.auth.signOut()
+        }
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [])
+
   async function cargarPerfil(authUser) {
     setPerfilListo(false)
     setUser(authUser)
