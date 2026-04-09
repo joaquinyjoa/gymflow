@@ -96,11 +96,55 @@ export default function PerfilCliente() {
 
   if (!perfil) return null
 
+  // Historial de sesiones desde localStorage
+  const sesiones = (() => {
+    try { return JSON.parse(localStorage.getItem('gymflow_sesiones') ?? '[]') } catch { return [] }
+  })()
+  const totalSesiones = sesiones.length
+  const ultimaSesion = sesiones[0] ? fmtFecha(sesiones[0]) : null
+
+  // Días como socio
+  const diasSocio = (() => {
+    if (!perfil.created_at) return null
+    const inicio = new Date(perfil.created_at)
+    const hoy = new Date()
+    return Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24))
+  })()
+
   return (
     <div className="perfil-page">
       <div className="perfil-header">
         <button className="btn-back" onClick={() => navigate('/rutina')}>← Volver</button>
         <h1 className="perfil-titulo">Mi perfil</h1>
+      </div>
+
+      {/* Actividad */}
+      <div className="perfil-card">
+        <div className="perfil-section-title">Mi actividad</div>
+        <div className="perfil-stats-grid">
+          {diasSocio !== null && (
+            <div className="perfil-stat">
+              <span className="perfil-stat-val">{diasSocio}</span>
+              <span className="perfil-stat-label">días socio</span>
+            </div>
+          )}
+          <div className="perfil-stat">
+            <span className="perfil-stat-val">{totalSesiones}</span>
+            <span className="perfil-stat-label">sesiones</span>
+          </div>
+          {ultimaSesion && (
+            <div className="perfil-stat">
+              <span className="perfil-stat-val" style={{ fontSize: '14px' }}>{ultimaSesion}</span>
+              <span className="perfil-stat-label">última sesión</span>
+            </div>
+          )}
+          {perfil.created_at && (
+            <div className="perfil-stat">
+              <span className="perfil-stat-val" style={{ fontSize: '14px' }}>{fmtFecha(perfil.created_at.split('T')[0])}</span>
+              <span className="perfil-stat-label">socio desde</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Datos personales */}

@@ -64,6 +64,16 @@ export default function RutinaDelDia() {
   // Persistir completados en sessionStorage al cambiar
   useEffect(() => {
     try { sessionStorage.setItem('gymflow_completados', JSON.stringify([...completados])) } catch {}
+    // Registrar sesión en historial si hay al menos 1 ejercicio completado
+    if (completados.size > 0) {
+      try {
+        const hoy = new Date().toISOString().split('T')[0]
+        const prev = JSON.parse(localStorage.getItem('gymflow_sesiones') ?? '[]')
+        if (!prev.includes(hoy)) {
+          localStorage.setItem('gymflow_sesiones', JSON.stringify([hoy, ...prev].slice(0, 365)))
+        }
+      } catch {}
+    }
   }, [completados])
 
   // Resetear completados al cambiar de día
