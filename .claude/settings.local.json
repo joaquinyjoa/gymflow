@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(mkdir -p ~/bin)",
+      "Bash(curl -L https://github.com/supabase/cli/releases/latest/download/supabase_windows_amd64.tar.gz -o /tmp/supabase.tar.gz)",
+      "Bash(git commit -m 'style: letras blancas en botón obtener app:*)"
     ]
   }
 }

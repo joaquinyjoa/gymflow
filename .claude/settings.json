@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m 'feat: animaciones de entrada en el panel del entrenador:*)",
+      "Bash(git commit -m 'fix: sesión persiste correctamente al cerrar y reabrir la app:*)",
+      "Bash(git commit -m 'fix: volver a la última ruta después del login:*)",
+      "Bash(git commit -m 'fix: autenticar usuario antes de cargar perfil para evitar logout en mobile:*)",
+      "Bash(git commit -m 'feat: animaciones en modal logout y detalle de ejercicio cliente:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(supabase functions:*)"
+    ]
+  }
+}
