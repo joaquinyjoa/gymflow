@@ -126,7 +126,7 @@ export default function LoginPage() {
         <div className="login-form-card">
           <p className="login-form-titulo">Iniciar sesión</p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             <div className="input-group">
               <label className="input-label">Número de documento</label>
               <input
@@ -149,7 +149,7 @@ export default function LoginPage() {
                 onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
                 placeholder="4 dígitos"
                 maxLength={4}
-                autoComplete="off"
+                autoComplete="new-password"
               />
             </div>
 
