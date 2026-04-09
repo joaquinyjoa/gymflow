@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { invocarFuncion } from '../../../lib/api'
+import { SkeletonList } from '../../../components/Skeleton'
 
 function getFechaProximoMes() {
   const fecha = new Date()
@@ -189,9 +190,13 @@ export default function ClienteForm() {
   }
 
   if (cargandoDatos) return (
-    <div className="admin-loading">
-      <p className="text-muted">Cargando datos del cliente...</p>
-    </div>
+    <>
+      <div className="admin-form-header">
+        <div className="skeleton" style={{ width: '80px', height: '20px', borderRadius: '6px' }} />
+        <div className="skeleton" style={{ width: '140px', height: '24px', borderRadius: '6px' }} />
+      </div>
+      <SkeletonList count={5} />
+    </>
   )
 
   return (
