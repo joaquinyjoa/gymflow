@@ -347,17 +347,19 @@ export default function EjercicioForm() {
         {/* ── GIF ── */}
         <div className="admin-form-section">
           <p className="admin-form-section-title">GIF demostrativo{!esEdicion && ' *'}</p>
-          <div style={{ marginTop: '8px' }}>
+          <div className="ent-gif-section">
+            {gifPreview && (
+              <div className="ent-gif-preview-wrap">
+                <img src={gifPreview} alt="Preview" className="ent-gif-preview" />
+              </div>
+            )}
             <div className="ent-gif-upload">
               <input type="file" accept=".gif,.webp" onChange={handleGifChange} />
               <div className="ent-gif-upload-label">
-                {gifPreview ? 'Cambiar GIF' : 'Seleccionar GIF o WebP'}
+                {gifPreview ? '↺ Cambiar GIF' : '＋ Seleccionar GIF o WebP'}
               </div>
               <div className="ent-gif-hint">Formatos: GIF, WebP · Máximo 2MB</div>
             </div>
-            {gifPreview && (
-              <img src={gifPreview} alt="Preview" className="ent-gif-preview" />
-            )}
           </div>
         </div>
 
