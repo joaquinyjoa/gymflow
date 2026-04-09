@@ -45,6 +45,9 @@ export default function ClientesList() {
   const [guardandoPin, setGuardandoPin] = useState(false)
   const [pinMsg, setPinMsg] = useState('')
   const [togglingId, setTogglingId] = useState(null)
+  const [historialId, setHistorialId] = useState(null)
+  const [historialData, setHistorialData] = useState({}) // { [clienteId]: [] }
+  const [cargandoHistorial, setCargandoHistorial] = useState(false)
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -98,6 +101,8 @@ export default function ClientesList() {
       setClientes(prev => prev.map(c =>
         c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, estado: true, metodo_pago: metodoPagoRenovar } : c
       ))
+      // Invalida el caché del historial para que recargue la próxima vez
+      setHistorialData(prev => { const next = { ...prev }; delete next[renovandoId]; return next })
       setRenovandoId(null)
       setNuevaFecha('')
       setMetodoPagoRenovar('efectivo')
@@ -152,6 +157,20 @@ export default function ClientesList() {
       toast(cliente.estado ? 'Cliente desactivado' : 'Cliente activado')
     }
     setTogglingId(null)
+  }
+
+  async function toggleHistorial(clienteId) {
+    if (historialId === clienteId) { setHistorialId(null); return }
+    setHistorialId(clienteId)
+    if (historialData[clienteId]) return
+    setCargandoHistorial(true)
+    const { data } = await supabase
+      .from('renovaciones')
+      .select('id, fecha_renovacion, fecha_vencimiento, metodo_pago')
+      .eq('cliente_id', clienteId)
+      .order('fecha_renovacion', { ascending: false })
+    setHistorialData(prev => ({ ...prev, [clienteId]: data ?? [] }))
+    setCargandoHistorial(false)
   }
 
   async function eliminarCliente() {
@@ -347,6 +366,29 @@ export default function ClientesList() {
                   </div>
                 )}
 
+                {/* Panel historial renovaciones */}
+                {historialId === cliente.id && (
+                  <div className="admin-renovar-panel">
+                    <p className="admin-renovar-label">Historial de pagos — {cliente.nombre}</p>
+                    {cargandoHistorial ? (
+                      <p className="text-muted" style={{ fontSize: '13px' }}>Cargando...</p>
+                    ) : (historialData[cliente.id] ?? []).length === 0 ? (
+                      <p className="text-muted" style={{ fontSize: '13px' }}>Sin renovaciones registradas.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '6px' }}>
+                        {(historialData[cliente.id] ?? []).map(r => (
+                          <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                            <span className="text-muted">{formatFecha(r.fecha_renovacion)}</span>
+                            <span>Vence: <strong>{formatFecha(r.fecha_vencimiento)}</strong></span>
+                            <span className={`badge ${r.metodo_pago === 'efectivo' ? 'badge-neutral' : 'badge-acento'}`} style={{ textTransform: 'capitalize' }}>{r.metodo_pago}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button className="btn btn-ghost" style={{ marginTop: '10px' }} onClick={() => setHistorialId(null)}>Cerrar</button>
+                  </div>
+                )}
+
                 {/* Panel renovar membresía */}
                 {renovando && (
                   <div className="admin-renovar-panel">
@@ -410,6 +452,12 @@ export default function ClientesList() {
                     onClick={() => { setResetPinId(cliente.id); setNuevoPin(''); setPinMsg('') }}
                   >
                     Reset PIN
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => toggleHistorial(cliente.id)}
+                  >
+                    Historial
                   </button>
                 </div>
 
