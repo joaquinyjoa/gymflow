@@ -114,7 +114,7 @@ export default function ClientesList() {
   }
 
   async function resetearPin() {
-    if (!nuevoPin || nuevoPin.length < 6) { setPinMsg('El PIN debe tener al menos 6 caracteres'); return }
+    if (!nuevoPin || nuevoPin.length !== 4) { setPinMsg('El PIN debe tener exactamente 4 dígitos'); return }
     setGuardandoPin(true)
     setPinMsg('')
     const cliente = clientes.find(c => c.id === resetPinId)
@@ -362,7 +362,7 @@ export default function ClientesList() {
                         className="input"
                         type="password"
                         inputMode="numeric"
-                        placeholder="Nuevo PIN (mín. 6 caracteres)"
+                        placeholder="Nuevo PIN (4 dígitos)"
                         value={nuevoPin}
                         onChange={e => setNuevoPin(e.target.value)}
                       />

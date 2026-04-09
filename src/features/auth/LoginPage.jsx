@@ -58,7 +58,7 @@ export default function LoginPage() {
     if (!/^\d+$/.test(dni)) { setError('El DNI solo puede contener números'); return }
     if (dni.length < 6 || dni.length > 11) { setError('El DNI debe tener entre 6 y 11 dígitos'); return }
     if (!pin) { setError('El PIN es obligatorio'); return }
-    if (pin.length < 6) { setError('El PIN debe tener al menos 6 dígitos'); return }
+    if (pin.length !== 4) { setError('El PIN debe tener 4 dígitos'); return }
 
     try {
       setCargando(true)
@@ -147,7 +147,7 @@ export default function LoginPage() {
                 type="password"
                 value={pin}
                 onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-                placeholder="Mín. 6 dígitos"
+                placeholder="4 dígitos"
                 maxLength={4}
                 autoComplete="off"
               />
