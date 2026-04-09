@@ -365,6 +365,7 @@ export default function ClientesList() {
                         placeholder="Nuevo PIN (4 dígitos)"
                         value={nuevoPin}
                         onChange={e => setNuevoPin(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && resetearPin()}
                       />
                       <button
                         className="btn btn-primary"
@@ -414,6 +415,7 @@ export default function ClientesList() {
                         value={nuevaFecha}
                         min={hoy}
                         onChange={e => setNuevaFecha(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && renovarMembresia()}
                       />
                       <select
                         className="input"
