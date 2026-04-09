@@ -322,9 +322,7 @@ export default function ClientesList() {
                   <div className="admin-renovar-panel">
                     <p className="admin-renovar-label">Nuevo PIN para {cliente.nombre}</p>
                     {pinMsg && (
-                      <div className={pinMsg.includes('Error') ? 'msg-error' : 'msg-exito'} style={{ marginBottom: '8px' }}>
-                        {pinMsg}
-                      </div>
+                      <div className="msg-error" style={{ marginBottom: '8px' }}>{pinMsg}</div>
                     )}
                     <div className="admin-renovar-row">
                       <input

@@ -269,6 +269,18 @@ export default function RutinaDelDia() {
             ))}
           </div>
 
+          {/* Pantalla sesión completada */}
+          {rutinaDelDia.ejercicios.length > 0 &&
+           completados.size === rutinaDelDia.ejercicios.length && (
+            <div className="sesion-completada">
+              <div className="sesion-completada-emoji">🏆</div>
+              <h2 className="sesion-completada-titulo">¡Sesión completada!</h2>
+              <p className="sesion-completada-desc">
+                Completaste {rutinaDelDia.ejercicios.length} ejercicios. ¡Excelente trabajo!
+              </p>
+            </div>
+          )}
+
           {/* Dots */}
           {rutinaDelDia.ejercicios.length > 1 && (
             <div className="carrusel-dots">

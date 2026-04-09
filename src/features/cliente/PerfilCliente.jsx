@@ -67,7 +67,6 @@ export default function PerfilCliente() {
 
   async function cambiarPin() {
     setPinError('')
-    setPinExito('')
     if (!pinActual || !pinNuevo || !pinConfirm) { setPinError('Completá todos los campos'); return }
     if (pinNuevo.length < 4) { setPinError('El PIN debe tener al menos 4 caracteres'); return }
     if (pinNuevo !== pinConfirm) { setPinError('Los PINs nuevos no coinciden'); return }
