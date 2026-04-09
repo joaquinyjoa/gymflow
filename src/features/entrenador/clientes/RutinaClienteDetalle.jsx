@@ -338,12 +338,26 @@ export default function RutinaClienteDetalle() {
                     </span>
                   )}
                   <div className="ent-ej-override-musculo">{ej.ejercicioFinal?.musculo_principal}</div>
-                  <div className="ent-ej-override-meta">
-                    {ej.override?.series ?? ej.series} series ×{' '}
-                    {ej.override?.repeticiones ?? ej.repeticiones} ·{' '}
-                    Descanso: {ej.override?.descanso_segundos ?? ej.descanso_segundos}s ·{' '}
-                    Intensidad: {ej.override?.porcentaje_fuerza ?? ej.porcentaje_fuerza}%
-                  </div>
+                  {ej.tieneOverride ? (
+                    <div className="ent-ej-override-diff">
+                      <div className="ent-ej-diff-row">
+                        <span className="ent-ej-diff-label">Original</span>
+                        <span className="ent-ej-diff-val text-muted">
+                          {ej.series} × {ej.repeticiones} · {ej.descanso_segundos}s · {ej.porcentaje_fuerza}%
+                        </span>
+                      </div>
+                      <div className="ent-ej-diff-row">
+                        <span className="ent-ej-diff-label" style={{ color: 'var(--acento)' }}>Modificado</span>
+                        <span className="ent-ej-diff-val">
+                          {ej.override.series} × {ej.override.repeticiones} · {ej.override.descanso_segundos}s · {ej.override.porcentaje_fuerza}%
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="ent-ej-override-meta">
+                      {ej.series} series × {ej.repeticiones} · Descanso: {ej.descanso_segundos}s · Intensidad: {ej.porcentaje_fuerza}%
+                    </div>
+                  )}
                   {(ej.override?.notas || ej.notas) && (
                     <div className="ent-ej-override-nota">
                       Nota: {ej.override?.notas || ej.notas}
@@ -351,7 +365,7 @@ export default function RutinaClienteDetalle() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexShrink: 0 }}>
+                <div className="ent-ej-override-right">
                   {ej.ejercicioFinal?.enlace_video && (
                     <img
                       src={ej.ejercicioFinal.enlace_video}

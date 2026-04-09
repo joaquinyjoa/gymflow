@@ -958,10 +958,48 @@
   font-style: italic;
 }
 
+.ent-ej-override-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .ent-ej-override-acciones {
   display: flex;
+  flex-direction: column;
   gap: 6px;
+  width: 90px;
+}
+
+.ent-ej-override-acciones .btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.ent-ej-override-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.ent-ej-diff-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.ent-ej-diff-label {
+  font-weight: 600;
+  min-width: 62px;
   flex-shrink: 0;
+}
+
+.ent-ej-diff-val {
+  color: var(--text-secondary);
 }
 
 .ent-ej-override-gif {
@@ -1169,12 +1207,20 @@
     gap: 10px;
   }
 
-  .ent-ej-override-acciones {
+  .ent-ej-override-right {
+    flex-direction: row;
+    align-items: center;
     width: 100%;
+    justify-content: space-between;
+  }
+
+  .ent-ej-override-acciones {
+    flex-direction: row;
+    width: auto;
   }
 
   .ent-ej-override-acciones .btn {
-    flex: 1;
+    width: auto;
   }
 
   .ent-ej-override-gif {
