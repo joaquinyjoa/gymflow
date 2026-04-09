@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../store/AuthContext'
 import { ROUTES } from '../../lib/constants'
+import { SkeletonStats } from '../../components/Skeleton'
 
 const DIAS = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
@@ -69,6 +70,18 @@ export default function DashboardEntrenador() {
 
   const clientesConAlerta = clientes.filter(c => estaVencido(c.fecha_vencimiento) || proximoAVencer(c.fecha_vencimiento))
 
+  if (loading) return (
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <div className="skeleton" style={{ width: '180px', height: '24px', borderRadius: '6px', marginBottom: '6px' }} />
+          <div className="skeleton" style={{ width: '120px', height: '14px', borderRadius: '6px' }} />
+        </div>
+      </div>
+      <SkeletonStats count={3} />
+    </>
+  )
+
   return (
     <>
       <div className="admin-page-header">
@@ -88,7 +101,7 @@ export default function DashboardEntrenador() {
               <path d="M17 9.5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h0a2 2 0 0 1-2-2v-5z"/>
             </svg>
           </div>
-          <div className="stat-card-val">{loading ? '—' : stats.totalEjercicios}</div>
+          <div className="stat-card-val">{stats.totalEjercicios}</div>
           <div className="stat-card-label">Ejercicios</div>
         </div>
         <div className="stat-card clickable" onClick={() => navigate(ROUTES.ENTRENADOR_RUTINAS)}>
@@ -100,7 +113,7 @@ export default function DashboardEntrenador() {
               <line x1="9" y1="17" x2="13" y2="17"/>
             </svg>
           </div>
-          <div className="stat-card-val">{loading ? '—' : stats.totalRutinas}</div>
+          <div className="stat-card-val">{stats.totalRutinas}</div>
           <div className="stat-card-label">Rutinas</div>
         </div>
         <div className="stat-card clickable" onClick={() => navigate(ROUTES.ENTRENADOR_CLIENTES)}>
@@ -112,7 +125,7 @@ export default function DashboardEntrenador() {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <div className="stat-card-val">{loading ? '—' : stats.totalClientes}</div>
+          <div className="stat-card-val">{stats.totalClientes}</div>
           <div className="stat-card-label">Clientes</div>
         </div>
       </div>
