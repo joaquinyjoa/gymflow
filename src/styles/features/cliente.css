@@ -127,6 +127,25 @@
   color: var(--acento-glow);
 }
 
+/* ── Saludo cliente ── */
+.cliente-saludo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  animation: cliente-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cliente-saludo-texto {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cliente-saludo-emoji {
+  font-size: 18px;
+}
+
 /* ── Days selector ── */
 .dias-selector {
   display: flex;

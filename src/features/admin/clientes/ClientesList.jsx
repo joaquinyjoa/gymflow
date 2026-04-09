@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
+import { useToast } from '../../../components/Toast'
+import { SkeletonList } from '../../../components/Skeleton'
 
 function formatFecha(iso) {
   if (!iso) return '—'
@@ -44,6 +46,7 @@ export default function ClientesList() {
   const [pinMsg, setPinMsg] = useState('')
   const [togglingId, setTogglingId] = useState(null)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => { cargarClientes() }, [])
 
@@ -51,7 +54,7 @@ export default function ClientesList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('clientes')
-      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero')
+      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero, metodo_pago')
       .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
@@ -98,6 +101,7 @@ export default function ClientesList() {
       setRenovandoId(null)
       setNuevaFecha('')
       setMetodoPagoRenovar('efectivo')
+      toast('Membresía renovada')
     } else {
       setError('Error al renovar membresía')
     }
@@ -127,12 +131,10 @@ export default function ClientesList() {
     if (error || data?.error) {
       setPinMsg('Error al resetear PIN')
     } else {
-      setPinMsg('PIN reseteado correctamente')
-      setTimeout(() => {
-        setResetPinId(null)
-        setNuevoPin('')
-        setPinMsg('')
-      }, 1500)
+      toast('PIN reseteado correctamente')
+      setResetPinId(null)
+      setNuevoPin('')
+      setPinMsg('')
     }
     setGuardandoPin(false)
   }
@@ -145,7 +147,10 @@ export default function ClientesList() {
       .eq('id', cliente.id)
 
     if (error) { setError('Error al actualizar estado') }
-    else setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c))
+    else {
+      setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c))
+      toast(cliente.estado ? 'Cliente desactivado' : 'Cliente activado')
+    }
     setTogglingId(null)
   }
 
@@ -173,9 +178,15 @@ export default function ClientesList() {
   }
 
   if (loading) return (
-    <div className="admin-loading">
-      <p className="text-muted">Cargando clientes...</p>
-    </div>
+    <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-left">
+          <div className="skeleton" style={{ width: '100px', height: '24px', borderRadius: '6px', marginBottom: '6px' }} />
+          <div className="skeleton" style={{ width: '120px', height: '14px', borderRadius: '6px' }} />
+        </div>
+      </div>
+      <SkeletonList count={4} />
+    </>
   )
 
   return (
@@ -289,6 +300,12 @@ export default function ClientesList() {
                       {cliente.estado && !vencido ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
+                  {cliente.metodo_pago && (
+                    <div className="admin-card-meta-row">
+                      <span className="admin-card-meta-label">Último pago</span>
+                      <span className="fecha-vigente" style={{ textTransform: 'capitalize' }}>{cliente.metodo_pago}</span>
+                    </div>
+                  )}
                   {cliente.genero && (
                     <div className="admin-card-meta-row">
                       <span className="admin-card-meta-label">Género</span>

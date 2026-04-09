@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { leerHistorialPesos } from '../../hooks/useRutinaCache'
+import { useToast } from '../../components/Toast'
 
 function fmtFecha(iso) {
   if (!iso) return '—'
@@ -18,13 +19,13 @@ function estaVencido(fecha) {
 export default function PerfilCliente() {
   const { perfil } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
   const historial = leerHistorialPesos()
 
   const [editando, setEditando] = useState(false)
   const [formEdit, setFormEdit] = useState({ peso: '', altura: '', objetivo: '' })
   const [guardando, setGuardando] = useState(false)
   const [editError, setEditError] = useState('')
-  const [editExito, setEditExito] = useState(false)
 
   function abrirEdicion() {
     setFormEdit({ peso: perfil?.peso ?? '', altura: perfil?.altura ?? '', objetivo: perfil?.objetivo ?? '' })
@@ -49,9 +50,8 @@ export default function PerfilCliente() {
 
     if (error) { setEditError('Error al guardar, intentá de nuevo') }
     else {
-      setEditExito(true)
       setEditando(false)
-      setTimeout(() => setEditExito(false), 2500)
+      toast('Datos actualizados')
     }
     setGuardando(false)
   }
@@ -61,7 +61,6 @@ export default function PerfilCliente() {
   const [pinConfirm, setPinConfirm] = useState('')
   const [cambiando, setCambiando]   = useState(false)
   const [pinError, setPinError]     = useState('')
-  const [pinExito, setPinExito]     = useState('')
   const [mostrarForm, setMostrarForm] = useState(false)
 
   const vencido = estaVencido(perfil?.fecha_vencimiento)
@@ -86,7 +85,7 @@ export default function PerfilCliente() {
       const { error } = await supabase.auth.updateUser({ password: pinNuevo })
       if (error) throw error
 
-      setPinExito('PIN cambiado correctamente')
+      toast('PIN cambiado correctamente')
       setPinActual(''); setPinNuevo(''); setPinConfirm('')
       setMostrarForm(false)
     } catch {
@@ -133,8 +132,6 @@ export default function PerfilCliente() {
               <button className="btn-perfil-edit" onClick={abrirEdicion}>Editar</button>
             )}
           </div>
-
-          {editExito && <div className="msg-exito" style={{ marginTop: '8px' }}>Datos actualizados</div>}
 
           {editando ? (
             <div className="perfil-edit-form">
@@ -250,8 +247,6 @@ export default function PerfilCliente() {
       {/* Cambio de PIN */}
       <div className="perfil-card">
         <div className="perfil-section-title">Seguridad</div>
-
-        {pinExito && <div className="msg-exito mb-16">{pinExito}</div>}
 
         {!mostrarForm ? (
           <button className="btn btn-secondary btn-full" onClick={() => setMostrarForm(true)}>

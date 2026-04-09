@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '../store/AuthContext'
+import { ToastProvider } from '../components/Toast'
 import ProtectedRoute from './ProtectedRoute'
 import ErrorBoundary from '../components/ErrorBoundary'
 import InstallPrompt from '../components/InstallPrompt'
@@ -49,6 +50,7 @@ export default function AppRouter() {
     <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
+      <ToastProvider>
         <Routes>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
 
@@ -101,6 +103,7 @@ export default function AppRouter() {
         </Routes>
         <InstallPrompt />
         <OfflineBanner />
+      </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
     </ErrorBoundary>

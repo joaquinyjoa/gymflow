@@ -4,7 +4,16 @@ import { useAuth } from '../../store/AuthContext'
 import { getRutinas, guardarPeso, leerPeso } from '../../hooks/useRutinaCache'
 import { useWakeLock } from '../../hooks/useWakeLock'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
+import { useToast } from '../../components/Toast'
+import { SkeletonCard } from '../../components/Skeleton'
 import '../../styles/features/cliente.css'
+
+function saludo() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Buenos días'
+  if (h < 19) return 'Buenas tardes'
+  return 'Buenas noches'
+}
 
 function fmtFecha(iso) {
   if (!iso) return null
@@ -66,8 +75,12 @@ export default function RutinaDelDia() {
 
   const { perfil, clienteVencido } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
   useWakeLock(true)
-  const { tirando, progreso, refrescando } = usePullToRefresh(() => cargarRutinas()) // Evita que la pantalla se apague durante el entrenamiento
+  const { tirando, progreso, refrescando } = usePullToRefresh(async () => {
+    await cargarRutinas()
+    toast('Rutina actualizada')
+  }) // Evita que la pantalla se apague durante el entrenamiento
 
   useEffect(() => {
     if (perfil?.id) cargarRutinas()
@@ -106,8 +119,14 @@ export default function RutinaDelDia() {
   )
 
   if (loading && rutinas.length === 0) return (
-    <div className="estado-center">
-      <p className="text-muted">Cargando tu rutina...</p>
+    <div className="rutina-container">
+      <div className="cliente-saludo">
+        <div className="skeleton" style={{ width: '160px', height: '20px', borderRadius: '6px' }} />
+      </div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        {[1,2,3].map(i => <div key={i} className="skeleton" style={{ width: '52px', height: '36px', borderRadius: '8px' }} />)}
+      </div>
+      <SkeletonCard />
     </div>
   )
 
@@ -158,6 +177,12 @@ export default function RutinaDelDia() {
           </div>
         )
       })()}
+
+      {/* Saludo */}
+      <div className="cliente-saludo">
+        <span className="cliente-saludo-texto">{saludo()}, {perfil?.nombre ?? ''}</span>
+        <span className="cliente-saludo-emoji">👋</span>
+      </div>
 
       {/* Selector de días */}
       <div className="dias-selector">

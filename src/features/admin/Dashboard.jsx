@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { SkeletonStats } from '../../components/Skeleton'
 
 function StatCard({ icon, valor, label, color }) {
   return (
@@ -106,7 +107,6 @@ export default function Dashboard() {
   }
 
   const s = stats
-  const val = (v) => loading ? '—' : v
 
   return (
     <>
@@ -119,15 +119,15 @@ export default function Dashboard() {
 
       {/* ── Membresías ── */}
       <p className="dashboard-seccion-titulo">Membresías</p>
-      <div className="dashboard-stats">
-        <StatCard icon={<IconUsers />}    valor={val(s?.total)}       label="Total clientes"      color="acento" />
-        <StatCard icon={<IconCheck />}    valor={val(s?.activos)}     label="Activos"             color="success" />
-        <StatCard icon={<IconWarning />}  valor={val(s?.vencidos)}    label="Vencidos"            color="danger" />
-        <StatCard icon={<IconClock />}    valor={val(s?.porVencer7)}  label="Vencen esta semana"  color="warning" />
-        <StatCard icon={<IconClock />}    valor={val(s?.porVencer30)} label="Vencen este mes"     color="warning" />
-        <StatCard icon={<IconEntrenador />} valor={val(s?.totalEntrenadores)} label="Entrenadores" color="neutral" />
-        <StatCard icon={<IconRutina />}   valor={val(s?.totalRutinas)} label="Rutinas"            color="rutina" />
-      </div>
+      {loading ? <SkeletonStats count={7} /> : <div className="dashboard-stats">
+        <StatCard icon={<IconUsers />}    valor={s?.total}       label="Total clientes"      color="acento" />
+        <StatCard icon={<IconCheck />}    valor={s?.activos}     label="Activos"             color="success" />
+        <StatCard icon={<IconWarning />}  valor={s?.vencidos}    label="Vencidos"            color="danger" />
+        <StatCard icon={<IconClock />}    valor={s?.porVencer7}  label="Vencen esta semana"  color="warning" />
+        <StatCard icon={<IconClock />}    valor={s?.porVencer30} label="Vencen este mes"     color="warning" />
+        <StatCard icon={<IconEntrenador />} valor={s?.totalEntrenadores} label="Entrenadores" color="neutral" />
+        <StatCard icon={<IconRutina />}   valor={s?.totalRutinas} label="Rutinas"            color="rutina" />
+      </div>}
 
       {/* ── Gráfico donut ── */}
       {!loading && s?.total > 0 && (

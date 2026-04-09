@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
+import { useToast } from '../../../components/Toast'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -28,7 +29,7 @@ export default function RutinaClienteDetalle() {
   const [restaurando, setRestaurando] = useState(false)
   const [notasEntrenador, setNotasEntrenador] = useState('')
   const [guardandoNota, setGuardandoNota] = useState(false)
-  const [notaGuardada, setNotaGuardada] = useState(false)
+  const toast = useToast()
 
   const { clienteId, rutinaClienteId } = useParams()
   const navigate = useNavigate()
@@ -69,10 +70,7 @@ export default function RutinaClienteDetalle() {
       .from('clientes')
       .update({ notas_entrenador: notasEntrenador })
       .eq('id', clienteId)
-    if (!error) {
-      setNotaGuardada(true)
-      setTimeout(() => setNotaGuardada(false), 2000)
-    }
+    if (!error) toast('Nota guardada')
     setGuardandoNota(false)
   }
 
@@ -306,7 +304,6 @@ export default function RutinaClienteDetalle() {
       <div className="ent-notas-card">
         <div className="ent-notas-header">
           <span className="ent-notas-titulo">Notas del entrenador</span>
-          {notaGuardada && <span className="ent-notas-guardada">Guardado</span>}
         </div>
         <textarea
           className="input ent-notas-textarea"
