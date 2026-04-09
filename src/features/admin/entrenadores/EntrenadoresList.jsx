@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
+import { useToast } from '../../../components/Toast'
 
 function IconTrash() {
   return (
@@ -23,6 +24,7 @@ export default function EntrenadoresList() {
   const [eliminando, setEliminando] = useState(false)
   const [togglingId, setTogglingId] = useState(null)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => { cargarEntrenadores() }, [])
 
@@ -46,7 +48,10 @@ export default function EntrenadoresList() {
       .eq('id', entrenador.user_id)
 
     if (error) { setError('Error al actualizar estado') }
-    else setEntrenadores(prev => prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e))
+    else {
+      setEntrenadores(prev => prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e))
+      toast(entrenador.activo ? 'Entrenador desactivado' : 'Entrenador activado')
+    }
     setTogglingId(null)
   }
 
@@ -57,8 +62,10 @@ export default function EntrenadoresList() {
     })
 
     if (error || result?.error) setError('Error al eliminar entrenador')
-    else setEntrenadores(prev => prev.filter(e => e.id !== confirmItem.id))
-
+    else {
+      setEntrenadores(prev => prev.filter(e => e.id !== confirmItem.id))
+      toast('Entrenador eliminado')
+    }
     setEliminando(false)
     setConfirmItem(null)
   }

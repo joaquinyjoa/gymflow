@@ -24,7 +24,6 @@ export default function RutinaClienteDetalle() {
   const [mostrarDropdown, setMostrarDropdown] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [exito, setExito] = useState('')
   const [confirmRestore, setConfirmRestore] = useState(null)
   const [restaurando, setRestaurando] = useState(false)
   const [notasEntrenador, setNotasEntrenador] = useState('')
@@ -169,7 +168,6 @@ export default function RutinaClienteDetalle() {
       overrideId: ejercicio.override?.id ?? null,
     })
     setError('')
-    setExito('')
     setMostrarDropdown(false)
   }
 
@@ -218,7 +216,7 @@ export default function RutinaClienteDetalle() {
         if (error) throw new Error(error.message)
       }
 
-      setExito('Ejercicio modificado correctamente para este cliente')
+      toast('Ejercicio modificado para este cliente')
       setEjercicioEditando(null)
       setBusquedaEjercicio('')
       cargarRutina()
@@ -235,7 +233,7 @@ export default function RutinaClienteDetalle() {
       .eq('id', confirmRestore.overrideId)
 
     if (!error) {
-      setExito('Ejercicio restaurado al original')
+      toast('Ejercicio restaurado al original')
       cargarRutina()
     }
 
@@ -297,7 +295,6 @@ export default function RutinaClienteDetalle() {
         <span className="badge badge-neutral">{ejercicios.length} ejercicio{ejercicios.length !== 1 ? 's' : ''}</span>
       </div>
 
-      {exito && <div className="msg-exito mb-16">{exito}</div>}
       {error && <div className="msg-error mb-16">{error}</div>}
 
       {/* Notas del entrenador */}

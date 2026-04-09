@@ -5,6 +5,7 @@ import { useAuth } from '../../../store/AuthContext'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
+import { useToast } from '../../../components/Toast'
 
 function IconTrash() {
   return (
@@ -29,6 +30,7 @@ export default function EjerciciosList() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const { perfil } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     if (perfil?.id) cargarEjercicios()
@@ -58,6 +60,7 @@ export default function EjerciciosList() {
     setEjercicios(prev =>
       prev.map(e => e.id === ejercicio.id ? { ...e, activo: !e.activo } : e)
     )
+    toast(ejercicio.activo ? 'Ejercicio desactivado' : 'Ejercicio activado')
   }
 
   async function eliminarEjercicio() {
@@ -75,8 +78,10 @@ export default function EjerciciosList() {
       .eq('id', confirmItem.id)
 
     if (error) setError('Error al eliminar ejercicio')
-    else setEjercicios(prev => prev.filter(e => e.id !== confirmItem.id))
-
+    else {
+      setEjercicios(prev => prev.filter(e => e.id !== confirmItem.id))
+      toast('Ejercicio eliminado')
+    }
     setEliminando(false)
     setConfirmItem(null)
   }

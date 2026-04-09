@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { invocarFuncion } from '../../../lib/api'
 import { SkeletonList } from '../../../components/Skeleton'
+import { useToast } from '../../../components/Toast'
 
 function getFechaProximoMes() {
   const fecha = new Date()
@@ -45,6 +46,7 @@ export default function ClienteForm() {
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
+  const toast = useToast()
 
   const navigate = useNavigate()
   const { id } = useParams()
@@ -134,6 +136,7 @@ export default function ClienteForm() {
     setLoading(true)
     try {
       esEdicion ? await editarCliente() : await crearCliente()
+      toast(esEdicion ? 'Cliente guardado' : 'Cliente creado')
       navigate('/admin/clientes')
     } catch (err) {
       setError(err.message)
@@ -180,7 +183,7 @@ export default function ClienteForm() {
 
     if (clienteError) throw new Error(`Error actualizando cliente: ${clienteError.message}`)
 
-    if (pin.length === 4) {
+    if (pin.length >= 6) {
       const { data: clienteData } = await supabase.from('clientes').select('user_id').eq('id', id).single()
       const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
         body: { user_id: clienteData.user_id, pin }

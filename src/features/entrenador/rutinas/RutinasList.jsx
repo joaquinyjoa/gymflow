@@ -5,6 +5,7 @@ import { useAuth } from '../../../store/AuthContext'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
+import { useToast } from '../../../components/Toast'
 
 function IconTrash() {
   return (
@@ -25,6 +26,7 @@ export default function RutinasList() {
   const [eliminando, setEliminando] = useState(false)
   const { perfil } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     if (perfil?.id) cargarRutinas()
@@ -59,6 +61,7 @@ export default function RutinasList() {
 
     if (error) { setError('Error al actualizar rutina'); return }
     setRutinas(prev => prev.map(r => r.id === rutina.id ? { ...r, activo: !r.activo } : r))
+    toast(rutina.activo ? 'Rutina desactivada' : 'Rutina activada')
   }
 
   async function eliminarRutina() {
@@ -69,8 +72,10 @@ export default function RutinasList() {
       .eq('id', confirmItem.id)
 
     if (error) setError('Error al eliminar rutina')
-    else setRutinas(prev => prev.filter(r => r.id !== confirmItem.id))
-
+    else {
+      setRutinas(prev => prev.filter(r => r.id !== confirmItem.id))
+      toast('Rutina eliminada')
+    }
     setEliminando(false)
     setConfirmItem(null)
   }

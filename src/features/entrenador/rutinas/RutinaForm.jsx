@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
+import { useToast } from '../../../components/Toast'
 
 const estadoInicial = {
   nombre: '',
@@ -33,6 +34,7 @@ export default function RutinaForm() {
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
+  const toast = useToast()
 
   const navigate = useNavigate()
   const { id } = useParams()
@@ -236,6 +238,7 @@ export default function RutinaForm() {
       const { error: ejError } = await supabase.from('rutinas_ejercicios').insert(ejerciciosParaInsertar)
       if (ejError) throw new Error(ejError.message)
 
+      toast(esEdicion ? 'Rutina guardada' : 'Rutina creada')
       navigate('/entrenador/rutinas')
     } catch (err) {
       setError(err.message)

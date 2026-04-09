@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
+import { useToast } from '../../../components/Toast'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -36,12 +37,12 @@ export default function AsignarRutina() {
   const [loading, setLoading] = useState(false)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
-  const [exito, setExito] = useState('')
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
 
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => { cargarDatos() }, [id])
 
@@ -159,7 +160,7 @@ export default function AsignarRutina() {
       const { error } = await supabase.from('rutinas_clientes').insert(inserts)
       if (error) throw new Error(error.message)
 
-      setExito(`Rutina asignada a ${clientesSeleccionados.length} cliente${clientesSeleccionados.length > 1 ? 's' : ''}`)
+      toast(`Rutina asignada a ${clientesSeleccionados.length} cliente${clientesSeleccionados.length > 1 ? 's' : ''}`)
       setClientesSeleccionados([])
       setDiaSemana('')
       cargarAsignaciones()
@@ -177,8 +178,10 @@ export default function AsignarRutina() {
       .delete()
       .eq('id', confirmItem.id)
 
-    if (!error) setAsignaciones(prev => prev.filter(a => a.id !== confirmItem.id))
-
+    if (!error) {
+      setAsignaciones(prev => prev.filter(a => a.id !== confirmItem.id))
+      toast('Asignación eliminada')
+    }
     setEliminando(false)
     setConfirmItem(null)
   }
@@ -290,7 +293,6 @@ export default function AsignarRutina() {
           )}
 
           {error && <div className="msg-error mb-16" style={{ marginTop: '12px' }}>{error}</div>}
-          {exito && <div className="msg-exito mb-16" style={{ marginTop: '12px' }}>{exito}</div>}
 
           <div style={{ marginTop: '12px' }}>
             <button

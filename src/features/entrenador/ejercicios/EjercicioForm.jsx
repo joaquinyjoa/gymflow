@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../store/AuthContext'
+import { useToast } from '../../../components/Toast'
 
 const MUSCULOS = [
   'Pecho', 'Espalda', 'Hombros', 'Biceps', 'Triceps', 'Piernas', 'Glúteos', 'Core', 'Full Body'
@@ -34,6 +35,7 @@ export default function EjercicioForm() {
   const { id } = useParams()
   const { perfil } = useAuth()
   const esEdicion = Boolean(id)
+  const toast = useToast()
 
   useEffect(() => {
     if (esEdicion) cargarEjercicio()
@@ -169,6 +171,7 @@ export default function EjercicioForm() {
         if (error) throw new Error(error.message)
       }
 
+      toast(esEdicion ? 'Ejercicio guardado' : 'Ejercicio creado')
       navigate('/entrenador/ejercicios')
     } catch (err) {
       setError(err.message)

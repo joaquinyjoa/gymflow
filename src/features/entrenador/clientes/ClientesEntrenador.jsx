@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import ConfirmModal from '../../../components/ConfirmModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
+import { useToast } from '../../../components/Toast'
 
 const DIAS = [
   { value: 1, label: 'Lunes' },
@@ -41,6 +42,7 @@ export default function ClientesEntrenador() {
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => { cargarClientes() }, [])
 
@@ -100,6 +102,7 @@ export default function ClientesEntrenador() {
         }
         return { ...prev, [clienteId]: updated }
       })
+      toast('Rutina desasignada')
     }
 
     setEliminando(false)

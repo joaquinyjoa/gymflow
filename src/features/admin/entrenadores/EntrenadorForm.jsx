@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { invocarFuncion } from '../../../lib/api'
+import { useToast } from '../../../components/Toast'
 
 const estadoInicial = {
   nombre: '',
@@ -15,6 +16,7 @@ export default function EntrenadorForm() {
   const [loading, setLoading] = useState(false)
   const [cargandoDatos, setCargandoDatos] = useState(false)
   const [error, setError] = useState('')
+  const toast = useToast()
 
   const navigate = useNavigate()
   const { id } = useParams()
@@ -57,6 +59,7 @@ export default function EntrenadorForm() {
     setLoading(true)
     try {
       esEdicion ? await editarEntrenador() : await crearEntrenador()
+      toast(esEdicion ? 'Entrenador guardado' : 'Entrenador creado')
       navigate('/admin/entrenadores')
     } catch (err) {
       setError(err.message)
@@ -80,7 +83,7 @@ export default function EntrenadorForm() {
 
     if (entrenadorError) throw new Error(`Error actualizando entrenador: ${entrenadorError.message}`)
 
-    if (pin.length === 4) {
+    if (pin.length >= 6) {
       const { data: entrenadorData } = await supabase.from('entrenadores').select('user_id').eq('id', id).single()
       const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
         body: { user_id: entrenadorData.user_id, pin }
