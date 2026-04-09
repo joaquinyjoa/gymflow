@@ -17,7 +17,7 @@ function estaVencido(fecha) {
 }
 
 export default function PerfilCliente() {
-  const { perfil } = useAuth()
+  const { perfil, setPerfil } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
   const historial = leerHistorialPesos()
@@ -50,6 +50,10 @@ export default function PerfilCliente() {
 
     if (error) { setEditError('Error al guardar, intentá de nuevo') }
     else {
+      const nuevoPeso = formEdit.peso ? Number(formEdit.peso) : perfil.peso
+      const nuevaAltura = formEdit.altura ? Number(formEdit.altura) : perfil.altura
+      const nuevoObjetivo = formEdit.objetivo || perfil.objetivo
+      setPerfil(prev => ({ ...prev, peso: nuevoPeso, altura: nuevaAltura, objetivo: nuevoObjetivo }))
       setEditando(false)
       toast('Datos actualizados')
     }

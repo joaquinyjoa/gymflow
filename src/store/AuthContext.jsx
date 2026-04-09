@@ -121,7 +121,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, perfil, rol, loading,
+      user, perfil, setPerfil, rol, loading,
       perfilListo, authError, setAuthError,
       clienteVencido,
       login, logout, getRutaInicial
