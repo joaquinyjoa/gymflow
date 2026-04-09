@@ -79,9 +79,11 @@ Deno.serve(async (req) => {
 
   // 3. Insertar perfil en clientes o entrenadores
   const tabla = rol === 'cliente' ? 'clientes' : 'entrenadores'
-  const { error: perfilError } = await supabase
+  const { data: perfilData, error: perfilError } = await supabase
     .from(tabla)
     .insert({ user_id: userId, correo: email, ...perfil })
+    .select('id')
+    .single()
 
   if (perfilError) {
     await supabase.from('users').delete().eq('id', userId)
@@ -89,5 +91,5 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: perfilError.message }), { status: 400, headers: CORS })
   }
 
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS })
+  return new Response(JSON.stringify({ ok: true, cliente_id: perfilData?.id ?? null }), { status: 200, headers: CORS })
 })

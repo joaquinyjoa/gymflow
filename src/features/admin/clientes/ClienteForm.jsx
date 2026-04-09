@@ -142,7 +142,7 @@ export default function ClienteForm() {
   }
 
   async function crearCliente() {
-    await invocarFuncion('crear-usuario', {
+    const result = await invocarFuncion('crear-usuario', {
       dni, pin, rol: 'cliente',
       perfil: {
         ...form,
@@ -154,6 +154,15 @@ export default function ClienteForm() {
         fecha_aceptacion_terminos: new Date().toISOString(),
       }
     })
+
+    if (result.cliente_id && form.fecha_vencimiento) {
+      await supabase.from('renovaciones').insert({
+        cliente_id: result.cliente_id,
+        fecha_vencimiento: form.fecha_vencimiento,
+        metodo_pago: form.metodo_pago,
+        fecha_renovacion: new Date().toISOString().split('T')[0],
+      })
+    }
   }
 
   async function editarCliente() {
