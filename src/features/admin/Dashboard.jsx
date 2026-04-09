@@ -56,6 +56,18 @@ function IconEntrenador() {
 function IconRutina() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
 }
+function IconCash({ color }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+}
+function IconTransfer({ color }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+}
+function IconCalendar({ color }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+}
+function IconRefresh({ color }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+}
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null)
@@ -164,22 +176,22 @@ export default function Dashboard() {
           <p className="dashboard-chart-titulo">Métodos de pago</p>
           <div className="dashboard-pagos-grid">
             <div className="dashboard-pago-stat">
-              <span className="dashboard-pago-emoji">💵</span>
+              <span className="dashboard-pago-icon"><IconCash color="#22C55E" /></span>
               <span className="dashboard-pago-val">{s.renovEfectivo}</span>
               <span className="dashboard-pago-label">Efectivo</span>
             </div>
             <div className="dashboard-pago-stat">
-              <span className="dashboard-pago-emoji">📲</span>
+              <span className="dashboard-pago-icon"><IconTransfer color="#60a5fa" /></span>
               <span className="dashboard-pago-val">{s.renovTransferencia}</span>
               <span className="dashboard-pago-label">Transferencia</span>
             </div>
             <div className="dashboard-pago-stat">
-              <span className="dashboard-pago-emoji">📅</span>
+              <span className="dashboard-pago-icon"><IconCalendar color="#EAB308" /></span>
               <span className="dashboard-pago-val">{s.renovEsteMes}</span>
               <span className="dashboard-pago-label">Este mes</span>
             </div>
             <div className="dashboard-pago-stat">
-              <span className="dashboard-pago-emoji">🔁</span>
+              <span className="dashboard-pago-icon"><IconRefresh color="var(--text-secondary)" /></span>
               <span className="dashboard-pago-val">{s.totalRenovaciones}</span>
               <span className="dashboard-pago-label">Total renovaciones</span>
             </div>

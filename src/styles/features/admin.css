@@ -330,7 +330,15 @@
   text-align: center;
 }
 
-.dashboard-pago-emoji { font-size: 20px; }
+.dashboard-pago-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--bg-input);
+}
 
 .dashboard-pago-val {
   font-size: 22px;
