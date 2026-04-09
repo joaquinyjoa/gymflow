@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
       .subscribe()
 
     return () => supabase.removeChannel(channel)
-  }, [])
+  }, [user])
 
   async function cargarPerfil(authUser) {
     setPerfilListo(false)
