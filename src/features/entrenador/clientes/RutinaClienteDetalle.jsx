@@ -130,7 +130,7 @@ export default function RutinaClienteDetalle() {
         return {
           ...ej,
           override: override ?? null,
-          ejercicioFinal: override ? override.ejercicios : ej.ejercicios,
+          ejercicioFinal: (override ? (override.ejercicios ?? ej.ejercicios) : ej.ejercicios),
           tieneOverride: Boolean(override),
         }
       })
