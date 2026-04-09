@@ -12,7 +12,7 @@ export default function CambiarPinModal({ onClose }) {
   async function guardar() {
     setError('')
     if (!pinActual || !pinNuevo || !pinConfirm) { setError('Completá todos los campos'); return }
-    if (pinNuevo.length < 4) { setError('El PIN debe tener al menos 4 caracteres'); return }
+    if (pinNuevo.length < 6) { setError('El PIN debe tener al menos 6 caracteres'); return }
     if (pinNuevo !== pinConfirm) { setError('Los PINs nuevos no coinciden'); return }
 
     setGuardando(true)

@@ -106,7 +106,7 @@ export default function ClienteForm() {
     if (dni.length < 6 || dni.length > 11) { setError('El DNI debe tener entre 6 y 11 dígitos'); return }
     if (!esEdicion && !pin) { setError('El PIN es obligatorio'); return }
     if (pin && !/^\d+$/.test(pin)) { setError('El PIN solo puede contener números'); return }
-    if (pin && pin.length !== 4) { setError('El PIN debe tener exactamente 4 dígitos'); return }
+    if (pin && pin.length < 6) { setError('El PIN debe tener al menos 6 dígitos'); return }
     if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre)) { setError('El nombre solo puede contener letras'); return }
     if (!form.apellido.trim()) { setError('El apellido es obligatorio'); return }
@@ -238,7 +238,7 @@ export default function ClienteForm() {
                 type="password"
                 value={pin}
                 onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-                placeholder="4 dígitos"
+                placeholder="Mín. 6 dígitos"
                 maxLength={4}
                 autoComplete="off"
               />

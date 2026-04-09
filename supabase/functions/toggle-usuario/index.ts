@@ -19,18 +19,16 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: CORS })
   }
 
-  // Cliente con JWT del usuario para verificar identidad
   const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: authHeader } },
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // Cliente con service role para operaciones admin
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // ── Verificar que el caller es admin ──────────────────────────────────
+  // Verificar que el caller es admin
   const { data: { user: caller }, error: authError } = await supabaseUser.auth.getUser()
   if (authError || !caller) {
     return new Response(JSON.stringify({ error: 'Token inválido' }), { status: 401, headers: CORS })
@@ -40,26 +38,18 @@ Deno.serve(async (req) => {
     .from('users').select('rol').eq('id', caller.id).single()
 
   if (callerData?.rol !== 'admin') {
-    return new Response(
-      JSON.stringify({ error: 'Solo el administrador puede cambiar PINs' }),
-      { status: 403, headers: CORS }
-    )
+    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: CORS })
   }
 
-  // ── Procesar request ───────────────────────────────────────────────────
-  const { user_id, pin } = await req.json()
+  const { user_id, activo } = await req.json()
 
-  if (!user_id || !pin) {
-    return new Response(
-      JSON.stringify({ error: 'Faltan campos obligatorios' }),
-      { status: 400, headers: CORS }
-    )
+  if (!user_id || activo === undefined) {
+    return new Response(JSON.stringify({ error: 'Faltan campos obligatorios' }), { status: 400, headers: CORS })
   }
 
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, { password: pin })
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: CORS })
+  // Si se desactiva, revocar todas las sesiones activas
+  if (!activo) {
+    await supabaseAdmin.auth.admin.signOut(user_id, 'global')
   }
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS })

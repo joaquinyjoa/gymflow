@@ -57,7 +57,7 @@ export default function ClientesList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('clientes')
-      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero, metodo_pago')
+      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero, metodo_pago, user_id')
       .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
@@ -114,7 +114,7 @@ export default function ClientesList() {
   }
 
   async function resetearPin() {
-    if (!nuevoPin || nuevoPin.length < 4) { setPinMsg('El PIN debe tener al menos 4 caracteres'); return }
+    if (!nuevoPin || nuevoPin.length < 6) { setPinMsg('El PIN debe tener al menos 6 caracteres'); return }
     setGuardandoPin(true)
     setPinMsg('')
     const cliente = clientes.find(c => c.id === resetPinId)
@@ -134,7 +134,7 @@ export default function ClientesList() {
     })
 
     if (error || data?.error) {
-      setPinMsg('Error al resetear PIN')
+      setPinMsg(data?.error || error?.message || 'Error al resetear PIN')
     } else {
       toast('PIN reseteado correctamente')
       setResetPinId(null)
@@ -146,15 +146,29 @@ export default function ClientesList() {
 
   async function toggleEstado(cliente) {
     setTogglingId(cliente.id)
-    const { error } = await supabase
-      .from('clientes')
-      .update({ estado: !cliente.estado })
-      .eq('id', cliente.id)
+    const nuevoEstado = !cliente.estado
 
-    if (error) { setError('Error al actualizar estado') }
+    const ops = [
+      supabase.from('clientes').update({ estado: nuevoEstado }).eq('id', cliente.id),
+      cliente.user_id
+        ? supabase.from('users').update({ activo: nuevoEstado }).eq('id', cliente.user_id)
+        : Promise.resolve({ error: null }),
+    ]
+
+    // Si se desactiva, también revocar sesión activa
+    if (!nuevoEstado && cliente.user_id) {
+      ops.push(supabase.functions.invoke('toggle-usuario', {
+        body: { user_id: cliente.user_id, activo: false }
+      }))
+    }
+
+    const results = await Promise.all(ops)
+    const errores = results.filter(r => r.error)
+
+    if (errores.length) { setError('Error al actualizar estado') }
     else {
-      setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: !c.estado } : c))
-      toast(cliente.estado ? 'Cliente desactivado' : 'Cliente activado')
+      setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: nuevoEstado } : c))
+      toast(nuevoEstado ? 'Cliente activado' : 'Cliente desactivado')
     }
     setTogglingId(null)
   }
@@ -348,7 +362,7 @@ export default function ClientesList() {
                         className="input"
                         type="password"
                         inputMode="numeric"
-                        placeholder="Nuevo PIN (mín. 4 caracteres)"
+                        placeholder="Nuevo PIN (mín. 6 caracteres)"
                         value={nuevoPin}
                         onChange={e => setNuevoPin(e.target.value)}
                       />
