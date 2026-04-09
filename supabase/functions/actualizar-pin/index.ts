@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import * as bcrypt from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -54,13 +53,10 @@ Deno.serve(async (req) => {
     )
   }
 
-  // Hashear el PIN con bcrypt y actualizar directamente en auth.users
-  // (evita la política de contraseñas de Supabase que rechaza < 6 chars)
-  const hash = await bcrypt.hash(pin)
-
+  // Hashear el PIN en PostgreSQL con crypt() + bcrypt (evita política de contraseñas de Supabase)
   const { error } = await supabaseAdmin.rpc('update_user_password', {
     p_user_id: user_id,
-    p_hash: hash,
+    p_pin: pin,
   })
 
   if (error) {
