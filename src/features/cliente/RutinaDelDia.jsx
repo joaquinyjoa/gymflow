@@ -61,12 +61,14 @@ export default function RutinaDelDia() {
     } catch { return new Set() }
   })
   const carruselRef = useRef(null)
+  const sesionRegistradaRef = useRef(false)
 
   // Persistir completados en sessionStorage al cambiar
   useEffect(() => {
     try { sessionStorage.setItem('gymflow_completados', JSON.stringify([...completados])) } catch {}
-    // Registrar sesión en Supabase si hay al menos 1 ejercicio completado
-    if (completados.size > 0 && perfil?.id) {
+    // Registrar sesión una sola vez al marcar el primer ejercicio del día
+    if (completados.size === 1 && perfil?.id && !sesionRegistradaRef.current) {
+      sesionRegistradaRef.current = true
       const hoy = new Date().toISOString().split('T')[0]
       supabase.from('sesiones_cliente').upsert(
         { cliente_id: perfil.id, fecha: hoy },
