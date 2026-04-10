@@ -155,13 +155,6 @@ export default function ClientesList() {
         : Promise.resolve({ error: null }),
     ]
 
-    // Si se desactiva, también revocar sesión activa
-    if (!nuevoEstado && cliente.user_id) {
-      ops.push(supabase.functions.invoke('toggle-usuario', {
-        body: { user_id: cliente.user_id, activo: false }
-      }))
-    }
-
     const results = await Promise.all(ops)
     const errores = results.filter(r => r.error)
 
@@ -169,6 +162,17 @@ export default function ClientesList() {
     else {
       setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: nuevoEstado } : c))
       toast(nuevoEstado ? 'Cliente activado' : 'Cliente desactivado')
+
+      // Kick inmediato via broadcast si se desactiva
+      if (!nuevoEstado && cliente.user_id) {
+        const kickChannel = supabase.channel(`kick-${cliente.user_id}`)
+        kickChannel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            kickChannel.send({ type: 'broadcast', event: 'deactivate', payload: {} })
+              .finally(() => supabase.removeChannel(kickChannel))
+          }
+        })
+      }
     }
     setTogglingId(null)
   }

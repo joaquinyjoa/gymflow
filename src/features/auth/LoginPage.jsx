@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState(() => {
     if (localStorage.getItem('gymflow_desactivado')) {
       localStorage.removeItem('gymflow_desactivado')
-      return 'Tu cuenta fue desactivada. Contactá al gimnasio.'
+      return 'Tu cuenta ha sido desactivada por la administración.'
     }
     return ''
   })

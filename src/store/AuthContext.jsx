@@ -44,22 +44,15 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Escuchar cambios en users.activo — si el admin desactiva la cuenta, cerrar sesión inmediatamente
+  // Escuchar broadcast del admin — si desactiva la cuenta, cerrar sesión inmediatamente
   useEffect(() => {
     if (!user) return
 
     const channel = supabase
-      .channel(`user-status-${user.id}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'users',
-        filter: `id=eq.${user.id}`,
-      }, (payload) => {
-        if (payload.new?.activo === false) {
-          localStorage.setItem('gymflow_desactivado', '1')
-          supabase.auth.signOut()
-        }
+      .channel(`kick-${user.id}`)
+      .on('broadcast', { event: 'deactivate' }, () => {
+        localStorage.setItem('gymflow_desactivado', '1')
+        supabase.auth.signOut()
       })
       .subscribe()
 
