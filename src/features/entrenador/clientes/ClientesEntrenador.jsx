@@ -51,7 +51,7 @@ export default function ClientesEntrenador() {
     const [{ data: clientesData }, { data: rutinaIds }] = await Promise.all([
       supabase
         .from('clientes')
-        .select('id, nombre, apellido, correo, estado, fecha_vencimiento')
+        .select('id, nombre, apellido, correo, fecha_vencimiento')
         .order('apellido', { ascending: true }),
       supabase
         .from('rutinas_clientes')
@@ -235,9 +235,6 @@ export default function ClientesEntrenador() {
                     </div>
                     <div className="ent-cliente-dni">DNI {cliente.correo?.split('@')[0]}</div>
                     <div className="ent-cliente-badges">
-                      {!cliente.estado && (
-                        <span className="badge badge-neutral">Inactivo</span>
-                      )}
                       {vencido && (
                         <span className="badge badge-danger">Vencido</span>
                       )}

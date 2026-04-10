@@ -88,17 +88,17 @@ export default function Dashboard() {
         { count: totalRutinas },
         { data: renovaciones },
       ] = await Promise.all([
-        supabase.from('clientes').select('id, estado, fecha_vencimiento'),
+        supabase.from('clientes').select('id, fecha_vencimiento'),
         supabase.from('entrenadores').select('id'),
         supabase.from('rutinas').select('*', { count: 'exact', head: true }),
         supabase.from('renovaciones').select('metodo_pago, fecha_renovacion'),
       ])
 
       const total = clientes?.length ?? 0
-      const activos = clientes?.filter(c => c.estado && c.fecha_vencimiento >= hoy).length ?? 0
+      const activos = clientes?.filter(c => c.fecha_vencimiento >= hoy).length ?? 0
       const vencidos = clientes?.filter(c => c.fecha_vencimiento && c.fecha_vencimiento < hoy).length ?? 0
-      const porVencer7 = clientes?.filter(c => c.estado && c.fecha_vencimiento >= hoy && c.fecha_vencimiento <= en7).length ?? 0
-      const porVencer30 = clientes?.filter(c => c.estado && c.fecha_vencimiento > en7 && c.fecha_vencimiento <= en30).length ?? 0
+      const porVencer7 = clientes?.filter(c => c.fecha_vencimiento >= hoy && c.fecha_vencimiento <= en7).length ?? 0
+      const porVencer30 = clientes?.filter(c => c.fecha_vencimiento > en7 && c.fecha_vencimiento <= en30).length ?? 0
 
       const renovEfectivo = renovaciones?.filter(r => r.metodo_pago === 'efectivo').length ?? 0
       const renovTransferencia = renovaciones?.filter(r => r.metodo_pago === 'transferencia').length ?? 0

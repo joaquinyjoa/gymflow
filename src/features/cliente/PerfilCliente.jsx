@@ -261,8 +261,8 @@ export default function PerfilCliente() {
         </div>
         <div className="perfil-row">
           <span className="perfil-label">Estado</span>
-          <span className={`badge ${perfil.estado && !vencido ? 'badge-success' : 'badge-neutral'}`}>
-            {perfil.estado && !vencido ? 'Activo' : 'Inactivo'}
+          <span className={`badge ${!vencido ? 'badge-success' : 'badge-neutral'}`}>
+            {!vencido ? 'Activo' : 'Inactivo'}
           </span>
         </div>
         {perfil.objetivo && (
