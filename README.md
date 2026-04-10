@@ -8,13 +8,21 @@ Construido como PWA (Progressive Web App) — se puede instalar en el teléfono 
 
 ## Capturas de pantalla
 
-| Login | Panel cliente | Rutina del día |
-|-------|--------------|----------------|
-| ![Login](screenshots/login.png) | ![Cliente](screenshots/cliente-rutina.png) | ![Rutina](screenshots/rutina-dia.png) |
+### Admin
 
-| Panel entrenador | Panel admin | Dashboard |
-|-----------------|-------------|-----------|
-| ![Entrenador](screenshots/entrenador-dashboard.png) | ![Admin](screenshots/admin-clientes.png) | ![Dashboard](screenshots/admin-dashboard.png) |
+![Dashboard](screenshots/admin_dashboard_estadisticas.png)
+![Lista de clientes](screenshots/admin_lista_clientes.png)
+![Lista de entrenadores](screenshots/admin_lista_entrenadores.png)
+
+### Crear cliente
+
+![Crear cliente](screenshots/admin_crear_cliente-ezgif.com-video-to-gif-converter.gif)
+
+### Entrenador
+
+![Dashboard entrenador](screenshots/entreador_dashboard.png)
+![Lista de ejercicios](screenshots/entrandor_lista_ejercicios.png)
+![Lista de rutinas](screenshots/entrenador_lista_rutinas.png)
 
 ---
 
