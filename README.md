@@ -8,21 +8,52 @@ Construido como PWA (Progressive Web App) — se puede instalar en el teléfono 
 
 ## Capturas de pantalla
 
-### Admin
+### Panel Administrador — Dashboard
+> Estadísticas en tiempo real: clientes activos, vencidos, próximos a vencer y métodos de pago del mes.
 
-![Dashboard](screenshots/admin_dashboard_estadisticas.png)
-![Lista de clientes](screenshots/admin_lista_clientes.png)
-![Lista de entrenadores](screenshots/admin_lista_entrenadores.png)
+![Dashboard del administrador con estadísticas de membresías](screenshots/admin_dashboard_estadisticas.png)
 
-### Crear cliente
+---
 
-![Crear cliente](screenshots/admin_crear_cliente-ezgif.com-video-to-gif-converter.gif)
+### Panel Administrador — Lista de clientes
+> Vista de todos los clientes con estado de membresía, fecha de vencimiento, datos personales y acciones rápidas (renovar, reset PIN, historial).
 
-### Entrenador
+![Lista de clientes con estado de membresía y acciones](screenshots/admin_lista_clientes.png)
 
-![Dashboard entrenador](screenshots/entreador_dashboard.png)
-![Lista de ejercicios](screenshots/entrandor_lista_ejercicios.png)
-![Lista de rutinas](screenshots/entrenador_lista_rutinas.png)
+---
+
+### Panel Administrador — Lista de entrenadores
+> Gestión de entrenadores: ver, editar y eliminar desde una misma pantalla.
+
+![Lista de entrenadores registrados](screenshots/admin_lista_entrenadores.png)
+
+---
+
+### Panel Administrador — Crear nuevo cliente (flujo completo)
+> Formulario de alta de cliente: datos personales, PIN de acceso, fecha de vencimiento y método de pago. La primera renovación se registra automáticamente.
+
+![GIF del flujo completo para crear un nuevo cliente](screenshots/admin_crear_cliente-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Entrenador — Dashboard
+> Resumen del entrenador: cantidad de clientes asignados, rutinas creadas y ejercicios disponibles.
+
+![Dashboard del entrenador con resumen de actividad](screenshots/entrenador_dashboard.png)
+
+---
+
+### Panel Entrenador — Lista de ejercicios
+> Biblioteca de ejercicios con GIF demostrativo, músculo principal, nivel de dificultad y categoría. Se pueden activar, desactivar o eliminar.
+
+![Lista de ejercicios con GIF y filtros por categoría](screenshots/entrenador_lista_ejercicios.png)
+
+---
+
+### Panel Entrenador — Lista de rutinas
+> Rutinas creadas por el entrenador con cantidad de ejercicios, nivel de dificultad y objetivo. Se pueden asignar a clientes por día de la semana.
+
+![Lista de rutinas con opciones de asignación](screenshots/entrenador_lista_rutinas.png)
 
 ---
 
