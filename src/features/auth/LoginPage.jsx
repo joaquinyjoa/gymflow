@@ -10,13 +10,7 @@ import '../../styles/features/login.css'
 export default function LoginPage() {
   const [dni, setDni] = useState('')
   const [pin, setPin] = useState('')
-  const [error, setError] = useState(() => {
-    if (localStorage.getItem('gymflow_desactivado')) {
-      localStorage.removeItem('gymflow_desactivado')
-      return 'Tu cuenta ha sido desactivada por la administración.'
-    }
-    return ''
-  })
+  const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
   const [intentoLogin, setIntentoLogin] = useState(false)
 

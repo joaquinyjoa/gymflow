@@ -44,7 +44,7 @@ export default function ClientesList() {
   const [nuevoPin, setNuevoPin] = useState('')
   const [guardandoPin, setGuardandoPin] = useState(false)
   const [pinMsg, setPinMsg] = useState('')
-  const [togglingId, setTogglingId] = useState(null)
+
   const [historialId, setHistorialId] = useState(null)
   const [historialData, setHistorialData] = useState({}) // { [clienteId]: [] }
   const [cargandoHistorial, setCargandoHistorial] = useState(false)
@@ -57,7 +57,7 @@ export default function ClientesList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('clientes')
-      .select('id, nombre, apellido, correo, estado, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero, metodo_pago, user_id')
+      .select('id, nombre, apellido, correo, fecha_vencimiento, edad, peso, altura, nivel_actividad, objetivo, genero, metodo_pago, user_id')
       .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
@@ -76,7 +76,7 @@ export default function ClientesList() {
     const vencido = estaVencido(c.fecha_vencimiento)
     const matchEstado =
       filtroEstado === 'todos' ? true :
-      filtroEstado === 'activos' ? (c.estado && !vencido) :
+      filtroEstado === 'activos' ? !vencido :
       filtroEstado === 'vencidos' ? vencido : true
     return matchBusqueda && matchEstado
   })
@@ -87,7 +87,7 @@ export default function ClientesList() {
 
     const [{ error }, { error: errorRenovacion }] = await Promise.all([
       supabase.from('clientes')
-        .update({ fecha_vencimiento: nuevaFecha, estado: true, metodo_pago: metodoPagoRenovar })
+        .update({ fecha_vencimiento: nuevaFecha, metodo_pago: metodoPagoRenovar })
         .eq('id', renovandoId),
       supabase.from('renovaciones').insert({
         cliente_id: renovandoId,
@@ -99,7 +99,7 @@ export default function ClientesList() {
 
     if (!error && !errorRenovacion) {
       setClientes(prev => prev.map(c =>
-        c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, estado: true, metodo_pago: metodoPagoRenovar } : c
+        c.id === renovandoId ? { ...c, fecha_vencimiento: nuevaFecha, metodo_pago: metodoPagoRenovar } : c
       ))
       // Invalida el caché del historial para que recargue la próxima vez
       setHistorialData(prev => { const next = { ...prev }; delete next[renovandoId]; return next })
@@ -144,38 +144,6 @@ export default function ClientesList() {
     setGuardandoPin(false)
   }
 
-  async function toggleEstado(cliente) {
-    setTogglingId(cliente.id)
-    const nuevoEstado = !cliente.estado
-
-    const ops = [
-      supabase.from('clientes').update({ estado: nuevoEstado }).eq('id', cliente.id),
-      cliente.user_id
-        ? supabase.from('users').update({ activo: nuevoEstado }).eq('id', cliente.user_id)
-        : Promise.resolve({ error: null }),
-    ]
-
-    const results = await Promise.all(ops)
-    const errores = results.filter(r => r.error)
-
-    if (errores.length) { setError('Error al actualizar estado') }
-    else {
-      setClientes(prev => prev.map(c => c.id === cliente.id ? { ...c, estado: nuevoEstado } : c))
-      toast(nuevoEstado ? 'Cliente activado' : 'Cliente desactivado')
-
-      // Kick inmediato via broadcast si se desactiva
-      if (!nuevoEstado && cliente.user_id) {
-        const kickChannel = supabase.channel(`kick-${cliente.user_id}`)
-        kickChannel.subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            kickChannel.send({ type: 'broadcast', event: 'deactivate', payload: {} })
-              .finally(() => supabase.removeChannel(kickChannel))
-          }
-        })
-      }
-    }
-    setTogglingId(null)
-  }
 
   async function toggleHistorial(clienteId) {
     if (historialId === clienteId) { setHistorialId(null); return }
@@ -331,12 +299,6 @@ export default function ClientesList() {
                       {vencido && <span className="badge badge-danger" style={{ marginLeft: '8px' }}>Vencido</span>}
                     </span>
                   </div>
-                  <div className="admin-card-meta-row">
-                    <span className="admin-card-meta-label">Estado</span>
-                    <span className={`badge ${cliente.estado && !vencido ? 'badge-success' : 'badge-neutral'}`}>
-                      {cliente.estado && !vencido ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
                   {cliente.metodo_pago && (
                     <div className="admin-card-meta-row">
                       <span className="admin-card-meta-label">Último pago</span>
@@ -459,13 +421,6 @@ export default function ClientesList() {
                     onClick={() => { setRenovandoId(cliente.id); setNuevaFecha('') }}
                   >
                     Renovar
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => toggleEstado(cliente)}
-                    disabled={togglingId === cliente.id}
-                  >
-                    {togglingId === cliente.id ? '...' : (cliente.estado ? 'Desactivar' : 'Activar')}
                   </button>
                   <button
                     className="btn btn-ghost"

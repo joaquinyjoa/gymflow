@@ -44,20 +44,6 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Escuchar broadcast del admin — si desactiva la cuenta, cerrar sesión inmediatamente
-  useEffect(() => {
-    if (!user) return
-
-    const channel = supabase
-      .channel(`kick-${user.id}`)
-      .on('broadcast', { event: 'deactivate' }, () => {
-        localStorage.setItem('gymflow_desactivado', '1')
-        supabase.auth.signOut()
-      })
-      .subscribe()
-
-    return () => supabase.removeChannel(channel)
-  }, [user])
 
   async function cargarPerfil(authUser) {
     setPerfilListo(false)
@@ -65,12 +51,11 @@ export function AuthProvider({ children }) {
     try {
       const { data: userData, error } = await supabase
         .from('users')
-        .select('rol, activo')
+        .select('rol')
         .eq('id', authUser.id)
         .single()
 
       if (error || !userData) throw new Error('Usuario no encontrado')
-      if (!userData.activo) throw new Error('Usuario desactivado')
 
       // Guardar rol en localStorage para redirect inmediato al reabrir
       localStorage.setItem(ROL_KEY, userData.rol)
@@ -104,7 +89,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       setAuthError(error.message)
       setPerfilListo(false)
-      if (error.message === 'Usuario no encontrado' || error.message === 'Usuario desactivado') {
+      if (error.message === 'Usuario no encontrado') {
         localStorage.removeItem(ROL_KEY)
         setUser(null)
         setRol(null)
