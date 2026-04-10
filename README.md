@@ -57,6 +57,48 @@ Construido como PWA (Progressive Web App) — se puede instalar en el teléfono 
 
 ---
 
+### Panel Administrador — Crear nuevo entrenador
+> Alta de entrenador con datos personales y PIN de acceso.
+
+![GIF del flujo para crear un nuevo entrenador](screenshots/admin_crear_entrenador-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Entrenador — Crear ejercicio con GIF
+> Creación de ejercicio: nombre, músculo, nivel, categoría y carga del GIF demostrativo.
+
+![GIF del flujo para crear un ejercicio con GIF demostrativo](screenshots/entrenador_crear_ejercicio-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Entrenador — Crear rutina
+> Armado de rutina con ejercicios, orden, series, repeticiones, descanso e intensidad.
+
+![GIF del flujo para crear una rutina con ejercicios](screenshots/entrenador_crear_rutina-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Entrenador — Asignar rutina a cliente
+> Asignación de una rutina a uno o varios clientes con día de la semana.
+
+![GIF del flujo para asignar una rutina a un cliente](screenshots/entrenador_asigna_rutina_cliente-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Entrenador — Lista de clientes
+> Vista de todos los clientes del gimnasio con badge de rutina asignada y filtros.
+
+![GIF de la lista de clientes del entrenador](screenshots/entrenador_lista_clientes-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### Panel Cliente — Dashboard y rutina del día
+> Vista del cliente: saludo, días de entrenamiento asignados, rutina del día con ejercicios, GIF animado y controles de completado.
+
+![GIF del panel del cliente con rutina del día](screenshots/Cliente_dashboar-ezgif.com-video-to-gif-converter.gif)
+
+---
+
 ## Roles
 
 ### Administrador
