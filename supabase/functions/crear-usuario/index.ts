@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
   // 2. Insertar en tabla users
   const { error: userInsertError } = await supabaseAdmin
     .from('users')
-    .insert({ id: userId, rol, activo: true })
+    .insert({ id: userId, rol })
 
   if (userInsertError) {
     await supabaseAdmin.auth.admin.deleteUser(userId)
