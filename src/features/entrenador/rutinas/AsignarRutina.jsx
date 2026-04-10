@@ -65,7 +65,6 @@ export default function AsignarRutina() {
     const { data } = await supabase
       .from('clientes')
       .select('id, nombre, apellido, correo')
-      .eq('estado', true)
       .order('apellido', { ascending: true })
     setClientes(data ?? [])
   }
