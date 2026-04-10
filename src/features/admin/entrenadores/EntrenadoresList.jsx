@@ -22,7 +22,6 @@ export default function EntrenadoresList() {
   const [error, setError] = useState(null)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
-  const [togglingId, setTogglingId] = useState(null)
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -32,28 +31,14 @@ export default function EntrenadoresList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('entrenadores')
-      .select('id, nombre, apellido, correo, user_id, users(activo)')
+      .select('id, nombre, apellido, correo, user_id')
       .order('apellido', { ascending: true })
 
     if (error) setError(error.message)
-    else setEntrenadores(data.map(e => ({ ...e, activo: e.users?.activo ?? true })))
+    else setEntrenadores(data)
     setLoading(false)
   }
 
-  async function toggleEstado(entrenador) {
-    setTogglingId(entrenador.id)
-    const { error } = await supabase
-      .from('users')
-      .update({ activo: !entrenador.activo })
-      .eq('id', entrenador.user_id)
-
-    if (error) { setError('Error al actualizar estado') }
-    else {
-      setEntrenadores(prev => prev.map(e => e.id === entrenador.id ? { ...e, activo: !e.activo } : e))
-      toast(entrenador.activo ? 'Entrenador desactivado' : 'Entrenador activado')
-    }
-    setTogglingId(null)
-  }
 
   async function eliminarEntrenador() {
     setEliminando(true)
@@ -119,12 +104,6 @@ export default function EntrenadoresList() {
               {/* Meta */}
               <div className="admin-card-meta">
                 <div className="admin-card-meta-row">
-                  <span className="admin-card-meta-label">Estado</span>
-                  <span className={`badge ${entrenador.activo ? 'badge-success' : 'badge-neutral'}`}>
-                    {entrenador.activo ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-                <div className="admin-card-meta-row">
                   <span className="admin-card-meta-label">Rol</span>
                   <span className="badge badge-acento">Entrenador</span>
                 </div>
@@ -137,13 +116,6 @@ export default function EntrenadoresList() {
                   onClick={() => navigate(`/admin/entrenadores/${entrenador.id}/editar`)}
                 >
                   Editar
-                </button>
-                <button
-                  className="btn btn-ghost"
-                  onClick={() => toggleEstado(entrenador)}
-                  disabled={togglingId === entrenador.id}
-                >
-                  {togglingId === entrenador.id ? '...' : (entrenador.activo ? 'Desactivar' : 'Activar')}
                 </button>
               </div>
 
