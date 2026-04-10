@@ -144,7 +144,6 @@ export default function AsignarRutina() {
   async function handleAsignar(e) {
     e.preventDefault()
     setError('')
-    setExito('')
 
     if (clientesSeleccionados.length === 0) { setError('Agregá al menos un cliente para asignar'); return }
 
