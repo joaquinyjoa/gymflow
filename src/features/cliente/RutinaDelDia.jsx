@@ -98,6 +98,14 @@ export default function RutinaDelDia() {
     if (perfil?.id) cargarRutinas()
   }, [perfil])
 
+  useEffect(() => {
+    function handleOnline() {
+      if (perfil?.id && desdeCache) cargarRutinas()
+    }
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [perfil, desdeCache])
+
   async function cargarRutinas() {
     setLoading(true)
     try {
