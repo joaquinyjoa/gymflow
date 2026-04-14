@@ -153,11 +153,12 @@ export default function ClientesList() {
     setHistorialId(clienteId)
     if (historialData[clienteId]) return
     setCargandoHistorial(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('renovaciones')
       .select('id, fecha_renovacion, fecha_vencimiento, metodo_pago, monto')
       .eq('cliente_id', clienteId)
       .order('fecha_renovacion', { ascending: false })
+    if (error) toast('Error al cargar historial')
     setHistorialData(prev => ({ ...prev, [clienteId]: data ?? [] }))
     setCargandoHistorial(false)
   }

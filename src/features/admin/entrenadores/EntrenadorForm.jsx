@@ -92,7 +92,8 @@ export default function EntrenadorForm() {
     if (entrenadorError) throw new Error(`Error actualizando entrenador: ${entrenadorError.message}`)
 
     if (pin.length === 4) {
-      const { data: entrenadorData } = await supabase.from('entrenadores').select('user_id').eq('id', id).single()
+      const { data: entrenadorData, error: fetchError } = await supabase.from('entrenadores').select('user_id').eq('id', id).single()
+      if (fetchError || !entrenadorData?.user_id) throw new Error('Error al obtener datos del entrenador')
       const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
         body: { user_id: entrenadorData.user_id, pin }
       })

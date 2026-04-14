@@ -232,7 +232,9 @@ export default function RutinaClienteDetalle() {
       .delete()
       .eq('id', confirmRestore.overrideId)
 
-    if (!error) {
+    if (error) {
+      toast('Error al restaurar ejercicio')
+    } else {
       toast('Ejercicio restaurado al original')
       cargarRutina()
     }

@@ -94,7 +94,9 @@ export default function ClientesEntrenador() {
       .delete()
       .eq('id', asignacionId)
 
-    if (!error) {
+    if (error) {
+      toast('Error al desasignar rutina')
+    } else {
       setRutinasCliente(prev => {
         const updated = prev[clienteId].filter(r => r.id !== asignacionId)
         if (updated.length === 0) {

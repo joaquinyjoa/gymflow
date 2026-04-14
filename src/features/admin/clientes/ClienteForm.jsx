@@ -168,12 +168,13 @@ export default function ClienteForm() {
     })
 
     if (result.cliente_id && form.fecha_vencimiento) {
-      await supabase.from('renovaciones').insert({
+      const { error: errorRenovacion } = await supabase.from('renovaciones').insert({
         cliente_id: result.cliente_id,
         fecha_vencimiento: form.fecha_vencimiento,
         metodo_pago: form.metodo_pago,
         fecha_renovacion: new Date().toISOString().split('T')[0],
       })
+      if (errorRenovacion) throw new Error('Cliente creado pero error al registrar renovación')
     }
   }
 
@@ -192,7 +193,8 @@ export default function ClienteForm() {
     if (clienteError) throw new Error(`Error actualizando cliente: ${clienteError.message}`)
 
     if (pin.length === 4) {
-      const { data: clienteData } = await supabase.from('clientes').select('user_id').eq('id', id).single()
+      const { data: clienteData, error: fetchError } = await supabase.from('clientes').select('user_id').eq('id', id).single()
+      if (fetchError || !clienteData?.user_id) throw new Error('Error al obtener datos del cliente')
       const { data, error: pinError } = await supabase.functions.invoke('actualizar-pin', {
         body: { user_id: clienteData.user_id, pin }
       })

@@ -212,7 +212,8 @@ export default function RutinaForm() {
       if (esEdicion) {
         const { error } = await supabase.from('rutinas').update({ ...form }).eq('id', id)
         if (error) throw new Error(error.message)
-        await supabase.from('rutinas_ejercicios').delete().eq('rutina_id', id)
+        const { error: deleteError } = await supabase.from('rutinas_ejercicios').delete().eq('rutina_id', id)
+        if (deleteError) throw new Error(deleteError.message)
       } else {
         const { data, error } = await supabase
           .from('rutinas')
