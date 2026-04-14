@@ -69,6 +69,14 @@ export default function EntrenadorForm() {
   }
 
   async function crearEntrenador() {
+    const { data: existente } = await supabase
+      .from('entrenadores')
+      .select('id')
+      .ilike('correo', `${dni}@%`)
+      .maybeSingle()
+
+    if (existente) throw new Error(`El DNI ${dni} ya está registrado`)
+
     await invocarFuncion('crear-usuario', {
       dni, pin, rol: 'entrenador',
       perfil: { nombre: form.nombre, apellido: form.apellido }
