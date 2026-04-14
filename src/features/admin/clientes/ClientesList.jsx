@@ -39,6 +39,7 @@ export default function ClientesList() {
   const [renovandoId, setRenovandoId] = useState(null)
   const [nuevaFecha, setNuevaFecha] = useState('')
   const [metodoPagoRenovar, setMetodoPagoRenovar] = useState('efectivo')
+  const [montoRenovar, setMontoRenovar] = useState('')
   const [guardandoFecha, setGuardandoFecha] = useState(false)
   const [resetPinId, setResetPinId] = useState(null)
   const [nuevoPin, setNuevoPin] = useState('')
@@ -93,6 +94,7 @@ export default function ClientesList() {
         cliente_id: renovandoId,
         fecha_vencimiento: nuevaFecha,
         metodo_pago: metodoPagoRenovar,
+        monto: montoRenovar ? Number(montoRenovar) : null,
         fecha_renovacion: new Date().toISOString().split('T')[0],
       }),
     ])
@@ -106,6 +108,7 @@ export default function ClientesList() {
       setRenovandoId(null)
       setNuevaFecha('')
       setMetodoPagoRenovar('efectivo')
+      setMontoRenovar('')
       toast('Membresía renovada')
     } else {
       setError('Error al renovar membresía')
@@ -152,7 +155,7 @@ export default function ClientesList() {
     setCargandoHistorial(true)
     const { data } = await supabase
       .from('renovaciones')
-      .select('id, fecha_renovacion, fecha_vencimiento, metodo_pago')
+      .select('id, fecha_renovacion, fecha_vencimiento, metodo_pago, monto')
       .eq('cliente_id', clienteId)
       .order('fecha_renovacion', { ascending: false })
     setHistorialData(prev => ({ ...prev, [clienteId]: data ?? [] }))
@@ -361,6 +364,7 @@ export default function ClientesList() {
                           <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                             <span className="text-muted">{formatFecha(r.fecha_renovacion)}</span>
                             <span>Vence: <strong>{formatFecha(r.fecha_vencimiento)}</strong></span>
+                            {r.monto != null && <span style={{ fontWeight: 600 }}>${r.monto.toLocaleString('es-AR')}</span>}
                             <span className={`badge ${r.metodo_pago === 'efectivo' ? 'badge-neutral' : 'badge-acento'}`} style={{ textTransform: 'capitalize' }}>{r.metodo_pago}</span>
                           </div>
                         ))}
@@ -394,6 +398,17 @@ export default function ClientesList() {
                       </select>
                     </div>
                     <div className="admin-renovar-row" style={{ marginTop: '8px' }}>
+                      <input
+                        className="input"
+                        type="number"
+                        value={montoRenovar}
+                        onChange={e => setMontoRenovar(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && renovarMembresia()}
+                        placeholder="Monto abonado ($)"
+                        min={0}
+                      />
+                    </div>
+                    <div className="admin-renovar-row" style={{ marginTop: '8px' }}>
                       <button
                         className="btn btn-primary"
                         onClick={renovarMembresia}
@@ -401,7 +416,7 @@ export default function ClientesList() {
                       >
                         {guardandoFecha ? '...' : 'Guardar'}
                       </button>
-                      <button className="btn btn-ghost" onClick={() => { setRenovandoId(null); setNuevaFecha(''); setMetodoPagoRenovar('efectivo') }}>
+                      <button className="btn btn-ghost" onClick={() => { setRenovandoId(null); setNuevaFecha(''); setMetodoPagoRenovar('efectivo'); setMontoRenovar('') }}>
                         Cancelar
                       </button>
                     </div>

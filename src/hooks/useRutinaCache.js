@@ -170,8 +170,8 @@ export async function getRutinas(clienteId) {
       return { rutinas, desdeCache: false }
     }
 
-    // Cache válido, usarlo
-    return { rutinas: cache.rutina, desdeCache: true }
+    // Cache válido y verificado online — no es offline
+    return { rutinas: cache.rutina, desdeCache: false }
   } catch {
     // Si falla la red, usar cache igual (offline)
     return { rutinas: cache.rutina, desdeCache: true }
