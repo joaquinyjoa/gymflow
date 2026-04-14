@@ -146,6 +146,14 @@ export default function ClienteForm() {
   }
 
   async function crearCliente() {
+    const { data: existente } = await supabase
+      .from('clientes')
+      .select('id')
+      .ilike('correo', `${dni}@%`)
+      .maybeSingle()
+
+    if (existente) throw new Error(`El DNI ${dni} ya está registrado`)
+
     const result = await invocarFuncion('crear-usuario', {
       dni, pin, rol: 'cliente',
       perfil: {
