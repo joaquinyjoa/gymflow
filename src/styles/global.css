@@ -65,6 +65,8 @@ html, body, #root {
   overflow-x: hidden;
   /* Evita zoom en iOS al hacer focus en inputs */
   -webkit-text-size-adjust: 100%;
+  /* Evita el rebote al scrollear en iOS PWA */
+  overscroll-behavior: none;
 }
 
 /* Elimina el flash azul/gris al tocar en mobile */
@@ -240,6 +242,7 @@ textarea.input {
 .page {
   min-height: 100vh;
   min-height: 100dvh; /* dynamic viewport — evita el problema con la barra del browser en mobile */
+  height: 100dvh;
   background: var(--bg-base);
 }
 
