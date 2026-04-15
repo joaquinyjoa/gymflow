@@ -113,8 +113,8 @@
 /* ── Theme toggle ── */
 .login-tema-toggle {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
   z-index: 10;
 }
 
