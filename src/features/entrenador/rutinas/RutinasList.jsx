@@ -18,12 +18,16 @@ function IconTrash() {
   )
 }
 
+const DIFICULTADES = ['Todos', 'Bajo', 'Medio', 'Alto']
+
 export default function RutinasList() {
   const [rutinas, setRutinas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [dificultadFiltro, setDificultadFiltro] = useState('Todos')
   const { perfil } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -79,6 +83,13 @@ export default function RutinasList() {
     setConfirmItem(null)
   }
 
+  const rutinasFiltradas = rutinas.filter(r => {
+    const q = busqueda.toLowerCase()
+    const matchBusqueda = !q || r.nombre.toLowerCase().includes(q) || r.objetivo?.toLowerCase().includes(q)
+    const matchDificultad = dificultadFiltro === 'Todos' || r.nivel_dificultad === dificultadFiltro
+    return matchBusqueda && matchDificultad
+  })
+
   if (loading) return (
     <>
       <div className="admin-page-header">
@@ -97,7 +108,7 @@ export default function RutinasList() {
       <div className="admin-page-header">
         <div className="admin-page-header-left">
           <h1 className="admin-page-title">Rutinas</h1>
-          <p className="admin-page-subtitle">{rutinas.length} creadas</p>
+          <p className="admin-page-subtitle">{rutinasFiltradas.length} de {rutinas.length}</p>
         </div>
         <button className="btn btn-primary" onClick={() => navigate('/entrenador/rutinas/nuevo')}>
           + Nueva rutina
@@ -106,15 +117,38 @@ export default function RutinasList() {
 
       {error && <div className="msg-error mb-16">{error}</div>}
 
-      {rutinas.length === 0 ? (
+      {/* Filtros */}
+      <div className="ent-filtros">
+        <input
+          className="input ent-filtro-busqueda"
+          type="text"
+          placeholder="Buscar por nombre u objetivo..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          autoComplete="off"
+        />
+        <div className="ent-filtro-cats">
+          {DIFICULTADES.map(d => (
+            <button
+              key={d}
+              className={`ent-filtro-cat${dificultadFiltro === d ? ' activo' : ''}`}
+              onClick={() => setDificultadFiltro(d)}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {rutinasFiltradas.length === 0 ? (
         <EmptyState
-          tipo="rutinas"
-          titulo="Sin rutinas creadas"
-          descripcion="Creá tu primera rutina con el botón de arriba."
+          tipo={rutinas.length === 0 ? 'rutinas' : 'busqueda'}
+          titulo={rutinas.length === 0 ? 'Sin rutinas creadas' : 'Sin resultados'}
+          descripcion={rutinas.length === 0 ? 'Creá tu primera rutina con el botón de arriba.' : 'Probá con otro término de búsqueda.'}
         />
       ) : (
         <div className="admin-cards-list">
-          {rutinas.map(rutina => {
+          {rutinasFiltradas.map(rutina => {
             const cantEjercicios = rutina.rutinas_ejercicios?.[0]?.count ?? 0
             return (
               <div key={rutina.id} className="admin-card">

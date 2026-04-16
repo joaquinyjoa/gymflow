@@ -233,6 +233,7 @@ export default function ClienteForm() {
               <input
                 className="input"
                 type="text"
+                inputMode="numeric"
                 value={dni}
                 onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
                 disabled={esEdicion}

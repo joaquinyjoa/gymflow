@@ -182,6 +182,7 @@ export default function ClientesEntrenador() {
           <input
             className="input"
             type="text"
+            inputMode="numeric"
             value={busquedaDni}
             onChange={e => setBusquedaDni(e.target.value.replace(/\D/g, ''))}
             placeholder="Buscar por DNI..."
