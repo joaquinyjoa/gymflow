@@ -144,13 +144,14 @@ export default function LoginPage() {
             <div className="input-group">
               <label className="input-label">PIN</label>
               <input
-                className="input"
-                type="password"
+                className="input input-pin-mask"
+                type="text"
+                inputMode="numeric"
                 value={pin}
                 onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
                 placeholder="4 dígitos"
                 maxLength={4}
-                autoComplete="new-password"
+                autoComplete="off"
               />
             </div>
 
