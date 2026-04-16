@@ -38,8 +38,8 @@ export default function DashboardEntrenador() {
         { count: totalRutinas },
         { data: asignaciones },
       ] = await Promise.all([
-        supabase.from('ejercicios').select('*', { count: 'exact', head: true }).eq('created_by', perfil.id),
-        supabase.from('rutinas').select('*', { count: 'exact', head: true }).eq('created_by', perfil.id),
+        supabase.from('ejercicios').select('*', { count: 'exact', head: true }),
+        supabase.from('rutinas').select('*', { count: 'exact', head: true }),
         supabase.from('rutinas_clientes')
           .select('id, dia_semana, cliente_id, clientes(id, nombre, apellido, fecha_vencimiento, correo), rutinas(nombre)')
           .order('dia_semana', { ascending: true }),
