@@ -18,8 +18,6 @@ function IconTrash() {
   )
 }
 
-const DIFICULTADES = ['Todos', 'Bajo', 'Medio', 'Alto']
-
 export default function RutinasList() {
   const [rutinas, setRutinas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,7 +25,6 @@ export default function RutinasList() {
   const [confirmItem, setConfirmItem] = useState(null)
   const [eliminando, setEliminando] = useState(false)
   const [busqueda, setBusqueda] = useState('')
-  const [dificultadFiltro, setDificultadFiltro] = useState('Todos')
   const { perfil } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -85,9 +82,7 @@ export default function RutinasList() {
 
   const rutinasFiltradas = rutinas.filter(r => {
     const q = busqueda.toLowerCase()
-    const matchBusqueda = !q || r.nombre.toLowerCase().includes(q) || r.objetivo?.toLowerCase().includes(q)
-    const matchDificultad = dificultadFiltro === 'Todos' || r.nivel_dificultad === dificultadFiltro
-    return matchBusqueda && matchDificultad
+    return !q || r.nombre.toLowerCase().includes(q) || r.objetivo?.toLowerCase().includes(q)
   })
 
   if (loading) return (
@@ -127,17 +122,6 @@ export default function RutinasList() {
           onChange={e => setBusqueda(e.target.value)}
           autoComplete="off"
         />
-        <div className="ent-filtro-cats">
-          {DIFICULTADES.map(d => (
-            <button
-              key={d}
-              className={`ent-filtro-cat${dificultadFiltro === d ? ' activo' : ''}`}
-              onClick={() => setDificultadFiltro(d)}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
       </div>
 
       {rutinasFiltradas.length === 0 ? (
