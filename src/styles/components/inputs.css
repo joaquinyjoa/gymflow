@@ -13,6 +13,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radio-sm);
   font-size: 13px;
+  /* iOS: evita zoom automático al enfocar (el navegador requiere >= 16px) */
   font-weight: 600;
   color: var(--text-primary);
   font-family: var(--font);
