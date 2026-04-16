@@ -313,17 +313,17 @@ export default function PerfilCliente() {
             <div className="input-group">
               <label className="input-label">PIN actual</label>
               <input className="input" type="password" inputMode="numeric" value={pinActual}
-                onChange={e => setPinActual(e.target.value)} placeholder="••••" />
+                onChange={e => setPinActual(e.target.value.replace(/\D/g, ''))} maxLength={4} placeholder="••••" />
             </div>
             <div className="input-group">
               <label className="input-label">Nuevo PIN</label>
               <input className="input" type="password" inputMode="numeric" value={pinNuevo}
-                onChange={e => setPinNuevo(e.target.value)} placeholder="••••" />
+                onChange={e => setPinNuevo(e.target.value.replace(/\D/g, ''))} maxLength={4} placeholder="••••" />
             </div>
             <div className="input-group">
               <label className="input-label">Confirmar nuevo PIN</label>
               <input className="input" type="password" inputMode="numeric" value={pinConfirm}
-                onChange={e => setPinConfirm(e.target.value)} placeholder="••••" />
+                onChange={e => setPinConfirm(e.target.value.replace(/\D/g, ''))} maxLength={4} placeholder="••••" />
             </div>
             <div className="perfil-pin-acciones">
               <button className="btn btn-primary" onClick={cambiarPin} disabled={cambiando}>

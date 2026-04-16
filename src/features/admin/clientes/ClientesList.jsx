@@ -334,7 +334,8 @@ export default function ClientesList() {
                         inputMode="numeric"
                         placeholder="Nuevo PIN (4 dígitos)"
                         value={nuevoPin}
-                        onChange={e => setNuevoPin(e.target.value)}
+                        onChange={e => setNuevoPin(e.target.value.replace(/\D/g, ''))}
+                        maxLength={4}
                         onKeyDown={e => e.key === 'Enter' && resetearPin()}
                       />
                       <button
