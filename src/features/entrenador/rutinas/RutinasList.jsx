@@ -45,7 +45,6 @@ export default function RutinasList() {
         activo,
         rutinas_ejercicios(count)
       `)
-      .eq('created_by', perfil.id)
       .order('nombre', { ascending: true })
 
     if (error) setError(error.message)

@@ -41,7 +41,6 @@ export default function EjerciciosList() {
     const { data, error } = await supabase
       .from('ejercicios')
       .select('id, nombre, musculo_principal, nivel_dificultad, activo, categoria, enlace_video')
-      .eq('created_by', perfil.id)
       .order('nombre', { ascending: true })
 
     if (error) setError(error.message)
