@@ -53,9 +53,6 @@ function IconClock() {
 function IconEntrenador() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 }
-function IconRutina() {
-  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-}
 function IconCash({ color }) {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
 }
@@ -85,12 +82,10 @@ export default function Dashboard() {
       const [
         { data: clientes },
         { data: entrenadores },
-        { count: totalRutinas },
         { data: renovaciones },
       ] = await Promise.all([
         supabase.from('clientes').select('id, fecha_vencimiento'),
         supabase.from('entrenadores').select('id'),
-        supabase.from('rutinas').select('*', { count: 'exact', head: true }),
         supabase.from('renovaciones').select('metodo_pago, fecha_renovacion'),
       ])
 
@@ -107,7 +102,6 @@ export default function Dashboard() {
       setStats({
         total, activos, vencidos, porVencer7, porVencer30,
         totalEntrenadores: entrenadores?.length ?? 0,
-        totalRutinas: totalRutinas ?? 0,
         renovEfectivo, renovTransferencia, renovEsteMes,
         totalRenovaciones: renovaciones?.length ?? 0,
       })
@@ -138,7 +132,6 @@ export default function Dashboard() {
         <StatCard icon={<IconClock />}    valor={s?.porVencer7}  label="Vencen esta semana"  color="warning" />
         <StatCard icon={<IconClock />}    valor={s?.porVencer30} label="Vencen este mes"     color="warning" />
         <StatCard icon={<IconEntrenador />} valor={s?.totalEntrenadores} label="Entrenadores" color="neutral" />
-        <StatCard icon={<IconRutina />}   valor={s?.totalRutinas} label="Rutinas"            color="rutina" />
       </div>}
 
       {/* ── Gráfico donut ── */}
